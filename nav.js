@@ -20,11 +20,13 @@ if ('serviceWorker' in navigator) {
 
 function toggleMenu() {
   const nl = document.getElementById('navLinks');
+  if (!nl) return;
   const open = nl.classList.toggle('open');
   _moveControls(open, nl);
 }
 function closeMenu() {
   const nl = document.getElementById('navLinks');
+  if (!nl) return;
   nl.classList.remove('open');
   _moveControls(false, nl);
 }
@@ -35,7 +37,9 @@ function _moveControls(intoMenu, nl) {
     nl.appendChild(c);
     c.classList.add('in-menu');
   } else if (c.classList.contains('in-menu')) {
-    document.querySelector('nav').insertBefore(c, document.getElementById('burger'));
+    const navEl = document.querySelector('nav');
+    const burger = document.getElementById('burger');
+    if (navEl) navEl.insertBefore(c, burger);
     c.classList.remove('in-menu');
   }
 }

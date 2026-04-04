@@ -1760,8 +1760,8 @@ function colAbout(){
   D.about.values=[...document.querySelectorAll('#ls-v .li-item')].map(li=>{const i=li.dataset.idx;return{icon:document.getElementById(`v-ic-${i}`)?.value||'',title:document.getElementById(`v-ti-${i}`)?.value||'',desc:document.getElementById(`v-de-${i}`)?.value||''};});
 }
 function addPara(){ colAbout(); D.about.paragraphs.push('Новый параграф'); CT=''; showTab('about'); scrollToLast('ls-p'); }
-function addStat(){ colAbout(); D.about.stats.push({num:'0',label:'подпись'}); CT=''; showTab('about'); }
-function addVal(){  colAbout(); D.about.values.push({icon:'⭐',title:'Новая ценность',desc:'Описание'}); CT=''; showTab('about'); }
+function addStat(){ colAbout(); D.about.stats.push({num:'0',label:'подпись'}); CT=''; showTab('about'); scrollToLast('ls-st'); }
+function addVal(){ colAbout(); D.about.values.push({icon:'⭐',title:'Новая ценность',desc:'Описание'}); CT=''; showTab('about'); scrollToLast('ls-v'); }
 
 // ── JOURNEY ──────────────────────────────────
 function edJourney(){
@@ -1857,9 +1857,9 @@ function colContact(){
   if(!D.contact.form) D.contact.form={};
   D.contact.form.web3formsKey = v('cn-w3key');
 }
-function addCI(){ colContact(); D.contact.items.push({icon:'🔗',label:'Новый',value:'@username',href:'#'}); CT=''; showTab('contact'); }
-function addCP(){ colContact(); D.contact.textParagraphs.push('Новый параграф'); CT=''; showTab('contact'); }
-function addTP(){ colContact(); D.contact.topics.push('🌟 Новая тема'); CT=''; showTab('contact'); }
+function addCI(){ colContact(); D.contact.items.push({icon:'🔗',label:'Новый',value:'@username',href:'#'}); CT=''; showTab('contact'); scrollToLast('ls-ci'); }
+function addCP(){ colContact(); D.contact.textParagraphs.push('Новый параграф'); CT=''; showTab('contact'); scrollToLast('ls-cp'); }
+function addTP(){ colContact(); D.contact.topics.push('🌟 Новая тема'); CT=''; showTab('contact'); scrollToLast('ls-tp'); }
 
 // ── GLOBAL ───────────────────────────────────
 async function edGlobal(){

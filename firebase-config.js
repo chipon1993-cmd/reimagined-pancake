@@ -10,25 +10,27 @@
     measurementId: "G-CNZ0RBXKPL"
   };
 
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-
-  window.db = firebase.firestore();
-  window.storage = firebase.storage();
-
-  // Analytics (if SDK loaded)
-  if (firebase.analytics) {
-    try { firebase.analytics(); } catch(e) {}
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    window.db = firebase.firestore();
+    window.storage = firebase.storage();
+    if (typeof firebase.analytics === 'function') { firebase.analytics(); }
+  } catch(e) {
+    console.warn('Firebase init failed:', e.message);
+    window.db = null;
+    window.storage = null;
   }
 
   // ── Firestore helpers ──────────────────────────
   // Read with 4s timeout — returns null if Firestore unreachable
   window.fsGet = async function (collection, docId) {
+    if (!window.db) return null;
     try {
       const result = await Promise.race([
         db.collection(collection).doc(docId).get(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000))
+        new Promise(function(_, reject) { setTimeout(function() { reject(new Error('timeout')); }, 4000); })
       ]);
       return result.exists ? result.data() : null;
     } catch (e) {
@@ -39,11 +41,7 @@
 
   // Write (merge) a document
   window.fsSet = async function (collection, docId, data) {
-    try {
-      await db.collection(collection).doc(docId).set(data, { merge: true });
-    } catch (e) {
-      console.error('Firestore write failed:', collection + '/' + docId, e);
-      throw e;
-    }
+    if (!window.db) throw new Error('Firestore not initialized');
+    await db.collection(collection).doc(docId).set(data, { merge: true });
   };
 })();

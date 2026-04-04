@@ -267,7 +267,7 @@
     const labels = { youtube: 'YouTube', vimeo: 'Vimeo', file: 'Файл' };
     const typeLabel = labels[v.type] || v.type;
     const tagsHtml  = (v.tags || []).map(t => `<span class="vtag">${t}</span>`).join('');
-    return `<div class="vcard fade-in" data-vid="${v.id}" data-tags="${(v.tags||[]).join(',')}" onclick="openVideo('${v.id}')">
+    return `<div class="vcard fade-in" data-vid="${v.id}" data-tags="${(v.tags||[]).join(',')}" onclick="openVideo(this.dataset.vid)">
       <div class="vthumb">
         <img src="${thumb}" alt="${v.title}" loading="lazy"
              onerror="this.src=${JSON.stringify("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360' style='background:%23050810'%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' fill='%2300d4ff' font-size='56'%3E%E2%96%B6%3C/text%3E%3C/svg%3E")}">
@@ -299,7 +299,7 @@
     if (featEl) {
       if (featured) {
         const thumb = getThumb(featured);
-        featEl.innerHTML = `<div class="vfeatured fade-in" onclick="openVideo('${featured.id}')">
+        featEl.innerHTML = `<div class="vfeatured fade-in" data-vid="${featured.id}" onclick="openVideo(this.dataset.vid)">
           <div class="vthumb"><img src="${thumb}" alt="${featured.title}" loading="lazy"></div>
           <div class="vfeatured-overlay">
             <div class="vfeatured-label">${i18n('featured_label','Избранное')}</div>
@@ -424,8 +424,8 @@
     const page = document.body.dataset.page;
     if (!page) return;
     injectPreviewBanner();
-    injectAnalytics();
     const data = await getData();
+    injectAnalytics(data);
 
     const lang = localStorage.getItem('ac_lang') || 'ru';
     document.documentElement.lang = lang;
@@ -503,30 +503,29 @@
   window.AC_RERENDER = renderPage;
 
   // ── ANALYTICS INJECTION (GDPR-gated) ────────────────────
-  function injectAnalytics() {
+  function injectAnalytics(d) {
     if (new URLSearchParams(location.search).has('preview')) return;
-    getData().then(function(d) {
-      const analytics = d.global && d.global.analytics;
-      if (!analytics) return;
+    if (!d) return;
+    const analytics = d.global && d.global.analytics;
+    if (!analytics) return;
 
-      const domain = analytics.plausible && analytics.plausible.trim();
-      if (domain && !document.querySelector('script[data-domain]')) {
-        const s = document.createElement('script');
-        s.defer = true;
-        s.setAttribute('data-domain', domain);
-        s.src = 'https://plausible.io/js/script.js';
-        document.head.appendChild(s);
-      }
+    const domain = analytics.plausible && analytics.plausible.trim();
+    if (domain && !document.querySelector('script[data-domain]')) {
+      const s = document.createElement('script');
+      s.defer = true;
+      s.setAttribute('data-domain', domain);
+      s.src = 'https://plausible.io/js/script.js';
+      document.head.appendChild(s);
+    }
 
-      const gaId = analytics.ga && analytics.ga.trim();
-      if (!gaId) return;
-      const consent = localStorage.getItem('ac_cookie_consent');
-      if (consent === 'accepted') {
-        injectGA(gaId);
-      } else if (!consent) {
-        showCookieBanner(gaId);
-      }
-    }).catch(function() {});
+    const gaId = analytics.ga && analytics.ga.trim();
+    if (!gaId) return;
+    const consent = localStorage.getItem('ac_cookie_consent');
+    if (consent === 'accepted') {
+      injectGA(gaId);
+    } else if (!consent) {
+      showCookieBanner(gaId);
+    }
   }
 
   function injectGA(gaId) {
