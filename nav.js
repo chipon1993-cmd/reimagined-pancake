@@ -140,7 +140,11 @@ function updateThemeDots(theme) {
 // ── INIT ─────────────────────────────────────────────
 function initLangTheme() {
   const lang  = localStorage.getItem('ac_lang')  || 'ru';
-  const theme = localStorage.getItem('ac_theme') || 'cyan';
+  // Auto-detect system preference for first-time visitors
+  let theme = localStorage.getItem('ac_theme');
+  if (!theme) {
+    theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'cyan';
+  }
   applyTheme(theme);
   updateThemeDots(theme);
   updateLangButtons();
