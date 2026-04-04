@@ -1,16 +1,975 @@
 {
-  "exportDate": "2026-04-04T00:00:00",
+  "exportDate": "2026-04-04T13:13:26.981Z",
   "source": "Firefox",
-  "note": "Запусти export-bookmarks.py на своём компьютере чтобы заполнить этот файл реальными закладками",
   "bookmarks": [
+    {
+      "title": "Mozilla Firefox",
+      "type": "folder",
+      "children": [
+        {
+          "title": "Получить помощь",
+          "type": "bookmark",
+          "url": "https://support.mozilla.org/products/firefox"
+        },
+        {
+          "title": "Настроить Firefox",
+          "type": "bookmark",
+          "url": "https://support.mozilla.org/kb/customize-firefox-controls-buttons-and-toolbars?utm_source=firefox-browser&utm_medium=default-bookmarks&utm_campaign=customize"
+        },
+        {
+          "title": "Присоединиться",
+          "type": "bookmark",
+          "url": "https://www.mozilla.org/contribute/"
+        },
+        {
+          "title": "О нас",
+          "type": "bookmark",
+          "url": "https://www.mozilla.org/about/"
+        }
+      ]
+    },
     {
       "title": "Панель закладок",
       "type": "folder",
       "children": [
         {
-          "title": "Пример — добавь свои закладки через export-bookmarks.py",
+          "title": "Gmail",
           "type": "bookmark",
-          "url": "https://example.com"
+          "url": "https://accounts.google.com/b/0/AddMailService"
+        },
+        {
+          "title": "Перевести",
+          "type": "bookmark",
+          "url": "https://translate.google.com/"
+        },
+        {
+          "title": "Идеи для развития",
+          "type": "folder",
+          "children": [
+            {
+              "title": "Этническая музыка группы OTYKEN | Таёжные продукты коренных народов Сибири",
+              "type": "bookmark",
+              "url": "https://otyken.ru/?playlist=8b61bec&video=726c8bb"
+            },
+            {
+              "title": "Главная - Регистры Брённёйсунд",
+              "type": "bookmark",
+              "url": "https://www.brreg.no/"
+            },
+            {
+              "title": "AI Video Generator | Convert Text & Images into Engaging Videos - Vidfly",
+              "type": "bookmark",
+              "url": "https://vidfly.ai/home/"
+            },
+            {
+              "title": "Reality, Perception, and the Density of Being - NotebookLM",
+              "type": "bookmark",
+              "url": "https://notebooklm.google.com/notebook/02b536f8-3ca4-4b8c-a558-49176e72e85a?_gl=1*4bf23j*_ga*NjQwOTk3MTI2LjE3NTA2MTE4Mzc.*_ga_W0LDH41ZCB*czE3NTA2MTE4MzYkbzEkZzEkdDE3NTA2MTE4ODckajkkbDAkaDA.&original_referer=https:%2F%2Fnotebooklm.google%23&pli=1"
+            },
+            {
+              "title": "BeagleBoard Documentation — BeagleBoard Documentation",
+              "type": "bookmark",
+              "url": "https://docs.beagle.cc/#"
+            },
+            {
+              "title": "Arduino - Home",
+              "type": "bookmark",
+              "url": "https://www.arduino.cc/"
+            },
+            {
+              "title": "Raspberry Pi",
+              "type": "bookmark",
+              "url": "https://www.raspberrypi.com/"
+            },
+            {
+              "title": "Weblium User Account",
+              "type": "bookmark",
+              "url": "https://app.weblium.com/ua/home"
+            },
+            {
+              "title": "Lumosity Home",
+              "type": "bookmark",
+              "url": "https://app.lumosity.com/"
+            },
+            {
+              "title": "vitaminX - naturlige produkter og kosttilskudd av høy kvalitet.",
+              "type": "bookmark",
+              "url": "https://www.vitaminx.no/"
+            },
+            {
+              "title": "NOW Foods, Vitamin D-3, High Potency , 10,000 IU, 120 Softgels",
+              "type": "bookmark",
+              "url": "https://no.iherb.com/pr/now-foods-vitamin-d-3-high-potency-10-000-iu-120-softgels/52326?gad_campaignid=841968905&gad_source=1&gclid=CjwKCAjwyb3DBhBlEiwAqZLe5OZOLF4P8WPJLlZ1I-yBBPwm36sbtvutHL_7W_3494PS4CRbLB-5cRoCMl4QAvD_BwE&gclsrc=aw.ds"
+            },
+            {
+              "title": "Stream | Google AI Studio",
+              "type": "bookmark",
+              "url": "https://aistudio.google.com/live?model=gemini-2.5-flash-preview-native-audio-dialog"
+            },
+            {
+              "title": "Innboks - Digipost",
+              "type": "bookmark",
+              "url": "https://www.digipost.no/postkasse/76899440/inbox"
+            },
+            {
+              "title": "Gjeldsregisteret",
+              "type": "bookmark",
+              "url": "https://gjeldsregisteret.com/innsyn"
+            },
+            {
+              "title": "Full body motion capture integrating body, finger and face capture in one intuitive mocap system",
+              "type": "bookmark",
+              "url": "https://www.rokoko.com/products/full-performance-capture?utm_source=chatgpt.com"
+            },
+            {
+              "title": "Kundeportal - Vitamail",
+              "type": "bookmark",
+              "url": "https://kunde.vitamail.no/manage.aspx"
+            },
+            {
+              "title": "Perception Neuron 3 | Системы захвата движения Noitom",
+              "type": "bookmark",
+              "url": "https://www.noitom.com/perception-neuron-3?utm_source=chatgpt.com"
+            },
+            {
+              "title": "Home | Movella.com",
+              "type": "bookmark",
+              "url": "https://www.movella.com/"
+            },
+            {
+              "title": "Best Mocap Full-Body Suit Manufacturer and Supplier | Virdyn",
+              "type": "bookmark",
+              "url": "https://www.virdynm.com/virdyn-vdsuit-full-for-full-body-function-inertia-motion-capture-suit-product/?utm_source=chatgpt.com"
+            },
+            {
+              "title": "OptiTrack - Motion Capture Systems",
+              "type": "bookmark",
+              "url": "https://www.optitrack.com/?utm_source=chatgpt.com"
+            },
+            {
+              "title": "For You :: Behance",
+              "type": "bookmark",
+              "url": "https://www.behance.net/"
+            },
+            {
+              "title": "Deine YogaLehrer Ausbildung & Weiterbildungen bei Yogaleela",
+              "type": "bookmark",
+              "url": "https://www.yogaleela.de/"
+            },
+            {
+              "title": "Byggdrifterfaget - ta fagbrev med nettkurs fra nettskolen NooA",
+              "type": "bookmark",
+              "url": "https://www.nooa.no/course/byggdrifterfaget/?utm_source=chatgpt.com"
+            },
+            {
+              "title": "Онлайн-курсы в NooA — начните прямо сейчас в онлайн-школе, которая подстраивается под ваш график",
+              "type": "bookmark",
+              "url": "https://www.nooa.no/"
+            },
+            {
+              "title": "Як створити веб-сайт – Google AdSense",
+              "type": "bookmark",
+              "url": "https://adsense.google.com/intl/uk_ua/start/resources/how-to-create-a-website/"
+            },
+            {
+              "title": "CUSTOMTOP - Make your own clothes",
+              "type": "bookmark",
+              "url": "https://customtop.eu/?utm_source=chatgpt.com#contact"
+            },
+            {
+              "title": "Steg: Konto for utbetaling | Lånekassen",
+              "type": "bookmark",
+              "url": "https://lanekassen.no/nb-no/soknad/st01d3i/st01d3i-oppgi-kontonummer"
+            },
+            {
+              "title": "Il Nordkyn - Min idrett",
+              "type": "bookmark",
+              "url": "https://www.minidrett.no/idrettslag/28581"
+            },
+            {
+              "title": "Голые девушки. Красивая эротика на фото",
+              "type": "bookmark",
+              "url": "https://ru.eropho.run/"
+            },
+            {
+              "title": "Home - Linux Mint",
+              "type": "bookmark",
+              "url": "https://linuxmint.com/"
+            },
+            {
+              "title": "Вебсайт родинної історії Chepelovskyi",
+              "type": "bookmark",
+              "url": "https://www.myheritage.com.ua/family-sites/chepelovskyi/OYYV74YIMTAXCKZO6JSLBCDARFKIBRQ"
+            },
+            {
+              "title": "Grok",
+              "type": "bookmark",
+              "url": "https://grok.com/"
+            },
+            {
+              "title": "Product Design - Yanko Design",
+              "type": "bookmark",
+              "url": "https://www.yankodesign.com/category/productdesign/"
+            },
+            {
+              "title": "Reflect Orbital",
+              "type": "bookmark",
+              "url": "https://www.reflectorbital.com/"
+            },
+            {
+              "title": "Min Experian",
+              "type": "bookmark",
+              "url": "https://www.minexperian.no/Home/Start#"
+            },
+            {
+              "title": "Аккаунт Google",
+              "type": "bookmark",
+              "url": "https://myaccount.google.com/?tab=kk&rapt=AEjHL4NG6ibRMZpEI1iF4bkBSDVznzTeSzxhqAEgL4VGX7fPd-XL_tM_vUNoxEnYEQ33jSwQ-CUum6_gSWw_sIEWaD9vz21bt0qH6wZ86Uni1d_uZy2JwsE"
+            },
+            {
+              "title": "Mureka: Best AI Music Generator in 2025 to Create Unique Melodies, Songs, And Lyrics with Artificial Intelligence | Best AI Composers, Music Creation Tools & Platforms",
+              "type": "bookmark",
+              "url": "https://www.mureka.ai/create"
+            },
+            {
+              "title": "epsgroup.pro",
+              "type": "bookmark",
+              "url": "https://epsgroup.pro/"
+            },
+            {
+              "title": "- leManoosh",
+              "type": "bookmark",
+              "url": "https://lemanoosh.com/publication/160542/?utm_source=Pinterest&utm_medium=organic"
+            }
+          ]
+        },
+        {
+          "title": "Sumbrum",
+          "type": "folder",
+          "children": [
+            {
+              "title": "Ta kontakt med oss! Kundeservice hos Signal Bredbånd AS",
+              "type": "bookmark",
+              "url": "https://signal.no/kundeservice/"
+            },
+            {
+              "title": "FINN.no - mulighetenes marked",
+              "type": "bookmark",
+              "url": "https://www.finn.no/"
+            },
+            {
+              "title": "Bokhylla di | Allvit",
+              "type": "bookmark",
+              "url": "https://allvit.no/bokhylle"
+            },
+            {
+              "title": "skolekassa.no",
+              "type": "bookmark",
+              "url": "https://skolekassa.no/"
+            },
+            {
+              "title": "Salaby Skole",
+              "type": "bookmark",
+              "url": "https://skole.salaby.no/"
+            },
+            {
+              "title": "акробатические элементы | Акробатика в Днепре и Запорожье",
+              "type": "bookmark",
+              "url": "https://www.dima-boing.com/tag/%D0%B0%D0%BA%D1%80%D0%BE%D0%B1%D0%B0%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B5-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D1%8B/page/8/"
+            },
+            {
+              "title": "Velmet - військовий бренд для професіоналів, військторг Велмет, інтернет магазин виробника",
+              "type": "bookmark",
+              "url": "https://velmet.ua/"
+            },
+            {
+              "title": "Подання заявки на платіжну угоду як фізичний платник податків - Податкова адміністрація Норвегії",
+              "type": "bookmark",
+              "url": "https://www.skatteetaten.no/en/forms/payment-agreement-person/"
+            }
+          ]
+        },
+        {
+          "title": "Pinterest",
+          "type": "bookmark",
+          "url": "https://www.pinterest.ru/"
+        },
+        {
+          "title": "Бесплатные стоковые фото, изображения без роялти и изображения, не защищенные авторским правом · Pexels",
+          "type": "bookmark",
+          "url": "https://www.pexels.com/ru-ru/"
+        },
+        {
+          "title": "Pakkesporing",
+          "type": "bookmark",
+          "url": "https://sporing.posten.no/sporing/370727790018870606?lang=no"
+        },
+        {
+          "title": "YouTube",
+          "type": "bookmark",
+          "url": "https://youtube.com/"
+        },
+        {
+          "title": "Maps",
+          "type": "bookmark",
+          "url": "https://maps.google.com/"
+        },
+        {
+          "title": "Andrii",
+          "type": "folder",
+          "children": [
+            {
+              "title": "På vei | Trello",
+              "type": "bookmark",
+              "url": "https://trello.com/b/CfQhgIZI/pa-vei"
+            },
+            {
+              "title": "localziv.com/activity/sustainable-style-17514/?utm_source=pinterest&utm_medium=549761619526&utm_campaign=LV-9f2-Sustainable-otc2-auto-OCPM-~%5BU870%5D~&utm_adset=9f2-ss-ik-otc2-mp-0907&utm_content=8f12-ss-1&utm_term=U870&pp=0&epik=dj0yJnU9dlBSZ003aG5ZSFI4V1NuTWdncW1Oaml3Vm9zYVVGN18mcD0xJm49OVhEbGswWFBhZWxBS3dKbFBFeDBqZyZ0PUFBQUFBR2JXQ0FR",
+              "type": "bookmark",
+              "url": "https://www.localziv.com/activity/sustainable-style-17514/?utm_source=pinterest&utm_medium=549761619526&utm_campaign=LV-9f2-Sustainable-otc2-auto-OCPM-~%5BU870%5D~&utm_adset=9f2-ss-ik-otc2-mp-0907&utm_content=8f12-ss-1&utm_term=U870&pp=0&epik=dj0yJnU9dlBSZ003aG5ZSFI4V1NuTWdncW1Oaml3Vm9zYVVGN18mcD0xJm49OVhEbGswWFBhZWxBS3dKbFBFeDBqZyZ0PUFBQUFBR2JXQ0FR"
+            },
+            {
+              "title": "Інтернет-магазин Curandero Store | Рапе Київ Пало Санто Аква Флоріда Мате Шаманізм",
+              "type": "bookmark",
+              "url": "https://curandero.store/"
+            },
+            {
+              "title": "Palladium Off Grid Waterproof Boot (Men) | Nordstrom",
+              "type": "bookmark",
+              "url": "https://www.nordstrom.com/s/off-grid-waterproof-boot-men/7822937?epik=dj0yJnU9MlB3Nko5Ykluc01BXzRfTDBBVkxPZmU1c0pxUnBfNzMmcD0wJm49U1oxZDhNTVktNXNLZThnZkNsdnNydyZ0PUFBQUFBR2I4T2c4"
+            },
+            {
+              "title": "sjamanisme – Store norske leksikon",
+              "type": "bookmark",
+              "url": "https://snl.no/sjamanisme"
+            },
+            {
+              "title": "Информация о компании Ayahuaska Club",
+              "type": "bookmark",
+              "url": "https://ayahuaska.club/o-nas/"
+            },
+            {
+              "title": "Магазин - BrainAccess",
+              "type": "bookmark",
+              "url": "https://www.brainaccess.ai/products/"
+            },
+            {
+              "title": "Nurosym™ Official Store",
+              "type": "bookmark",
+              "url": "https://nurosym.com/?_gl=1*3jjrvf*_up*MQ..&gclid=Cj0KCQjwsJO4BhDoARIsADDv4vBSGrSVSh6b7JdHr6x2xxtkct9iZo83Sf6kfF4rnfP8wqtVnpmMKTwaAjGgEALw_wcB"
+            },
+            {
+              "title": "Kontorrekvisita og kontormateriale billig på nettet | Kontorgiganten.no",
+              "type": "bookmark",
+              "url": "https://www.kontorgiganten.no/"
+            },
+            {
+              "title": "Seville Cathedral | TheArtOfProcess",
+              "type": "bookmark",
+              "url": "https://www.theartofprocess.art/seville-cathedral"
+            },
+            {
+              "title": "AI Voice Generator & Text to Speech | ElevenLabs",
+              "type": "bookmark",
+              "url": "https://elevenlabs.io/app/speech-synthesis/text-to-speech"
+            },
+            {
+              "title": "Neuralink — Pioneering Brain Computer Interfaces",
+              "type": "bookmark",
+              "url": "https://neuralink.com/"
+            },
+            {
+              "title": "Order a Flow tDCS Headset - Flow Neuroscience",
+              "type": "bookmark",
+              "url": "https://www.flowneuroscience.com/shop/"
+            },
+            {
+              "title": "Antelope Evolution EMS Shirt for men with Booster - Buy",
+              "type": "bookmark",
+              "url": "https://www.mindtecstore.com/Antelope-Evolution-EMS-Shirt-for-men-with-booster-S?gad_source=1&gclid=CjwKCAiAmfq6BhAsEiwAX1jsZwzcfmFv9gwT5eSOZweS-IJ1VkalS6p7N9z3A5Qw1DZBZV9h5xCS2RoCtkUQAvD_BwE"
+            },
+            {
+              "title": "Мощные цифровые ресурсы и инструменты для создателей видео | Artlist",
+              "type": "bookmark",
+              "url": "https://artlist.io/"
+            },
+            {
+              "title": "Shila - Norges ledende innen helsekost og naturmedisin",
+              "type": "bookmark",
+              "url": "https://www.shila.no/"
+            },
+            {
+              "title": "Januarsalg - Opptil 70 % rabatt - Tights.no",
+              "type": "bookmark",
+              "url": "https://www.tights.no/"
+            },
+            {
+              "title": "Windy: Vindkart og værvarsel",
+              "type": "bookmark",
+              "url": "https://www.windy.com/?69.970,23.356,5"
+            },
+            {
+              "title": "SpaceEngine - Симулятор Вселенной",
+              "type": "bookmark",
+              "url": "https://spaceengine.org/"
+            },
+            {
+              "title": "Preply",
+              "type": "bookmark",
+              "url": "https://preply.com/ru/home"
+            },
+            {
+              "title": "Circusforyou - Цирковой реквизит и оборудование",
+              "type": "bookmark",
+              "url": "https://circusforyou.com.ua/ru/"
+            },
+            {
+              "title": "Зробіть свій сайт доступним | Wix.com",
+              "type": "bookmark",
+              "url": "https://manage.wix.com/dashboard/2c793e9a-c294-43bb-b702-df642742d246/website-channel?referralInfo=sidebar"
+            }
+          ]
+        },
+        {
+          "title": "EM Systemer",
+          "type": "bookmark",
+          "url": "https://emportal.no/"
+        },
+        {
+          "title": "AK Engro AS",
+          "type": "bookmark",
+          "url": "https://www.akengro.no/"
+        },
+        {
+          "title": "Logg inn - FAMAC",
+          "type": "bookmark",
+          "url": "https://auth.famacweb.no/auth/login-authorize?state=a3d10f2759dce9bdc7ebc6095f253af4&response_type=code&approval_prompt=auto&redirect_uri=https%3A%2F%2Ffamacweb.no%2Flogin%2Fverify&client_id=10"
+        },
+        {
+          "title": "Hjem | Microsoft 365 Copilot",
+          "type": "bookmark",
+          "url": "https://m365.cloud.microsoft/?auth=2"
+        },
+        {
+          "title": "Все остальное",
+          "type": "folder",
+          "children": [
+            {
+              "title": "Gartnerutstyr – Plantsy.no",
+              "type": "bookmark",
+              "url": "https://plantsy.no/collections/gartnerutstyr"
+            },
+            {
+              "title": "NAD Total® - 120 kapsler | Helsetilskudd",
+              "type": "bookmark",
+              "url": "https://helsetilskudd.no/produkt/helsekost/nad-total-60-kapsler-1?gad_source=1&gad_campaignid=22375874598&gbraid=0AAAAA_KcUmTbS0yTCOuMin8z_cWon5ki7&gclid=CjwKCAjwl_XBBhAUEiwAWK2hzkDWPly2bxKo-asGrVcp9HZdl_tmQ5Fq3721a2VDPGG0ZDc3JiBzjRoCdiUQAvD_BwE"
+            },
+            {
+              "title": "CX SOFT BACK — Информация о продукте",
+              "type": "bookmark",
+              "url": "https://www.suitx.com/en/products/cx-soft-back"
+            },
+            {
+              "title": "SUITX Exoskeletons for daily work",
+              "type": "bookmark",
+              "url": "https://www.suitx.com/en/home?utm_source=chatgpt.com"
+            },
+            {
+              "title": "Linux Mint 22.1 \"Xia\" - Linux Mint",
+              "type": "bookmark",
+              "url": "https://linuxmint.com/edition.php?id=319"
+            },
+            {
+              "title": "Starlink | Жилье",
+              "type": "bookmark",
+              "url": "https://www.starlink.com/no/residential?referral=RC-481067-34312-6&utm_source=google&utm_medium=paid&utm_campaign=sls_no_src_ggl_brd_stk-pe&utm_content=sls_no_src_ggl_brd_stk-pe_res_ctr_v4s_txt_nb-no_pmo-0&utm_term=stk-pe_starlink&gad_source=1&gad_campaignid=21919438245&gbraid=0AAAAAok2xKkljYBfYQYUjZ3nUzYKKor_I&gclid=Cj0KCQjw1JjDBhDjARIsABlM2Svg72RSGKiojjzMptR_ql6LRv14alcF4kVxbxzgUBxwyVbG6PFmSOUaAk7pEALw_wcB"
+            },
+            {
+              "title": "OSH Park ~",
+              "type": "bookmark",
+              "url": "https://oshpark.com/"
+            },
+            {
+              "title": "Elecrow: PCB Prototype & Open Hardware For Makers",
+              "type": "bookmark",
+              "url": "https://www.elecrow.com/"
+            },
+            {
+              "title": "MySyclope",
+              "type": "bookmark",
+              "url": "https://www.mysyclope.com/"
+            }
+          ]
+        },
+        {
+          "title": "Andrii Chepelovskyi",
+          "type": "folder",
+          "children": [
+            {
+              "title": "Google Аналитика | Главная",
+              "type": "bookmark",
+              "url": "https://analytics.google.com/analytics/web/#/a185942585p268153709/reports/intelligenthome?params=_u..nav%3Dmaui"
+            },
+            {
+              "title": "Механика и системы · Andrii Chepelovskyi",
+              "type": "bookmark",
+              "url": "file:///C:/Users/chipo/Downloads/SSSS/interest.html?id=cars"
+            },
+            {
+              "title": "// ADMIN · AC",
+              "type": "bookmark",
+              "url": "file:///C:/Users/chipo/Downloads/SSSS/admin.html"
+            },
+            {
+              "title": "chipon1993-cmd/reimagined-pancake",
+              "type": "bookmark",
+              "url": "https://github.com/chipon1993-cmd/reimagined-pancake#"
+            },
+            {
+              "title": "Dashboard - Web3Forms",
+              "type": "bookmark",
+              "url": "https://app.web3forms.com/dashboard"
+            },
+            {
+              "title": "Domains | Registrations | Cloudflare",
+              "type": "bookmark",
+              "url": "https://dash.cloudflare.com/dbdeec4c857292a694e4e4f638dacbc9/domains/registrations"
+            },
+            {
+              "title": "chepelovskyi-site - Firebase console",
+              "type": "bookmark",
+              "url": "https://console.firebase.google.com/project/chepelovskyi-site/overview?pli=1"
+            },
+            {
+              "title": "Обзор",
+              "type": "bookmark",
+              "url": "https://search.google.com/search-console?resource_id=sc-domain%3Achepelovskyi.com"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Другие закладки",
+      "type": "folder",
+      "children": [
+        {
+          "title": "Your Profile",
+          "type": "bookmark",
+          "url": "https://www.midjourney.com/app/"
+        },
+        {
+          "title": "Norvae",
+          "type": "folder",
+          "children": [
+            {
+              "title": "альфасколен",
+              "type": "bookmark",
+              "url": "https://bo.alfaskolen.no/student"
+            },
+            {
+              "title": "Forside | Cappelen Damm Undervisning",
+              "type": "bookmark",
+              "url": "https://www.cappelendammundervisning.no/"
+            },
+            {
+              "title": "Basar",
+              "type": "bookmark",
+              "url": "https://basar.cappelendamm.no/no/verksforside"
+            },
+            {
+              "title": "Norskopplæring 2023",
+              "type": "bookmark",
+              "url": "https://classroom.google.com/u/0/c/NTg1MTg1Nzc5Njk2"
+            },
+            {
+              "title": "Altibox Мои страницы",
+              "type": "bookmark",
+              "url": "https://www.altibox.no/minesider"
+            },
+            {
+              "title": "ordbøkene.no",
+              "type": "bookmark",
+              "url": "https://ordbokene.no/"
+            },
+            {
+              "title": "no",
+              "type": "folder",
+              "children": [
+                {
+                  "title": "Buypass - Min Side",
+                  "type": "bookmark",
+                  "url": "https://www.buypass.no/minside/#/no/main"
+                },
+                {
+                  "title": "Моя сторона",
+                  "type": "bookmark",
+                  "url": "https://skatt.skatteetaten.no/web/minfolkeregisterside/skjema/flytte/11c1e3ab-3502-59c8-807f-f4838eb9afff"
+                },
+                {
+                  "title": "Алтинн - Старт",
+                  "type": "bookmark",
+                  "url": "https://www.altinn.no/no"
+                },
+                {
+                  "title": "Helsenorge – din helse på nett - Helsenorge",
+                  "type": "bookmark",
+                  "url": "https://tjenester.helsenorge.no/"
+                },
+                {
+                  "title": "Bli kunde via Posten",
+                  "type": "bookmark",
+                  "url": "https://secure.sbanken.no/Personal/NewCustomer/passport"
+                },
+                {
+                  "title": "Entur - національний планувальник подорожей",
+                  "type": "bookmark",
+                  "url": "https://entur.no/"
+                },
+                {
+                  "title": "Forside | Feide",
+                  "type": "bookmark",
+                  "url": "https://www.feide.no/"
+                },
+                {
+                  "title": "Arbeidsplassen - arbeidsplassen.no",
+                  "type": "bookmark",
+                  "url": "https://arbeidsplassen.nav.no/"
+                },
+                {
+                  "title": "Знайти роботу - Робота в Норвегії",
+                  "type": "bookmark",
+                  "url": "https://www.workinnorway.no/en/Guide+for+citizens+from+countries+outside+EU+and+EEA/Get+started+in+Norway/Find+a+job"
+                },
+                {
+                  "title": "Робота в Норвегії - нав.№",
+                  "type": "bookmark",
+                  "url": "https://www.nav.no/en/home/work-and-stay-in-norway/work-in-norway?nav-veiviser=12906"
+                },
+                {
+                  "title": "Kaiber",
+                  "type": "bookmark",
+                  "url": "https://kaiber.ai/"
+                },
+                {
+                  "title": "Status på søknaden din - Økonomisk sosialhjelp",
+                  "type": "bookmark",
+                  "url": "https://www.nav.no/sosialhjelp/innsyn/ef7c7cda-6002-4edd-b771-03cd7abb8015/status"
+                },
+                {
+                  "title": "Inlearn",
+                  "type": "bookmark",
+                  "url": "https://bo.inlearn.no/student/calendar/teacher-calendar?date_start=2023-09-01T00:00:00+02:00&calendar=Event,Course"
+                },
+                {
+                  "title": "Ny i Norge Tekstbok (9788211014955) by Fagbokforlaget - Issuu",
+                  "type": "bookmark",
+                  "url": "https://issuu.com/fagbokforlaget/docs/ny_i_norge_tekstbok_ny_utdrag"
+                },
+                {
+                  "title": "Hedepy - Повідомлення",
+                  "type": "bookmark",
+                  "url": "https://app.hedepy.com.ua/messages/CH734a0539f62b4ab494a568ccbc0c9113"
+                },
+                {
+                  "title": "min.Kunnskap - courses",
+                  "type": "bookmark",
+                  "url": "https://min.kunnskap.no/courses/list/type/all"
+                },
+                {
+                  "title": "POWER - Hele Nordens elektrogigant - Power.no",
+                  "type": "bookmark",
+                  "url": "https://www.power.no/"
+                },
+                {
+                  "title": "Calendly",
+                  "type": "bookmark",
+                  "url": "https://calendly.com/event_types/user/me"
+                },
+                {
+                  "title": "min.Kunnskap - home",
+                  "type": "bookmark",
+                  "url": "https://min.kunnskap.no/home"
+                },
+                {
+                  "title": "Kreative innredningsideer og rimelige møbler - IKEA",
+                  "type": "bookmark",
+                  "url": "https://www.ikea.com/no/no/"
+                },
+                {
+                  "title": "grammatikk.com - Norsk grammatikk kort forklart",
+                  "type": "bookmark",
+                  "url": "https://grammatikk.com/"
+                },
+                {
+                  "title": "Mer norsk",
+                  "type": "bookmark",
+                  "url": "https://mernorsk.portfolio.no/"
+                },
+                {
+                  "title": "handbokigrammatikk.portfolio.no",
+                  "type": "bookmark",
+                  "url": "https://handbokigrammatikk.portfolio.no/"
+                },
+                {
+                  "title": "Her på berget (samleside): Velkommen til Her på berget - norsk og samfunnskunnskap for voksne innvandrere",
+                  "type": "bookmark",
+                  "url": "https://herpaberget.cappelendamm.no/"
+                },
+                {
+                  "title": "Norsk på 123 - oppgaver (2017): Kapitler",
+                  "type": "bookmark",
+                  "url": "https://norsk123-oppgaver.cappelendamm.no/"
+                },
+                {
+                  "title": "Norsk grammatikk: Hovedmeny",
+                  "type": "bookmark",
+                  "url": "https://norskgrammatikk.cappelendamm.no/"
+                },
+                {
+                  "title": "Hei! B1",
+                  "type": "bookmark",
+                  "url": "https://heib1.cappelendamm.no/verksforside"
+                },
+                {
+                  "title": "Rongshop",
+                  "type": "bookmark",
+                  "url": "https://www.rongshop.com/collections/cozy-knitwear?pp=0&epik=dj0yJnU9bVpXNWN0QTBWSTFIU2pDUlU0elhTVEh2OFU0UEI4UjUmcD0xJm49VlJNZ1BIbXpBWFdLT1lEY1lxeW5ldyZ0PUFBQUFBR2RCcV93"
+                },
+                {
+                  "title": "Velkommen som kunde hos Lånekassen",
+                  "type": "bookmark",
+                  "url": "https://lanekassen.no/nb-NO/dinesider/velkommen-som-kunde-hos-lanekassen/"
+                },
+                {
+                  "title": "Min profil - Personalia - Politiet Namsmann- og forliksrådstjenester",
+                  "type": "bookmark",
+                  "url": "https://skatt.skatteetaten.no/web/namsmann/profil"
+                },
+                {
+                  "title": "Refusjon, erstatning, prisavslag | Forsinket tog eller buss | vy.no",
+                  "type": "bookmark",
+                  "url": "https://www.vy.no/kundeservice/prisavslag-og-erstatning"
+                },
+                {
+                  "title": "Трудовая инспекция",
+                  "type": "bookmark",
+                  "url": "https://www.arbeidstilsynet.no/"
+                }
+              ]
+            },
+            {
+              "title": "NAOB",
+              "type": "bookmark",
+              "url": "https://naob.no/"
+            },
+            {
+              "title": "LEXIN",
+              "type": "bookmark",
+              "url": "https://lexin.oslomet.no/#/findwords/message.bokmal-russian"
+            },
+            {
+              "title": "BankID",
+              "type": "bookmark",
+              "url": "https://www.bankid.no/en/private/"
+            },
+            {
+              "title": "Lebesby bibliotek",
+              "type": "bookmark",
+              "url": "https://lebesbybibliotek.no/"
+            },
+            {
+              "title": "Information in English - nav.no",
+              "type": "bookmark",
+              "url": "https://www.nav.no/en/home"
+            },
+            {
+              "title": "Introduksjonsprogram - regjeringen.no",
+              "type": "bookmark",
+              "url": "https://www.regjeringen.no/no/tema/innvandring-og-integrering/asd/Verkemiddel-i-integreringsarbeidet/introduksjonsprogram/id2343472/"
+            },
+            {
+              "title": "Velkommen til introduksjonsprogrammet | IMDi",
+              "type": "bookmark",
+              "url": "https://www.imdi.no/om-imdi/brosjyrer-handboker-og-veiledere/velkommen-til-introduksjonsprogram/"
+            },
+            {
+              "title": "Inlearn Norway | Approved Norwegian Language School – Inlearnnorway",
+              "type": "bookmark",
+              "url": "https://www.inlearn.no/"
+            },
+            {
+              "title": "TED Talks",
+              "type": "bookmark",
+              "url": "https://www.ted.com/talks?language=ru"
+            },
+            {
+              "title": "Ledige stillinger - arbeidsplassen.no",
+              "type": "bookmark",
+              "url": "https://arbeidsplassen.nav.no/stillinger"
+            },
+            {
+              "title": "Forsiden - Lovdata",
+              "type": "bookmark",
+              "url": "https://lovdata.no/"
+            },
+            {
+              "title": "snake - ordbøkene.no",
+              "type": "bookmark",
+              "url": "https://ordbokene.no/bm,nn/search?q=snake&scope=ei"
+            },
+            {
+              "title": "Startside – Politiet.no",
+              "type": "bookmark",
+              "url": "https://www.politiet.no/"
+            },
+            {
+              "title": "Ishavskraft – Min Side",
+              "type": "bookmark",
+              "url": "https://minside.ishavskraft.no/tabs/forbruk"
+            },
+            {
+              "title": "Gode erfaringer med mikrokurs for ukrainske flyktninger | Veilederforum.no",
+              "type": "bookmark",
+              "url": "https://veilederforum.no/artikler/praksis/gode-erfaringer-med-mikrokurs-ukrainske-flyktninger"
+            },
+            {
+              "title": "Hele Norges nettbutikk - alltid gode tilbud - Komplett.no",
+              "type": "bookmark",
+              "url": "https://www.komplett.no/"
+            },
+            {
+              "title": "Kvalifiserings­programmet - nav.no",
+              "type": "bookmark",
+              "url": "https://www.nav.no/kvalifiseringsprogrammet"
+            },
+            {
+              "title": "www.jegfinner.net",
+              "type": "bookmark",
+              "url": "https://www.jegfinner.net/?ueid=0CD24CEC-1987-4104-B0EF-BB8684416553&akid=04d790f1-9281-44d2-bf89-ea1de920ab12-0-jg_gsb&an=google_s&ag=fw81&gclid=CjwKCAjw9cCyBhBzEiwAJTUWNTwye_hJOHLCUnDVeOKHcM-83cx-9Ezizukd68Rctv_Yo2Uk3NNAUhoCfN0QAvD_BwE&ad=semD&tt=rmd&debug=0"
+            },
+            {
+              "title": "Hedepy - Календар",
+              "type": "bookmark",
+              "url": "https://app.hedepy.com.ua/client/calendar"
+            },
+            {
+              "title": "Min side | Jobbsøker",
+              "type": "bookmark",
+              "url": "https://www.jobbnorge.no/jobseeker/#/account/my-page"
+            },
+            {
+              "title": "Handlevogn - IKEA",
+              "type": "bookmark",
+              "url": "https://www.ikea.com/no/no/shoppingcart/"
+            },
+            {
+              "title": "our work",
+              "type": "bookmark",
+              "url": "https://www.astranova.org/xyz"
+            },
+            {
+              "title": "glimpses - A simple and minimal journal app for windows",
+              "type": "bookmark",
+              "url": "https://getglimpses.com/#"
+            }
+          ]
+        },
+        {
+          "title": "Årsstudium i psykologi",
+          "type": "bookmark",
+          "url": "https://www.kristiania.no/studier/aarsstudium/psykologi/?gclid=Cj0KCQjwpc-oBhCGARIsAH6ote_oAr3RNwW3R75xBeE1_2Q1KvBD34YugCAfbNYaKk3PTkYB4o_r4cIaArsREALw_wcB"
+        },
+        {
+          "title": "Adobe Account",
+          "type": "bookmark",
+          "url": "https://account.adobe.com/?lang=nb"
+        },
+        {
+          "title": "History of Esotericism",
+          "type": "bookmark",
+          "url": "https://chat.openai.com/chat"
+        },
+        {
+          "title": "Добро пожаловать в Colaboratory! - Colaboratory",
+          "type": "bookmark",
+          "url": "https://colab.research.google.com/#scrollTo=GJBs_flRovLc"
+        },
+        {
+          "title": "Соціальна інженерія Архіви - HackYourMom",
+          "type": "bookmark",
+          "url": "https://hackyourmom.com/category/kibervijna/soczialna-inzheneriya/"
+        },
+        {
+          "title": "- Statens innkrevingssentral",
+          "type": "bookmark",
+          "url": "https://www.sismo.no/no/pub/"
+        },
+        {
+          "title": "Prisjakt - Alle produkter og priser på ett sted",
+          "type": "bookmark",
+          "url": "https://www.prisjakt.no/"
+        },
+        {
+          "title": "Status på søknad om politiattest - Politiet.no",
+          "type": "bookmark",
+          "url": "https://www.politiet.no/tjenester/politiattest/status-pa-soknad-om-politiattest/"
+        },
+        {
+          "title": "продукты дающие энергию | Sweet and Beauty",
+          "type": "bookmark",
+          "url": "http://sweetnbeauty.ru/zdorovje/7-produktov-kotorye-dayut-nam-bodrost"
+        },
+        {
+          "title": "Рубрикатор - Библиотека магии Лабиринта Мандрагоры",
+          "type": "bookmark",
+          "url": "http://www.mag.org.ua/library/"
+        },
+        {
+          "title": "Magic Eden - NFT торговая плошадка",
+          "type": "bookmark",
+          "url": "https://magiceden.io/marketplace/degods"
+        },
+        {
+          "title": "Ny fane",
+          "type": "bookmark",
+          "url": "chrome-native://newtab/"
+        },
+        {
+          "title": "Qualia - Створення значущих покращень для особистого благополуччя",
+          "type": "bookmark",
+          "url": "https://www.qualialife.com/?srsltid=AfmBOopammuPYOKDhMIHu4XgWMW9HLSOG08hFHPirGnbyylBEQFuHr8z"
+        },
+        {
+          "title": "Cyberpunk Fashion – Techwear Official",
+          "type": "bookmark",
+          "url": "https://techwearofficial.com/collections/cyberpunk-fashion"
+        },
+        {
+          "title": "THEODOR | Stilig, varm ullfrakk til menn – Klærigo",
+          "type": "bookmark",
+          "url": "https://klaerigo.com/products/theodor-chic-warm-ugly-cape-for-men?currency=NOK&variant=49414571196765&utm_source=google&utm_medium=cpc&utm_campaign=Google%20Shopping&stkn=f2ef74a93d18&tw_source=google&tw_adid=&tw_campaign=21332440954&gad_source=1&gclid=CjwKCAjw-JG5BhBZEiwAt7JR69lL6Wrqcak28qu17hRWF1nAKyIcvLwSfAi5gFBO6iogwUGfHPX_exoCEAYQAvD_BwE"
+        },
+        {
+          "title": "Опроектах связи",
+          "type": "folder",
+          "children": [
+            {
+              "title": "Арканум - центр осознанного развития в Москве - официальный сайт развития эзотерических способностей и самопознания",
+              "type": "bookmark",
+              "url": "https://www.arcanum.ru/"
+            },
+            {
+              "title": "Самопознание 2.0",
+              "type": "bookmark",
+              "url": "https://samopoznanie.ru/"
+            },
+            {
+              "title": "2024 nye mineralkrystall kaffekrus",
+              "type": "bookmark",
+              "url": "https://www.kelansu.com/products/mineral-crystal-coffee-mugs?st=&pp=0&epik=dj0yJnU9NWhCLXBCOUE1YjhXR3gtcF94aEU3YzVBUHZjWVhGUzkmcD0xJm49RHl2V0FwLTJKS3EySmVyRGJ4YTFUUSZ0PUFBQUFBR2N2SnVZ"
+            }
+          ]
         }
       ]
     }
