@@ -581,9 +581,15 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script src="site-data.js"></script>
 <script src="translations.js"></script>
 <script>
+
+const auth = firebase.auth();
 
 // ── CURSOR ───────────────────────────────────
 const cdot = document.getElementById('cdot');
@@ -592,40 +598,38 @@ let mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',(e)=>{ mx=e.clientX; my=e.clientY; cdot.style.left=mx+'px'; cdot.style.top=my+'px'; });
 (function anim(){ rx+=(mx-rx)*.11; ry+=(my-ry)*.11; cring.style.left=rx+'px'; cring.style.top=ry+'px'; requestAnimationFrame(anim); })();
 
-// ── AUTH ─────────────────────────────────────
-async function sha256(s) {
-  const b = await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
-  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
-}
-
+// ── AUTH (Firebase) ──────────────────────────
 async function doLogin() {
   const email = document.getElementById('inp-email').value.trim();
   const pass  = document.getElementById('inp-pass').value;
   const err   = document.getElementById('login-err');
   err.style.display='none';
   if (!email||!pass){ err.textContent='Введите данные'; err.style.display='block'; return; }
-  const inputHash = await sha256(email+':'+pass);
-  const stored    = localStorage.getItem('ac_admin_hash');
-  if (!stored) {
-    const expected = await sha256('chipon1993@gmail.com:Kunfor527_');
-    if (inputHash===expected){ localStorage.setItem('ac_admin_hash',inputHash); grantAccess(); }
-    else { err.textContent='Неверный идентификатор или код'; err.style.display='block'; }
-  } else {
-    if (inputHash===stored) grantAccess();
-    else { err.textContent='Неверный идентификатор или код'; err.style.display='block'; }
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+    grantAccess();
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found': 'Пользователь не найден',
+      'auth/wrong-password': 'Неверный пароль',
+      'auth/invalid-email': 'Некорректный email',
+      'auth/invalid-credential': 'Неверный идентификатор или код',
+      'auth/too-many-requests': 'Слишком много попыток — подождите'
+    };
+    err.textContent = msgs[e.code] || 'Ошибка входа: ' + e.message;
+    err.style.display='block';
   }
 }
 
 function grantAccess(){
-  sessionStorage.setItem('ac_s','1');
   document.getElementById('login-screen').style.display='none';
   document.getElementById('admin-panel').style.display='flex';
   updateAdminLangBtns();
   showTab('index');
 }
 
-function doLogout(){
-  sessionStorage.removeItem('ac_s');
+async function doLogout(){
+  await auth.signOut();
   document.getElementById('admin-panel').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 }
@@ -646,7 +650,7 @@ let adminLang='ru';
 
 function langKey(lang){ return lang==='ru'?'ac_content':'ac_content_'+lang; }
 
-function getDataForLang(lang){
+async function getDataForLang(lang){
   // 1. Defaults
   let base=JSON.parse(JSON.stringify(window.AC_DEFAULTS));
   // 2. Language translations
@@ -654,43 +658,46 @@ function getDataForLang(lang){
     base=deepMerge(base,window.AC_TRANSLATIONS[lang]);
   }
   // 3. Russian master edits (always applied — changes propagate to all languages)
-  const ruSaved=localStorage.getItem('ac_content');
-  if(ruSaved){ try{ base=deepMerge(base,JSON.parse(ruSaved)); }catch(e){} }
+  let ruData = await fsGet('content','ac_content');
+  if(ruData){ base=deepMerge(base,ruData); }
   // 4. Language-specific overrides (UK/NO fine-tuning)
   if(lang!=='ru'){
-    const langSaved=localStorage.getItem(langKey(lang));
-    if(langSaved){ try{ base=deepMerge(base,JSON.parse(langSaved)); }catch(e){} }
+    let langData = await fsGet('content', langKey(lang));
+    if(langData){ base=deepMerge(base,langData); }
   }
   // 5. Restore nav translations lost during RU master merge (step 3).
-  //    Per-key: only fill keys the admin hasn't explicitly overridden in step 4.
   if(lang!=='ru'&&window.AC_TRANSLATIONS&&window.AC_TRANSLATIONS[lang]){
     const transNav=window.AC_TRANSLATIONS[lang].global&&window.AC_TRANSLATIONS[lang].global.nav;
     if(transNav&&base.global){
       let adminNav={};
-      try{const ld=JSON.parse(localStorage.getItem(langKey(lang))||'{}');adminNav=(ld.global&&ld.global.nav)||{};}catch(e){}
+      try{
+        const ld = await fsGet('content', langKey(lang)) || {};
+        adminNav=(ld.global&&ld.global.nav)||{};
+      }catch(e){}
       Object.keys(transNav).forEach(k=>{ if(!adminNav[k]) base.global.nav[k]=transNav[k]; });
     }
   }
   return base;
 }
 
-let D=getDataForLang('ru');
+let D={};
+// D will be loaded asynchronously on init
 
 // ── LANG SWITCH (admin editor) ────────────────
-function switchAdminLang(lang){
+async function switchAdminLang(lang){
   if(lang===adminLang) return;
   collectCurrent();
-  persistCurrentLang();          // auto-save current lang before switching
+  await persistCurrentLang();
   adminLang=lang;
-  D=getDataForLang(lang);
+  D=await getDataForLang(lang);
   updateAdminLangBtns();
-  const savedCT=CT; CT='';      // CT='' → showTab's collectCurrent() finds no match → не перезапишет D
+  const savedCT=CT; CT='';
   showTab(savedCT);
   showToast('// Язык редактора: '+lang.toUpperCase());
 }
 
-function persistCurrentLang(){
-  localStorage.setItem(langKey(adminLang),JSON.stringify(D));
+async function persistCurrentLang(){
+  await fsSet('content', langKey(adminLang), JSON.parse(JSON.stringify(D)));
 }
 
 function updateAdminLangBtns(){
@@ -756,18 +763,20 @@ function previewSite(){
 }
 
 // ── BACKUPS ──────────────────────────────────
-function pushBackup(){
+async function pushBackup(){
   try{
-    const backups=JSON.parse(localStorage.getItem('ac_backups')||'[]');
+    const doc = await fsGet('content','ac_backups');
+    const backups = (doc && doc.items) || [];
     backups.unshift({ts:Date.now(), lang:adminLang, data:JSON.stringify(D)});
     if(backups.length>5) backups.length=5;
-    localStorage.setItem('ac_backups',JSON.stringify(backups));
-  }catch(e){}
+    await fsSet('content','ac_backups',{items:backups});
+  }catch(e){ console.warn('Backup save failed',e); }
 }
 
-function renderBackups(){
+async function renderBackups(){
   try{
-    const backups=JSON.parse(localStorage.getItem('ac_backups')||'[]');
+    const doc = await fsGet('content','ac_backups');
+    const backups = (doc && doc.items) || [];
     if(!backups.length) return '<p style="color:var(--muted);font-size:.85rem;">Сохранений пока нет — появятся после первого нажатия «Сохранить»</p>';
     const fmtDate=ts=>{
       const d=new Date(ts);
@@ -781,9 +790,10 @@ function renderBackups(){
   }catch(e){ return '<p style="color:#f87171;font-size:.85rem;">Ошибка чтения бэкапов</p>'; }
 }
 
-function restoreBackup(i){
+async function restoreBackup(i){
   try{
-    const backups=JSON.parse(localStorage.getItem('ac_backups')||'[]');
+    const doc = await fsGet('content','ac_backups');
+    const backups = (doc && doc.items) || [];
     const b=backups[i];
     if(!b) return;
     const ts=new Date(b.ts).toLocaleString('ru-RU');
@@ -791,30 +801,35 @@ function restoreBackup(i){
     D=JSON.parse(b.data);
     adminLang=b.lang;
     updateAdminLangBtns();
-    persistCurrentLang();
+    await persistCurrentLang();
     showToast('// Версия от '+ts+' восстановлена');
     showTab(CT);
   }catch(e){ alert('Ошибка восстановления: '+e.message); }
 }
 
-function saveAll(){
+async function saveAll(){
   collectCurrent();
-  pushBackup();
-  persistCurrentLang();
-  isDirty=false; autoSec=60;
-  document.getElementById('save-auto').textContent='';
   const st=document.getElementById('save-st');
-  const hints={ru:'RU',uk:'UK',no:'NO'};
-  st.textContent='✓ Сохранено ('+hints[adminLang]+')'; st.className='save-status ok';
-  setTimeout(()=>{ st.textContent='Изменения не сохранены'; st.className='save-status'; },3000);
-  const warns=validateBeforeSave();
-  if(warns.length){
-    showValidationWarnings(warns);
-    showToast('// Сохранено · ⚠ '+warns.length+' предупреждений');
-  } else {
-    const old=document.getElementById('warn-panel');
-    if(old)old.remove();
-    showToast('// Сохранено · '+adminLang.toUpperCase());
+  try {
+    await pushBackup();
+    await persistCurrentLang();
+    isDirty=false; autoSec=60;
+    document.getElementById('save-auto').textContent='';
+    const hints={ru:'RU',uk:'UK',no:'NO'};
+    st.textContent='✓ Сохранено ('+hints[adminLang]+')'; st.className='save-status ok';
+    setTimeout(()=>{ st.textContent='Изменения не сохранены'; st.className='save-status'; },3000);
+    const warns=validateBeforeSave();
+    if(warns.length){
+      showValidationWarnings(warns);
+      showToast('// Сохранено · ⚠ '+warns.length+' предупреждений');
+    } else {
+      const old=document.getElementById('warn-panel');
+      if(old)old.remove();
+      showToast('// Сохранено · '+adminLang.toUpperCase());
+    }
+  } catch(e) {
+    st.textContent='✕ Ошибка сохранения'; st.className='save-status';
+    showToast('// Ошибка: '+e.message);
   }
 }
 
@@ -884,7 +899,7 @@ function toggleAllItems(action){
 
 // ── TABS ─────────────────────────────────────
 let CT='index';
-function showTab(tab){
+async function showTab(tab){
   collectCurrent(); CT=tab;
   document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
   const m=document.getElementById('adm-main');
@@ -894,13 +909,13 @@ function showTab(tab){
     case 'journey':    m.innerHTML=edJourney();    break;
     case 'interests':  m.innerHTML=edInterests();  break;
     case 'contact':    m.innerHTML=edContact();    break;
-    case 'global':     m.innerHTML=edGlobal();     break;
+    case 'global':     m.innerHTML=await edGlobal(); break;
     case 'videos':     m.innerHTML=edVideos();     break;
-    case 'boards':     m.innerHTML=edBoards();     break;
+    case 'boards':     m.innerHTML=await edBoards(); break;
     case 'seo':        m.innerHTML=edSEO(); initSeoCounters(); break;
     case 'appearance': m.innerHTML=edAppearance(); break;
     case 'security':   m.innerHTML=edSecurity();   break;
-    case 'i18n':       m.innerHTML=edTranslations(); break;
+    case 'i18n':       m.innerHTML=await edTranslations(); break;
   }
 }
 function collectCurrent(){
@@ -1091,8 +1106,9 @@ function addCP(){ colContact(); D.contact.textParagraphs.push('Новый пар
 function addTP(){ colContact(); D.contact.topics.push('🌟 Новая тема'); CT=''; showTab('contact'); }
 
 // ── GLOBAL ───────────────────────────────────
-function edGlobal(){
+async function edGlobal(){
   const g=D.global;
+  const backupsHtml = await renderBackups();
   return `<div class="ed-header"><div class="ed-tag">Настройки</div><h2>Общие</h2><p>Навигация, футер и резервные копии</p></div>
   <div class="fsec">Навигация (меню сайта)</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;line-height:1.6;">Текст пунктов верхнего меню и ссылок «назад». При переключении языка редактирования (RU / UK / NO) — вводи соответствующие переводы.</p>
@@ -1136,7 +1152,7 @@ function edGlobal(){
   </div>
   <div class="fsec">История версий (последние 5)</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">При каждом нажатии «Сохранить» автоматически создаётся снимок. Здесь хранятся 5 последних — можно откатиться к любому.</p>
-  <div id="bk-list">${renderBackups()}</div>
+  <div id="bk-list">${backupsHtml}</div>
   <div class="fsec">Сброс данных</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">Вернуть весь контент к оригинальному состоянию. Необратимо.</p>
   <button class="xbtn red" style="padding:10px 20px;" onclick="resetAll()">⚠ Сбросить все данные</button>`;
@@ -1158,11 +1174,11 @@ function colGlobal(){
   D.global.nav.contact=v('gl-nav-contact'); D.global.nav.backHome=v('gl-nav-back');
   D.global.nav.backInterests=v('gl-nav-backi');
 }
-function resetAll(){
+async function resetAll(){
   const hints={ru:'русского',uk:'украинского',no:'норвежского'};
   if(!confirm('Сбросить изменения '+hints[adminLang]+' языка? Необратимо.'))return;
-  localStorage.removeItem(langKey(adminLang));
-  D=getDataForLang(adminLang);
+  try { await db.collection('content').doc(langKey(adminLang)).delete(); } catch(e){}
+  D=await getDataForLang(adminLang);
   showToast('// Данные сброшены ('+adminLang.toUpperCase()+')');
   showTab(CT);
 }
@@ -1178,12 +1194,12 @@ function exportJSON(){
 function importJSON(e){
   const file=e.target.files[0]; if(!file)return;
   const r=new FileReader();
-  r.onload=function(ev){
+  r.onload=async function(ev){
     try{
       const data=JSON.parse(ev.target.result);
       if(!data.global&&!data.index) throw new Error('Неверный формат файла');
       D=deepMerge(JSON.parse(JSON.stringify(window.AC_DEFAULTS)),data);
-      localStorage.setItem(langKey(adminLang),JSON.stringify(D));
+      await fsSet('content', langKey(adminLang), JSON.parse(JSON.stringify(D)));
       showToast('// Данные восстановлены из файла ('+adminLang.toUpperCase()+')');
       showTab(CT);
     }catch(err){ alert('Ошибка: '+err.message); }
@@ -1319,16 +1335,19 @@ const BOARD_LIST=[
 let currentBoard='psychology';
 
 function boardKey(id){ return 'ac_board_'+id; }
-function loadBoardPosts(id){
-  try{ return JSON.parse(localStorage.getItem(boardKey(id))||'[]'); }catch(e){ return []; }
+async function loadBoardPosts(id){
+  try{
+    const doc = await fsGet('boards', id);
+    return (doc && doc.posts) || [];
+  }catch(e){ return []; }
 }
-function saveBoardPosts(id, posts){
-  localStorage.setItem(boardKey(id), JSON.stringify(posts));
+async function saveBoardPosts(id, posts){
+  await fsSet('boards', id, {posts: posts});
 }
 
-function edBoards(){
+async function edBoards(){
   const meta = BOARD_LIST.find(b=>b.id===currentBoard)||BOARD_LIST[0];
-  const posts = loadBoardPosts(currentBoard);
+  const posts = await loadBoardPosts(currentBoard);
   const tabs = BOARD_LIST.map(b=>
     `<button class="xbtn ${b.id===currentBoard?'cyan':''}" style="font-size:.78rem" onclick="switchBoard('${b.id}')">${b.icon} ${b.label}</button>`
   ).join('');
@@ -1375,14 +1394,14 @@ function boardTypeChange(i){
   if(el) el.innerHTML = boardPostFields({type:t, id}, i);
 }
 
-function switchBoard(id){
-  colBoards();
+async function switchBoard(id){
+  await colBoards();
   currentBoard=id;
-  CT=''; // prevent double-collect
+  CT='';
   showTab('boards');
 }
 
-function colBoards(){
+async function colBoards(){
   if(!document.getElementById('ls-boards')) return;
   const posts=[...document.querySelectorAll('#ls-boards .li-item')].map(li=>{
     const i=li.dataset.idx;
@@ -1407,14 +1426,14 @@ function colBoards(){
     }
     return post;
   });
-  saveBoardPosts(currentBoard, posts);
+  await saveBoardPosts(currentBoard, posts);
 }
 
-function addBoardPost(){
-  colBoards();
-  const posts=loadBoardPosts(currentBoard);
+async function addBoardPost(){
+  await colBoards();
+  const posts=await loadBoardPosts(currentBoard);
   posts.unshift({id:Date.now(),type:'note',title:'',content:'',tags:[],date:new Date().toISOString().slice(0,10),published:true});
-  saveBoardPosts(currentBoard,posts);
+  await saveBoardPosts(currentBoard,posts);
   CT='';
   showTab('boards');
 }
@@ -1518,38 +1537,45 @@ function colAppearance(){
 
 // ── SECURITY ─────────────────────────────────
 function edSecurity(){
-  return `<div class="ed-header"><div class="ed-tag">Безопасность</div><h2>Доступ к панели</h2><p>Смена email и пароля для входа в Admin</p></div>
-  <div class="fsec">Новые данные для входа</div>
-  <div class="fg"><label class="flbl">Email</label><input class="fi" type="email" id="sec-email" placeholder="user@domain.com" autocomplete="off"/></div>
-  <div class="fg"><label class="flbl">Новый пароль (мин. 8 символов)</label><input class="fi" type="password" id="sec-pass" placeholder="••••••••••" autocomplete="new-password"/></div>
+  const user = auth.currentUser;
+  const emailHint = user ? user.email : '';
+  return `<div class="ed-header"><div class="ed-tag">Безопасность</div><h2>Доступ к панели</h2><p>Смена пароля через Firebase Auth</p></div>
+  <div class="fsec">Текущий аккаунт</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;">Вход выполнен как: <strong style="color:var(--accent);">${emailHint}</strong></p>
+  <div class="fsec">Смена пароля</div>
+  <div class="fg"><label class="flbl">Новый пароль (мин. 6 символов)</label><input class="fi" type="password" id="sec-pass" placeholder="••••••••••" autocomplete="new-password"/></div>
   <div class="fg"><label class="flbl">Повторите пароль</label><input class="fi" type="password" id="sec-pass2" placeholder="••••••••••" autocomplete="new-password"/></div>
-  <button class="xbtn cyan" style="margin-top:4px;" onclick="changePassword()">🔐 Обновить данные входа</button>
+  <button class="xbtn cyan" style="margin-top:4px;" onclick="changePassword()">🔐 Обновить пароль</button>
   <div id="sec-msg" style="margin-top:14px;font-size:.85rem;min-height:20px;"></div>
   <div class="fsec">Сессия</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">Завершить текущую сессию и вернуться на экран авторизации.</p>
   <button class="xbtn red" onclick="doLogout()">→ Выйти из системы</button>`;
 }
 async function changePassword(){
-  const email=document.getElementById('sec-email')?.value.trim();
   const pass=document.getElementById('sec-pass')?.value;
   const pass2=document.getElementById('sec-pass2')?.value;
   const msg=document.getElementById('sec-msg');
-  if(!email||!pass){ msg.innerHTML='<span class="sec-msg-err">Заполните все поля</span>'; return; }
+  if(!pass){ msg.innerHTML='<span class="sec-msg-err">Введите новый пароль</span>'; return; }
   if(pass!==pass2){ msg.innerHTML='<span class="sec-msg-err">Пароли не совпадают</span>'; return; }
-  if(pass.length<8){ msg.innerHTML='<span class="sec-msg-err">Пароль минимум 8 символов</span>'; return; }
-  const hash=await sha256(email+':'+pass);
-  localStorage.setItem('ac_admin_hash',hash);
-  msg.innerHTML='<span class="sec-msg-ok">✓ Данные обновлены. При следующем входе используйте новые данные.</span>';
-  document.getElementById('sec-email').value='';
-  document.getElementById('sec-pass').value='';
-  document.getElementById('sec-pass2').value='';
+  if(pass.length<6){ msg.innerHTML='<span class="sec-msg-err">Пароль минимум 6 символов</span>'; return; }
+  try {
+    await auth.currentUser.updatePassword(pass);
+    msg.innerHTML='<span class="sec-msg-ok">✓ Пароль обновлён.</span>';
+    document.getElementById('sec-pass').value='';
+    document.getElementById('sec-pass2').value='';
+  } catch(e) {
+    if(e.code==='auth/requires-recent-login'){
+      msg.innerHTML='<span class="sec-msg-err">Необходимо перелогиниться для смены пароля. Выйдите и войдите снова.</span>';
+    } else {
+      msg.innerHTML='<span class="sec-msg-err">Ошибка: '+e.message+'</span>';
+    }
+  }
 }
 
 // ── TRANSLATIONS EDITOR ───────────────────────
-function edTranslations(){
+async function edTranslations(){
   const lang=adminLang;
-  let ov={};
-  try{ ov=JSON.parse(localStorage.getItem('ac_i18n_'+lang)||'{}'); }catch(e){}
+  let ov = await fsGet('content','ac_i18n_'+lang) || {};
   const def=(window.AC_I18N&&window.AC_I18N[lang])||{};
   const val=(k)=>ov[k]!==undefined?ov[k]:(def[k]||'');
   const KEYS=[
@@ -1579,8 +1605,7 @@ function colTranslations(){
   const KEYS=['open_board','watch_btn','featured_label','values_title','topics_title','nav_section','menu_label'];
   const ov={};
   KEYS.forEach(k=>{ const v2=document.getElementById('tr-'+k)?.value||''; if(v2)ov[k]=v2; });
-  localStorage.setItem('ac_i18n_'+adminLang,JSON.stringify(ov));
-  // Обновить AC_I18N в памяти — чтобы изменения сразу применялись при открытии сайта
+  fsSet('content','ac_i18n_'+adminLang, ov).catch(e=>console.warn('i18n save failed',e));
   if(window.AC_I18N&&window.AC_I18N[adminLang]){
     KEYS.forEach(k=>{ if(ov[k])window.AC_I18N[adminLang][k]=ov[k]; });
   }
@@ -1599,7 +1624,7 @@ window.addEventListener('beforeunload', e=>{
 });
 
 setInterval(()=>{
-  if(!sessionStorage.getItem('ac_s')||!isDirty) return;
+  if(!auth.currentUser||!isDirty) return;
   autoSec--;
   const el=document.getElementById('save-auto');
   if(autoSec<=0){
@@ -1610,13 +1635,16 @@ setInterval(()=>{
   }
 },1000);
 
-// ── INIT ─────────────────────────────────────
-if(sessionStorage.getItem('ac_s')){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('admin-panel').style.display='flex';
-  updateAdminLangBtns();
-  showTab('index');
-}
+// ── INIT (Firebase Auth state) ───────────────
+auth.onAuthStateChanged(async function(user){
+  if(user){
+    D = await getDataForLang('ru');
+    grantAccess();
+  } else {
+    document.getElementById('admin-panel').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+  }
+});
 </script>
 </body>
 </html>

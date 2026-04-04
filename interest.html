@@ -302,6 +302,9 @@
 
   <footer></footer>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="site-data.js"></script>
   <script src="translations.js"></script>
   <script src="loader.js"></script>
@@ -323,18 +326,18 @@
     let currentView   = 'grid';
 
     /* ── INTEREST META ───────────────────────────── */
-    function getInterestCard() {
+    async function getInterestCard() {
       const iconToId = {'🧠':'psychology','🌀':'philosophy','⚡':'tech','🌍':'sociology','🤸':'acrobatics','🚗':'cars'};
       let cards = (window.AC_DEFAULTS && window.AC_DEFAULTS.interests && window.AC_DEFAULTS.interests.cards) || [];
       try {
-        const saved = localStorage.getItem('ac_content');
-        if (saved) { const p = JSON.parse(saved); if (p.interests && p.interests.cards) cards = p.interests.cards; }
+        const saved = await fsGet('content', 'ac_content');
+        if (saved && saved.interests && saved.interests.cards) cards = saved.interests.cards;
       } catch(e) {}
       return cards.find(c => (c.id || iconToId[c.icon]) === interestId) || null;
     }
 
-    function renderHero() {
-      const c = getInterestCard();
+    async function renderHero() {
+      const c = await getInterestCard();
       if (!c) {
         document.getElementById('int-icon').textContent  = '⚠️';
         document.getElementById('int-title').textContent = 'Интерес не найден';
@@ -348,10 +351,12 @@
       document.getElementById('int-desc').textContent  = c.desc;
     }
 
-    /* ── STORAGE (read-only) ─────────────────────── */
-    function loadPosts() {
-      try { posts = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); }
-      catch(e) { posts = []; }
+    /* ── STORAGE (read-only, Firestore) ─────────── */
+    async function loadPosts() {
+      try {
+        const doc = await fsGet('boards', interestId);
+        posts = (doc && doc.posts) || [];
+      } catch(e) { posts = []; }
     }
 
     /* ── HELPERS ─────────────────────────────────── */
@@ -538,15 +543,14 @@
     window.vmoClick        = vmoClick;
 
     /* ── GISCUS INJECTION ────────────────────────── */
-    function injectGiscus() {
+    async function injectGiscus() {
       const wrap = document.getElementById('giscus-wrap');
       if (!wrap) return;
       try {
         let g = window.AC_DEFAULTS && window.AC_DEFAULTS.global && window.AC_DEFAULTS.global.giscus;
-        // Merge admin overrides
         try {
-          const saved = localStorage.getItem('ac_content');
-          if (saved) { const p = JSON.parse(saved); if (p.global && p.global.giscus) g = Object.assign({}, g, p.global.giscus); }
+          const saved = await fsGet('content', 'ac_content');
+          if (saved && saved.global && saved.global.giscus) g = Object.assign({}, g, saved.global.giscus);
         } catch(e) {}
         if (!g || !g.repo || !g.repo.trim()) return;
         wrap.style.display = '';
@@ -570,11 +574,11 @@
     }
 
     /* ── INIT ────────────────────────────────────── */
-    document.addEventListener('DOMContentLoaded', () => {
-      renderHero();
-      loadPosts();
+    document.addEventListener('DOMContentLoaded', async () => {
+      await renderHero();
+      await loadPosts();
       renderPosts();
-      injectGiscus();
+      await injectGiscus();
     });
 
   })();

@@ -1,8 +1,8 @@
-// loader.js — рендерит контент страниц из site-data.js + переопределения из localStorage
+// loader.js — renders page content from site-data.js + Firestore overrides
 
 (function () {
 
-  function getData() {
+  async function getData() {
     // Preview mode: admin passed a full snapshot via ac_preview
     if (new URLSearchParams(location.search).has('preview')) {
       try {
@@ -22,30 +22,38 @@
     }
 
     // 3. Russian admin edits apply to ALL languages (master content)
-    //    This way, any change made in admin is visible in every language.
-    const ruSaved = localStorage.getItem('ac_content');
-    if (ruSaved) {
-      try { base = deepMerge(base, JSON.parse(ruSaved)); }
-      catch (e) {}
+    let ruData = await fsGet('content', 'ac_content');
+    if (!ruData) {
+      // Fallback to localStorage for offline/migration
+      const ruSaved = localStorage.getItem('ac_content');
+      if (ruSaved) { try { ruData = JSON.parse(ruSaved); } catch(e) {} }
+    }
+    if (ruData) {
+      base = deepMerge(base, ruData);
     }
 
-    // 4. Language-specific admin fine-tuning on top (optional, set via admin lang switcher)
+    // 4. Language-specific admin fine-tuning on top
     if (lang !== 'ru') {
-      const langSaved = localStorage.getItem('ac_content_' + lang);
-      if (langSaved) {
-        try { base = deepMerge(base, JSON.parse(langSaved)); }
-        catch (e) {}
+      let langData = await fsGet('content', 'ac_content_' + lang);
+      if (!langData) {
+        const langSaved = localStorage.getItem('ac_content_' + lang);
+        if (langSaved) { try { langData = JSON.parse(langSaved); } catch(e) {} }
+      }
+      if (langData) {
+        base = deepMerge(base, langData);
       }
     }
 
     // 5. Restore nav translations lost during RU master merge (step 3).
-    //    Per-key: only fill keys the admin hasn't explicitly overridden in step 4.
     if (lang !== 'ru' && window.AC_TRANSLATIONS && window.AC_TRANSLATIONS[lang]) {
       const transNav = window.AC_TRANSLATIONS[lang].global && window.AC_TRANSLATIONS[lang].global.nav;
       if (transNav && base.global) {
         let adminNav = {};
         try {
-          const ld = JSON.parse(localStorage.getItem('ac_content_' + lang) || '{}');
+          let ld = await fsGet('content', 'ac_content_' + lang);
+          if (!ld) {
+            ld = JSON.parse(localStorage.getItem('ac_content_' + lang) || '{}');
+          }
           adminNav = (ld.global && ld.global.nav) || {};
         } catch(e) {}
         Object.keys(transNav).forEach(k => { if (!adminNav[k]) base.global.nav[k] = transNav[k]; });
@@ -175,7 +183,6 @@
     set('interests-section-label', d.sectionLabel || i18n('lbl_interests','Интересы'));
     set('interests-page-title', d.pageTitle);
     set('interests-page-desc', d.pageDesc);
-    // Fallback map: icon → id (works even if localStorage cards have no id field)
     const iconToId = {'🧠':'psychology','🌀':'philosophy','⚡':'tech','🌍':'sociology','🤸':'acrobatics','🚗':'cars'};
     const grid = document.getElementById('interests-grid');
     if (grid && d.cards) grid.innerHTML = d.cards.map(c => {
@@ -199,7 +206,6 @@
     if (v.thumb) return v.thumb;
     if (v.type === 'youtube' && v.embedId)
       return 'https://img.youtube.com/vi/' + v.embedId + '/hqdefault.jpg';
-    // SVG placeholder
     return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360' style='background:%23050810'%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' fill='%2300d4ff' font-size='56'%3E%E2%96%B6%3C/text%3E%3C/svg%3E";
   }
 
@@ -234,9 +240,8 @@
     set('videos-page-desc', d.pageDesc);
 
     const items = (d.items || []).filter(v => v.published !== false);
-    window.AC_VIDEOS = items; // expose for modal JS
+    window.AC_VIDEOS = items;
 
-    // Featured banner
     const featured = items.find(v => v.featured);
     const featEl   = document.getElementById('videos-featured');
     if (featEl) {
@@ -254,7 +259,6 @@
       } else featEl.innerHTML = '';
     }
 
-    // Grid
     const gridItems = featured ? items.filter(v => !v.featured) : items;
     const gridEl    = document.getElementById('videos-grid');
     const emptyEl   = document.getElementById('videos-empty');
@@ -268,7 +272,6 @@
       }
     }
 
-    // Filter bar — delegate to inline script
     if (window.renderVideoFilter) window.renderVideoFilter(items);
   }
 
@@ -289,7 +292,6 @@
     const topics = document.getElementById('contact-topics');
     if (topics && d.topics) topics.innerHTML = d.topics.map(t=>`<span class="topic-tag">${t}</span>`).join('');
 
-    // Web3Forms — show only when an access key is configured
     const formWrap = document.getElementById('contact-form-wrap');
     if (formWrap) {
       const w3key = d.form && d.form.web3formsKey && d.form.web3formsKey.trim();
@@ -303,7 +305,7 @@
     }
   }
 
-  // ── PAGE VISIBILITY ────────────────────────────────
+  // ── PAGE VISIBILITY ────────────────────────────
   function applyPageVisibility(pages) {
     const map = {
       about:     'about.html',
@@ -314,19 +316,17 @@
     };
     Object.entries(map).forEach(([key, href]) => {
       const visible = pages[key] !== false;
-      // Hide / show nav menu link
       document.querySelectorAll(`.nav-links a[href="${href}"]`).forEach(a => {
         const li = a.closest('li');
         if (li) li.style.display = visible ? '' : 'none';
       });
-      // Hide / show index nav cards
       document.querySelectorAll(`a.nav-card[href="${href}"]`).forEach(c => {
         c.style.display = visible ? '' : 'none';
       });
     });
   }
 
-  // ── PREVIEW BANNER ─────────────────────────────────
+  // ── PREVIEW BANNER ─────────────────────────────
   function injectPreviewBanner() {
     if (!new URLSearchParams(location.search).has('preview')) return;
     if (document.getElementById('ac-preview-bar')) return;
@@ -347,7 +347,7 @@
     bar.innerHTML = `
       <span style="display:flex;align-items:center;gap:10px;">
         <span style="width:7px;height:7px;border-radius:50%;background:#c084fc;box-shadow:0 0 8px #c084fc;animation:pvpulse 1.5s infinite;display:inline-block;flex-shrink:0;"></span>
-        👁 Предпросмотр — несохранённые изменения
+        Предпросмотр — несохранённые изменения
       </span>
       <button id="ac-preview-close"
         style="background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#c084fc;
@@ -358,7 +358,6 @@
         onclick="localStorage.removeItem('ac_preview');window.close();">
         ✕ Закрыть
       </button>`;
-    // Pulse animation
     if (!document.getElementById('ac-preview-style')) {
       const st = document.createElement('style');
       st.id = 'ac-preview-style';
@@ -369,14 +368,13 @@
   }
 
   // ── INIT ───────────────────────────────────────────
-  function renderPage() {
+  async function renderPage() {
     const page = document.body.dataset.page;
     if (!page) return;
     injectPreviewBanner();
     injectAnalytics();
-    const data = getData();
+    const data = await getData();
 
-    // Apply SEO + lang attribute
     const lang = localStorage.getItem('ac_lang') || 'ru';
     document.documentElement.lang = lang;
     if (data.seo && data.seo[page]) {
@@ -385,14 +383,12 @@
       if (!md) { md = document.createElement('meta'); md.name = 'description'; document.head.appendChild(md); }
       md.content = data.seo[page].desc || '';
     }
-    // Update OG tags dynamically
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) ogTitle.content = document.title;
     const ogDesc = document.querySelector('meta[property="og:description"]');
     const metaDesc = document.querySelector('meta[name="description"]');
     if (ogDesc && metaDesc) ogDesc.content = metaDesc.content;
 
-    // Expose nav data for translateNav() in nav.js
     if (data.global && data.global.nav) {
       window.AC_NAV_DATA = data.global.nav;
     }
@@ -405,15 +401,13 @@
       case 'interests': renderInterests(data.interests);  break;
       case 'contact':   renderContact(data.contact);      break;
       case 'videos':    renderVideos(data.videos || { items: [] }); break;
-      case 'interest-board': break; // hero/board handled by inline script; footer below
+      case 'interest-board': break;
     }
 
-    // Apply page visibility (hide pages not ready yet)
     if (data.appearance && data.appearance.pages) {
       applyPageVisibility(data.appearance.pages);
     }
 
-    // Apply default theme for first-time visitors
     if (!localStorage.getItem('ac_theme') && data.appearance && data.appearance.defaultTheme) {
       const dt = data.appearance.defaultTheme;
       localStorage.setItem('ac_theme', dt);
@@ -428,19 +422,15 @@
 
   document.addEventListener('DOMContentLoaded', renderPage);
 
-  // Expose for language switcher
   window.AC_RERENDER = renderPage;
 
   // ── ANALYTICS INJECTION (GDPR-gated) ────────────────────
-  // GA only loads after cookie consent. Plausible is cookie-free → no consent needed.
   function injectAnalytics() {
     if (new URLSearchParams(location.search).has('preview')) return;
-    try {
-      const d = getData();
+    getData().then(function(d) {
       const analytics = d.global && d.global.analytics;
       if (!analytics) return;
 
-      // Plausible (no cookies → always OK)
       const domain = analytics.plausible && analytics.plausible.trim();
       if (domain && !document.querySelector('script[data-domain]')) {
         const s = document.createElement('script');
@@ -450,7 +440,6 @@
         document.head.appendChild(s);
       }
 
-      // Google Analytics 4 (needs cookie consent)
       const gaId = analytics.ga && analytics.ga.trim();
       if (!gaId) return;
       const consent = localStorage.getItem('ac_cookie_consent');
@@ -459,8 +448,7 @@
       } else if (!consent) {
         showCookieBanner(gaId);
       }
-      // consent === 'declined' → do nothing
-    } catch(e) {}
+    }).catch(function() {});
   }
 
   function injectGA(gaId) {
