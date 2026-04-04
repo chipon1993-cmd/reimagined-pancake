@@ -109,10 +109,20 @@ function switchTheme(theme) {
 }
 
 function applyTheme(theme) {
-  if (theme === 'cyan' || !theme) {
-    document.documentElement.removeAttribute('data-theme');
+  // Reset custom inline styles first
+  var root = document.documentElement;
+  ['--accent','--accent2','--bg','--text','--glow','--glow2','--border','--border-h','--grid-accent'].forEach(function(p){
+    root.style.removeProperty(p);
+  });
+  if (theme === 'custom') {
+    root.removeAttribute('data-theme');
+    if (window.applyCustomColors && window.AC_CUSTOM_COLORS) {
+      window.applyCustomColors(window.AC_CUSTOM_COLORS);
+    }
+  } else if (theme === 'cyan' || !theme) {
+    root.removeAttribute('data-theme');
   } else {
-    document.documentElement.setAttribute('data-theme', theme);
+    root.setAttribute('data-theme', theme);
   }
 }
 

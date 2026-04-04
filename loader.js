@@ -19,6 +19,34 @@
     }
   }
 
+  function applyCustomColors(cc) {
+    if (!cc) return;
+    var root = document.documentElement;
+    document.documentElement.removeAttribute('data-theme');
+    if (cc.accent) {
+      root.style.setProperty('--accent', cc.accent);
+      // Derive glow from accent
+      var r = parseInt(cc.accent.slice(1,3),16), g = parseInt(cc.accent.slice(3,5),16), b = parseInt(cc.accent.slice(5,7),16);
+      root.style.setProperty('--glow', '0 0 24px rgba('+r+','+g+','+b+',0.25)');
+      root.style.setProperty('--border', 'rgba('+r+','+g+','+b+',0.12)');
+      root.style.setProperty('--border-h', 'rgba('+r+','+g+','+b+',0.45)');
+      // Grid lines
+      var gridEl = document.querySelector('body');
+      if (gridEl) {
+        root.style.setProperty('--grid-accent', 'rgba('+r+','+g+','+b+',0.04)');
+      }
+    }
+    if (cc.accent2) {
+      root.style.setProperty('--accent2', cc.accent2);
+      var r2 = parseInt(cc.accent2.slice(1,3),16), g2 = parseInt(cc.accent2.slice(3,5),16), b2 = parseInt(cc.accent2.slice(5,7),16);
+      root.style.setProperty('--glow2', '0 0 24px rgba('+r2+','+g2+','+b2+',0.25)');
+    }
+    if (cc.bg) root.style.setProperty('--bg', cc.bg);
+    if (cc.text) root.style.setProperty('--text', cc.text);
+  }
+  // Expose globally for nav.js to use
+  window.applyCustomColors = applyCustomColors;
+
   async function getData() {
     // Preview mode: admin passed a full snapshot via ac_preview
     if (new URLSearchParams(location.search).has('preview')) {
@@ -430,6 +458,29 @@
       localStorage.setItem('ac_theme', dt);
       if (window.applyTheme) window.applyTheme(dt);
       if (window.updateThemeDots) window.updateThemeDots(dt);
+    }
+
+    // Apply custom colors if theme is 'custom'
+    if (data.appearance && data.appearance.customColors) {
+      var cc = data.appearance.customColors;
+      window.AC_CUSTOM_COLORS = cc;
+      var currentTheme = localStorage.getItem('ac_theme') || data.appearance.defaultTheme || 'cyan';
+      if (currentTheme === 'custom') {
+        applyCustomColors(cc);
+      }
+      // Add custom theme dot to nav if not present
+      document.querySelectorAll('.theme-dots').forEach(function(wrap){
+        if (!wrap.querySelector('[data-theme="custom"]')) {
+          var dot = document.createElement('button');
+          dot.className = 'theme-dot t-custom';
+          dot.dataset.theme = 'custom';
+          dot.title = 'Custom';
+          dot.onclick = function(){ switchTheme('custom'); };
+          dot.style.background = 'conic-gradient(' + (cc.accent||'#00d4ff') + ', ' + (cc.accent2||'#a855f7') + ', ' + (cc.accent||'#00d4ff') + ')';
+          wrap.appendChild(dot);
+        }
+      });
+      if (window.updateThemeDots) window.updateThemeDots(currentTheme);
     }
 
     setTimeout(() => {

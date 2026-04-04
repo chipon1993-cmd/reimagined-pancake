@@ -804,6 +804,32 @@
     .ip-current .ip-preview svg { width:20px; height:20px; stroke:var(--accent); stroke-width:1.75; fill:none; }
     .ip-confirm { padding:6px 18px !important; font-size:.78rem !important; }
 
+    /* ═══ COLOR PICKER ═══ */
+    .color-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;
+    }
+    @media(max-width:600px){ .color-grid { grid-template-columns:1fr; } }
+    .color-item { display:flex; flex-direction:column; gap:6px; }
+    .color-pick-wrap { display:flex; align-items:center; gap:8px; }
+    .color-inp {
+      width:48px; height:40px; border:2px solid var(--border); border-radius:8px;
+      cursor:pointer; background:transparent; padding:2px; flex-shrink:0;
+    }
+    .color-inp::-webkit-color-swatch-wrapper { padding:0; }
+    .color-inp::-webkit-color-swatch { border:none; border-radius:5px; }
+    .color-inp::-moz-color-swatch { border:none; border-radius:5px; }
+    .color-inp:hover { border-color:var(--accent); }
+    .color-hex { flex:1; font-family:'Inter',monospace; font-size:.82rem; letter-spacing:.05em; }
+    .color-preview-bar { margin-top:4px; margin-bottom:20px; }
+    .cprev-bg {
+      padding:16px 24px; border-radius:10px; border:1px solid var(--border);
+      display:flex; align-items:center; gap:20px;
+      background:#050810; transition:background .2s;
+    }
+    .cprev-text { font-weight:600; font-size:.9rem; color:#f1f5f9; }
+    .cprev-accent { font-weight:700; font-size:.9rem; color:#00d4ff; }
+    .cprev-accent2 { font-weight:800; font-size:.9rem; }
+
     /* Icon input with picker button */
     .icon-input-wrap {
       display:flex; gap:6px; align-items:center;
@@ -2056,10 +2082,12 @@ function colSEO(){
 // ── APPEARANCE ───────────────────────────────
 function edAppearance(){
   const a=D.appearance||{};
-  const themes=[['cyan','Cyan — синий (по умолчанию)'],['purple','Purple — фиолетовый'],['green','Green — зелёный'],['orange','Orange — оранжевый']];
+  const colors = a.customColors||{};
+  const themes=[['cyan','Cyan — синий (по умолчанию)'],['purple','Purple — фиолетовый'],['green','Green — зелёный'],['orange','Orange — оранжевый'],['custom','🎨 Свой цвет']];
   const opts=themes.map(([val,lbl])=>`<option value="${val}"${a.defaultTheme===val?' selected':''}>${lbl}</option>`).join('');
   const checked=a.showHeroStats!==false;
   const pg=a.pages||{};
+  const isCustom = a.defaultTheme==='custom';
   const pgRow=(key,label,hint)=>{
     const vis=pg[key]!==false;
     return `<label class="chk-row" style="margin-bottom:10px;align-items:flex-start;">
@@ -2067,10 +2095,55 @@ function edAppearance(){
       <div><span>${label}</span><p class="fhint" style="margin:3px 0 0;">${hint}</p></div>
     </label>`;
   };
-  return `<div class="ed-header"><div class="ed-tag">Внешний вид</div><h2>Настройки отображения</h2><p>Тема, видимость разделов и элементов страниц</p></div>
-  ${fg('Тема по умолчанию (для новых посетителей)',`<select class="fi" id="ap-theme">${opts}</select>`,'Посетители смогут менять тему самостоятельно — эта настройка только для первого открытия')}
+  return `<div class="ed-header"><div class="ed-tag">Внешний вид</div><h2>Настройки отображения</h2><p>Тема, цвета, видимость разделов и элементов</p></div>
+  ${fg('Тема по умолчанию',`<select class="fi" id="ap-theme" onchange="toggleCustomColors()">${opts}</select>`,'Для новых посетителей. Выбери «Свой цвет» чтобы задать любые цвета')}
+  <div id="custom-colors-panel" style="display:${isCustom?'block':'none'};">
+    <div class="fsec">Свои цвета</div>
+    <p style="color:var(--muted);font-size:.82rem;margin-bottom:16px;line-height:1.5;">Выбери свои цвета для сайта. Изменения будут видны после сохранения.</p>
+    <div class="color-grid">
+      <div class="color-item">
+        <label class="flbl">Основной акцент</label>
+        <div class="color-pick-wrap">
+          <input type="color" id="cc-accent" value="${colors.accent||'#00d4ff'}" class="color-inp" oninput="previewColor()"/>
+          <input class="fi color-hex" id="cc-accent-hex" value="${colors.accent||'#00d4ff'}" oninput="syncColorFromHex('accent')"/>
+        </div>
+        <p class="fhint">Кнопки, ссылки, иконки, свечение</p>
+      </div>
+      <div class="color-item">
+        <label class="flbl">Второй акцент</label>
+        <div class="color-pick-wrap">
+          <input type="color" id="cc-accent2" value="${colors.accent2||'#a855f7'}" class="color-inp" oninput="previewColor()"/>
+          <input class="fi color-hex" id="cc-accent2-hex" value="${colors.accent2||'#a855f7'}" oninput="syncColorFromHex('accent2')"/>
+        </div>
+        <p class="fhint">Градиент имени, детали</p>
+      </div>
+      <div class="color-item">
+        <label class="flbl">Фон</label>
+        <div class="color-pick-wrap">
+          <input type="color" id="cc-bg" value="${colors.bg||'#050810'}" class="color-inp" oninput="previewColor()"/>
+          <input class="fi color-hex" id="cc-bg-hex" value="${colors.bg||'#050810'}" oninput="syncColorFromHex('bg')"/>
+        </div>
+        <p class="fhint">Основной фон страницы</p>
+      </div>
+      <div class="color-item">
+        <label class="flbl">Текст</label>
+        <div class="color-pick-wrap">
+          <input type="color" id="cc-text" value="${colors.text||'#f1f5f9'}" class="color-inp" oninput="previewColor()"/>
+          <input class="fi color-hex" id="cc-text-hex" value="${colors.text||'#f1f5f9'}" oninput="syncColorFromHex('text')"/>
+        </div>
+        <p class="fhint">Основной цвет текста</p>
+      </div>
+    </div>
+    <div class="color-preview-bar" id="color-preview">
+      <div class="cprev-bg" id="cprev-bg">
+        <span class="cprev-text" id="cprev-text">Превью текста</span>
+        <span class="cprev-accent" id="cprev-accent">Акцент</span>
+        <span class="cprev-accent2" id="cprev-accent2">Градиент</span>
+      </div>
+    </div>
+  </div>
   <div class="fsec">Видимость разделов</div>
-  <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;line-height:1.6;">Снятая галочка — раздел исчезает из меню и с главной страницы. Используй для разделов, которые ещё не готовы. Прямая ссылка на страницу всё ещё работает.</p>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;line-height:1.6;">Снятая галочка — раздел исчезает из меню и с главной страницы. Прямая ссылка всё ещё работает.</p>
   ${pgRow('about',   'О себе',   'about.html')}
   ${pgRow('journey', 'Мой путь', 'journey.html')}
   ${pgRow('interests','Интересы','interests.html')}
@@ -2082,6 +2155,41 @@ function edAppearance(){
     <span>Показывать блок со счётчиками (10+ лет, 5+ стран...)</span>
   </label>`;
 }
+
+function toggleCustomColors(){
+  const sel=document.getElementById('ap-theme');
+  const panel=document.getElementById('custom-colors-panel');
+  if(sel&&panel) panel.style.display=sel.value==='custom'?'block':'none';
+}
+function syncColorFromHex(key){
+  const hex=document.getElementById('cc-'+key+'-hex');
+  const clr=document.getElementById('cc-'+key);
+  if(hex&&clr&&/^#[0-9a-fA-F]{6}$/.test(hex.value)){ clr.value=hex.value; previewColor(); }
+}
+function previewColor(){
+  const bg=document.getElementById('cc-bg')?.value||'#050810';
+  const accent=document.getElementById('cc-accent')?.value||'#00d4ff';
+  const accent2=document.getElementById('cc-accent2')?.value||'#a855f7';
+  const text=document.getElementById('cc-text')?.value||'#f1f5f9';
+  // Sync hex inputs
+  ['accent','accent2','bg','text'].forEach(k=>{
+    const c=document.getElementById('cc-'+k);
+    const h=document.getElementById('cc-'+k+'-hex');
+    if(c&&h) h.value=c.value;
+  });
+  // Preview bar
+  const bar=document.getElementById('cprev-bg');
+  if(bar){
+    bar.style.background=bg;
+    document.getElementById('cprev-text').style.color=text;
+    document.getElementById('cprev-accent').style.color=accent;
+    const a2=document.getElementById('cprev-accent2');
+    a2.style.background=`linear-gradient(90deg,${accent},${accent2})`;
+    a2.style.webkitBackgroundClip='text';
+    a2.style.webkitTextFillColor='transparent';
+  }
+}
+
 function colAppearance(){
   if(!document.getElementById('ap-theme'))return;
   if(!D.appearance)D.appearance={};
@@ -2091,6 +2199,15 @@ function colAppearance(){
   ['about','journey','interests','videos','contact'].forEach(key=>{
     D.appearance.pages[key]=!!document.getElementById('ap-pg-'+key)?.checked;
   });
+  // Save custom colors
+  if(D.appearance.defaultTheme==='custom'){
+    D.appearance.customColors={
+      accent: document.getElementById('cc-accent')?.value||'#00d4ff',
+      accent2: document.getElementById('cc-accent2')?.value||'#a855f7',
+      bg: document.getElementById('cc-bg')?.value||'#050810',
+      text: document.getElementById('cc-text')?.value||'#f1f5f9'
+    };
+  }
 }
 
 // ── SECURITY ─────────────────────────────────
