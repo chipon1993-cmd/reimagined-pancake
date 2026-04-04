@@ -249,6 +249,14 @@
       font-size:.72rem; color:var(--muted); letter-spacing:.08em;
     }
     .vsection-count span { color:var(--accent); font-weight:700; }
+
+    /* Light theme overrides */
+    [data-theme="light"] .vmodal { background:rgba(255,255,255,0.92); }
+    [data-theme="light"] .vmodal-box { background:rgba(255,255,255,0.95); border-color:rgba(0,0,0,0.1); box-shadow:0 20px 60px rgba(0,0,0,0.15); }
+    [data-theme="light"] .vmodal-close { background:rgba(255,255,255,0.9); border-color:rgba(0,0,0,0.1); }
+    [data-theme="light"] .vfeatured-overlay { background:linear-gradient(to right, rgba(245,245,247,.92) 0%, rgba(245,245,247,.5) 55%, transparent 100%); }
+    [data-theme="light"] .vcard { background:rgba(255,255,255,0.8); }
+    [data-theme="light"] .vcard:hover { box-shadow:0 8px 30px rgba(0,119,237,0.1); }
   </style>
 </head>
 <body data-page="videos">
@@ -276,6 +284,7 @@
         <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')"></button>
         <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')"></button>
         <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')"></button>
+        <button class="theme-dot t-light"  data-theme="light"  onclick="switchTheme('light')"></button>
       </div>
     </div>
     <button class="burger" id="burger" onclick="toggleMenu()" aria-label="Меню">

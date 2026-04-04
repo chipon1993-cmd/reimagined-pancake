@@ -50,6 +50,46 @@
   --grid-accent: rgba(249,115,22,0.02);
 }
 
+/* ── LIGHT THEME ─────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:        #f5f5f7;
+  --surface:   rgba(255,255,255,0.72);
+  --surface2:  rgba(255,255,255,0.55);
+  --border:    rgba(0,0,0,0.08);
+  --border-h:  rgba(0,0,0,0.15);
+  --accent:    #0077ed;
+  --accent2:   #7c3aed;
+  --accent3:   #059669;
+  --text:      #1d1d1f;
+  --muted:     rgba(60,60,67,0.6);
+  --glow:  0 0 24px rgba(0,119,237,0.12);
+  --glow2: 0 0 24px rgba(124,58,237,0.12);
+  --glass: saturate(1.8) blur(24px);
+  --shadow: 0 8px 32px rgba(0,0,0,0.08);
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.06);
+  --grid-accent: rgba(0,0,0,0.025);
+}
+[data-theme="light"] body { cursor: auto; }
+[data-theme="light"] .cursor-dot,
+[data-theme="light"] .cursor-ring { display: none; }
+[data-theme="light"] body::after {
+  background:
+    radial-gradient(ellipse at 25% 15%, rgba(0,119,237,0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 85%, rgba(124,58,237,0.03) 0%, transparent 55%);
+}
+[data-theme="light"] .theme-dot.active { border-color: rgba(0,0,0,0.4); }
+[data-theme="light"] .cursor-ring { border-color: rgba(0,119,237,0.3); }
+[data-theme="light"] nav { background: rgba(245,245,247,0.75); }
+[data-theme="light"] .nav-links a { color: var(--text); }
+[data-theme="light"] .nav-links a:hover,
+[data-theme="light"] .nav-links a.active { color: var(--accent); }
+[data-theme="light"] .burger span { background: var(--text); }
+[data-theme="light"] footer { background: rgba(245,245,247,0.8); border-top-color: rgba(0,0,0,0.06); }
+[data-theme="light"] .btn-primary { color: #fff; }
+[data-theme="light"] .btn-ghost { border-color: rgba(0,0,0,0.15); color: var(--text); }
+[data-theme="light"] .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+[data-theme="light"] #page-overlay { background: var(--bg); }
+
 * { margin:0; padding:0; box-sizing:border-box; }
 
 html {
@@ -241,6 +281,7 @@ nav::after { display: none; }
 .theme-dot.t-purple { background: #bf5af2; }
 .theme-dot.t-green  { background: #34d399; }
 .theme-dot.t-orange { background: #f97316; }
+.theme-dot.t-light  { background: linear-gradient(135deg, #f5f5f7 50%, #0077ed 50%); border: 1px solid rgba(0,0,0,0.15); }
 .theme-dot.t-custom { border:1px solid rgba(255,255,255,0.25); }
 
 /* =====================
