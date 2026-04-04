@@ -31,7 +31,7 @@
   // Write (merge) a document
   window.fsSet = async function (collection, docId, data) {
     try {
-      await db.collection(collection).doc(docId).set(data);
+      await db.collection(collection).doc(docId).set(data, { merge: true });
     } catch (e) {
       console.error('Firestore write failed:', collection + '/' + docId, e);
       throw e;
