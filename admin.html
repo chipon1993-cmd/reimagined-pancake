@@ -844,6 +844,102 @@
     .icon-pick-btn:hover { border-color:var(--accent); color:var(--accent); }
     .icon-pick-btn .btn-preview { display:flex; align-items:center; font-size:1rem; }
     .icon-pick-btn .btn-preview svg { width:16px; height:16px; stroke:currentColor; stroke-width:1.75; fill:none; }
+
+    /* ═══════ WYSIWYG EDITOR ═══════ */
+    .rta-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; transition:border-color .25s,box-shadow .25s; }
+    .rta-wrap:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+    .rta-toolbar {
+      display:flex; gap:2px; padding:6px 8px;
+      background:var(--s2); border-bottom:1px solid var(--border);
+      flex-wrap:wrap;
+    }
+    .rta-btn {
+      background:none; border:1px solid transparent; border-radius:4px;
+      color:var(--muted); cursor:pointer; padding:4px 8px;
+      font-size:.78rem; font-weight:700; font-family:inherit;
+      transition:all .15s; line-height:1;
+    }
+    .rta-btn:hover { color:var(--text); background:var(--sb-hover); border-color:var(--border); }
+    .rta-btn.active { color:var(--accent); background:var(--sb-active); border-color:var(--accent); }
+    .rta-sep { width:1px; background:var(--border); margin:2px 4px; }
+    .rta-body {
+      min-height:100px; padding:12px 14px;
+      background:var(--input-bg); color:var(--text);
+      font-size:.9rem; line-height:1.7; font-family:inherit;
+      outline:none; overflow-y:auto; max-height:400px;
+    }
+    .rta-body:empty::before { content:attr(data-placeholder); color:var(--muted); opacity:.5; }
+    .rta-body h3 { font-size:1.05rem; margin:8px 0 4px; color:var(--accent); }
+    .rta-body a { color:var(--accent); text-decoration:underline; }
+    .rta-body p { margin:0 0 6px; }
+
+    /* ═══════ MEDIA MANAGER ═══════ */
+    .media-drop {
+      border:2px dashed var(--border); border-radius:var(--r);
+      padding:40px 24px; text-align:center; cursor:pointer;
+      transition:all .25s; position:relative;
+    }
+    .media-drop:hover, .media-drop.dragover {
+      border-color:var(--accent); background:var(--sb-hover);
+    }
+    .media-drop.dragover { box-shadow:0 0 24px var(--accent-glow); }
+    .media-drop-icon { font-size:2.4rem; margin-bottom:12px; }
+    .media-drop-text { font-size:.85rem; color:var(--muted); }
+    .media-drop-text b { color:var(--accent); }
+    .media-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+    .media-upload-progress {
+      height:4px; background:var(--border); border-radius:4px; margin-top:16px; overflow:hidden; display:none;
+    }
+    .media-upload-progress .bar { height:100%; background:var(--accent); border-radius:4px; width:0; transition:width .2s; }
+
+    .media-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; margin-top:20px;
+    }
+    .media-card {
+      position:relative; border-radius:var(--r); overflow:hidden;
+      border:1px solid var(--border); cursor:pointer;
+      transition:border-color .2s,box-shadow .2s,transform .15s;
+      aspect-ratio:1; background:var(--s2);
+    }
+    .media-card:hover { border-color:var(--accent); box-shadow:0 2px 16px var(--accent-glow); transform:translateY(-2px); }
+    .media-card img { width:100%; height:100%; object-fit:cover; }
+    .media-card-overlay {
+      position:absolute; inset:0; background:rgba(0,0,0,.7);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      opacity:0; transition:opacity .2s; gap:6px;
+    }
+    .media-card:hover .media-card-overlay { opacity:1; }
+    .media-card-btn {
+      padding:5px 12px; border-radius:6px; border:1px solid;
+      font-size:.68rem; font-weight:700; cursor:pointer; font-family:inherit;
+      letter-spacing:.06em; text-transform:uppercase;
+    }
+    .media-card-btn.copy { background:var(--accent); color:var(--bg-solid); border-color:var(--accent); }
+    .media-card-btn.del  { background:transparent; color:var(--danger); border-color:var(--danger); }
+    .media-card-name {
+      position:absolute; bottom:0; left:0; right:0;
+      padding:4px 8px; background:rgba(0,0,0,.65);
+      font-size:.62rem; color:var(--text); white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis;
+    }
+
+    /* ═══════ HISTORY ENHANCED ═══════ */
+    .hist-item {
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:14px 16px; background:var(--s2); border:1px solid var(--border);
+      border-radius:var(--r); margin-bottom:8px;
+      transition:border-color .2s;
+    }
+    .hist-item:hover { border-color:color-mix(in srgb, var(--accent) 30%, var(--border)); }
+    .hist-meta { display:flex; flex-direction:column; gap:2px; }
+    .hist-date { font-size:.82rem; font-weight:700; color:var(--text); }
+    .hist-info { font-size:.7rem; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; }
+    .hist-badge {
+      display:inline-block; padding:1px 6px; border-radius:4px; font-size:.6rem;
+      font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    }
+    .hist-badge.lang { background:var(--sb-active); color:var(--accent); }
+    .hist-badge.user { background:rgba(168,85,247,.1); color:var(--accent2); }
   </style>
 </head>
 <body>
@@ -924,6 +1020,7 @@
       <div class="sb-item" data-tab="appearance" onclick="showTab('appearance')"> <span class="sb-icon">🎨</span> Внешний вид</div>
       <div class="sb-item" data-tab="global"     onclick="showTab('global')">     <span class="sb-icon">⚙️</span> Общие</div>
       <div class="sb-item" data-tab="security"   onclick="showTab('security')">   <span class="sb-icon">🔐</span> Безопасность</div>
+      <div class="sb-item" data-tab="media"    onclick="showTab('media')">    <span class="sb-icon">🖼️</span> Медиа</div>
       <div class="sb-item" data-tab="i18n"        onclick="showTab('i18n')">        <span class="sb-icon">🌐</span> Переводы</div>
       <div class="sb-status">Система активна</div>
     </div>
@@ -985,6 +1082,7 @@ function toggleAdminTheme(){
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="site-data.js"></script>
 <script src="translations.js"></script>
@@ -1314,8 +1412,14 @@ async function pushBackup(){
   try{
     const doc = await fsGet('content','ac_backups');
     const backups = (doc && doc.items) || [];
-    backups.unshift({ts:Date.now(), lang:adminLang, data:JSON.stringify(D)});
-    if(backups.length>5) backups.length=5;
+    const user = auth.currentUser;
+    backups.unshift({
+      ts:Date.now(),
+      lang:adminLang,
+      user: user ? user.email : 'unknown',
+      data:JSON.stringify(D)
+    });
+    if(backups.length>10) backups.length=10;
     await fsSet('content','ac_backups',{items:backups});
   }catch(e){ console.warn('Backup save failed',e); }
 }
@@ -1329,12 +1433,18 @@ async function renderBackups(){
       const d=new Date(ts);
       return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
     };
-    const hints={ru:'Русский',uk:'Українська',no:'Norsk'};
-    return backups.map((b,i)=>`<div class="bk-item">
-      <div class="bk-meta"><strong>${fmtDate(b.ts)}</strong> &nbsp;<span>· ${hints[b.lang]||b.lang.toUpperCase()}</span></div>
-      <button class="xbtn cyan" style="padding:6px 14px;font-size:.72rem;" onclick="restoreBackup(${i})">↩ Восстановить</button>
+    const hints={ru:'RU',uk:'UK',no:'NO'};
+    return backups.map((b,i)=>`<div class="hist-item">
+      <div class="hist-meta">
+        <span class="hist-date">${fmtDate(b.ts)}</span>
+        <div class="hist-info">
+          <span class="hist-badge lang">${hints[b.lang]||b.lang}</span>
+          ${b.user?'<span class="hist-badge user">'+esc(b.user)+'</span>':''}
+        </div>
+      </div>
+      <button class="xbtn cyan" style="padding:6px 14px;font-size:.7rem;" onclick="restoreBackup(${i})">↩ Откатить</button>
     </div>`).join('');
-  }catch(e){ return '<p style="color:#f87171;font-size:.85rem;">Ошибка чтения бэкапов</p>'; }
+  }catch(e){ return '<p style="color:var(--danger);font-size:.85rem;">Ошибка чтения истории</p>'; }
 }
 
 async function restoreBackup(i){
@@ -1406,6 +1516,43 @@ function dateinp(id,val){ return `<input class="fi" type="date" id="${id}" value
 function ta(id,val,rows=3){ return `<textarea class="fi" id="${id}" rows="${rows}">${escTA(val)}</textarea>`; }
 function fg(label,content,hint){ return `<div class="fg"><label class="flbl">${label}</label>${content}${hint?'<p class="fhint">'+hint+'</p>':''}</div>`; }
 
+// ── WYSIWYG Rich Text Area ──────────────────
+function rta(id, val, placeholder) {
+  return `<div class="rta-wrap" id="${id}-wrap">
+    <div class="rta-toolbar">
+      <button class="rta-btn" onclick="rtaCmd('${id}','bold')" title="Жирный"><b>B</b></button>
+      <button class="rta-btn" onclick="rtaCmd('${id}','italic')" title="Курсив"><i>I</i></button>
+      <button class="rta-btn" onclick="rtaCmd('${id}','underline')" title="Подчёркнутый"><u>U</u></button>
+      <div class="rta-sep"></div>
+      <button class="rta-btn" onclick="rtaCmd('${id}','formatBlock','H3')" title="Заголовок">H3</button>
+      <button class="rta-btn" onclick="rtaCmd('${id}','formatBlock','P')" title="Параграф">P</button>
+      <div class="rta-sep"></div>
+      <button class="rta-btn" onclick="rtaLink('${id}')" title="Вставить ссылку">🔗</button>
+      <button class="rta-btn" onclick="rtaCmd('${id}','unlink')" title="Убрать ссылку">⊘</button>
+      <div class="rta-sep"></div>
+      <button class="rta-btn" onclick="rtaCmd('${id}','insertUnorderedList')" title="Список">•  List</button>
+      <button class="rta-btn" onclick="rtaInsertImage('${id}')" title="Вставить картинку">🖼️</button>
+    </div>
+    <div class="rta-body" id="${id}" contenteditable="true"
+         data-placeholder="${esc(placeholder||'Начните писать...')}"
+         oninput="markDirty()">${val||''}</div>
+  </div>`;
+}
+
+function rtaCmd(id, cmd, val) {
+  document.getElementById(id).focus();
+  document.execCommand(cmd, false, val||null);
+}
+function rtaLink(id) {
+  const url = prompt('URL ссылки:', 'https://');
+  if (url) { document.getElementById(id).focus(); document.execCommand('createLink', false, url); }
+}
+function rtaInsertImage(id) {
+  const url = prompt('URL картинки (или откройте Медиа и скопируйте ссылку):', 'https://');
+  if (url) { document.getElementById(id).focus(); document.execCommand('insertImage', false, url); }
+}
+function rv(id) { const el=document.getElementById(id); return el?el.innerHTML.trim():''; }
+
 function liW(idx,title,fields){
   const n=String(idx+1).padStart(2,'0');
   return `<div class="li-item" data-idx="${idx}">
@@ -1473,6 +1620,7 @@ async function showTab(tab){
     case 'seo':        m.innerHTML=edSEO(); initSeoCounters(); break;
     case 'appearance': m.innerHTML=edAppearance(); break;
     case 'security':   m.innerHTML=edSecurity();   break;
+    case 'media':      m.innerHTML=edMedia(); initMediaDrop(); break;
     case 'i18n':       m.innerHTML=await edTranslations(); break;
   }
   initSortables();
@@ -1569,7 +1717,7 @@ function edAbout(){
   ${fg('Подзаголовок',ta('ab-d',d.pageDesc,2),'Описание под заголовком — 1-2 предложения')}
   <div class="fsec">Параграфы</div>
   <div class="leditor" id="ls-p">
-    ${(d.paragraphs||[]).map((p,i)=>liW(i,p.replace(/<[^>]+>/g,'').substring(0,50)+'…',fg('Текст (можно &lt;b&gt;жирный&lt;/b&gt;)',ta(`p-${i}`,p,3)))).join('')}
+    ${(d.paragraphs||[]).map((p,i)=>liW(i,p.replace(/<[^>]+>/g,'').substring(0,50)+'…',fg('Текст',rta(`p-${i}`,p,'Текст параграфа...')))).join('')}
   </div>
   <button class="add-btn" onclick="addPara()">+ Добавить параграф</button>
   <div class="fsec">Статистика</div>
@@ -1586,7 +1734,7 @@ function edAbout(){
 function colAbout(){
   if(!document.getElementById('ab-t'))return;
   D.about.sectionLabel=v('ab-sl'); D.about.pageTitle=v('ab-t'); D.about.pageDesc=v('ab-d');
-  D.about.paragraphs=[...document.querySelectorAll('#ls-p .li-item')].map(li=>document.getElementById(`p-${li.dataset.idx}`)?.value||'');
+  D.about.paragraphs=[...document.querySelectorAll('#ls-p .li-item')].map(li=>rv(`p-${li.dataset.idx}`));
   D.about.stats=[...document.querySelectorAll('#ls-st .li-item')].map(li=>{const i=li.dataset.idx;return{num:document.getElementById(`st-n-${i}`)?.value||'',label:document.getElementById(`st-l-${i}`)?.value||''};});
   D.about.values=[...document.querySelectorAll('#ls-v .li-item')].map(li=>{const i=li.dataset.idx;return{icon:document.getElementById(`v-ic-${i}`)?.value||'',title:document.getElementById(`v-ti-${i}`)?.value||'',desc:document.getElementById(`v-de-${i}`)?.value||''};});
 }
@@ -1605,7 +1753,7 @@ function edJourney(){
   <div class="leditor" id="ls-jn">
     ${(d.items||[]).map((it,i)=>liW(i,it.title,
       fg('Период',inp(`jn-y-${i}`,it.year))+fg('Заголовок',inp(`jn-ti-${i}`,it.title))+
-      fg('Место',inp(`jn-lo-${i}`,it.location))+fg('Описание',ta(`jn-de-${i}`,it.desc,3))+
+      fg('Место',inp(`jn-lo-${i}`,it.location))+fg('Описание',rta(`jn-de-${i}`,it.desc,'Описание этапа...'))+
       fg('Теги (через запятую)',inp(`jn-tg-${i}`,(it.tags||[]).join(', ')))
     )).join('')}
   </div>
@@ -1618,7 +1766,7 @@ function colJourney(){
   if(!document.getElementById('jn-t'))return;
   D.journey.sectionLabel=v('jn-sl'); D.journey.pageTitle=v('jn-t'); D.journey.pageDesc=v('jn-d');
   D.journey.nowTitle=v('jn-nt'); D.journey.nowText=v('jn-nx');
-  D.journey.items=[...document.querySelectorAll('#ls-jn .li-item')].map(li=>{const i=li.dataset.idx;return{year:document.getElementById(`jn-y-${i}`)?.value||'',title:document.getElementById(`jn-ti-${i}`)?.value||'',location:document.getElementById(`jn-lo-${i}`)?.value||'',desc:document.getElementById(`jn-de-${i}`)?.value||'',tags:(document.getElementById(`jn-tg-${i}`)?.value||'').split(',').map(s=>s.trim()).filter(Boolean)};});
+  D.journey.items=[...document.querySelectorAll('#ls-jn .li-item')].map(li=>{const i=li.dataset.idx;return{year:document.getElementById(`jn-y-${i}`)?.value||'',title:document.getElementById(`jn-ti-${i}`)?.value||'',location:document.getElementById(`jn-lo-${i}`)?.value||'',desc:rv(`jn-de-${i}`),tags:(document.getElementById(`jn-tg-${i}`)?.value||'').split(',').map(s=>s.trim()).filter(Boolean)};});
 }
 function addJn(){ colJourney(); D.journey.items.push({year:'Новый',title:'Заголовок',location:'📍 Место',desc:'Описание',tags:[]}); CT=''; showTab('journey'); }
 
@@ -1734,8 +1882,8 @@ async function edGlobal(){
     <button class="xbtn cyan" onclick="exportJSON()">⬇ Скачать backup.json</button>
     <label class="xbtn cyan imp-label">⬆ Загрузить из файла<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label>
   </div>
-  <div class="fsec">История версий (последние 5)</div>
-  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">При каждом нажатии «Сохранить» автоматически создаётся снимок. Здесь хранятся 5 последних — можно откатиться к любому.</p>
+  <div class="fsec">История изменений (последние 10)</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">При каждом «Сохранить» создаётся снимок с датой, языком и автором. Можно откатиться к любой версии.</p>
   <div id="bk-list">${backupsHtml}</div>
   <div class="fsec">Сброс данных</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">Вернуть весь контент к оригинальному состоянию. Необратимо.</p>
@@ -2049,12 +2197,24 @@ function edSEO(){
   const s=D.seo||{};
   const pages=[['index','🏠 Главная'],['about','👤 О себе'],['journey','🗺️ Мой путь'],['interests','🧠 Интересы'],['videos','🎬 Видео'],['contact','✉️ Контакт']];
   let html=`<div class="ed-header"><div class="ed-tag">SEO</div><h2>Мета-теги</h2><p>Заголовок вкладки и описание для поисковиков и соцсетей</p></div>
-  <p style="color:var(--muted);font-size:.82rem;margin-bottom:24px;padding:10px 14px;background:rgba(0,212,255,0.03);border:1px solid var(--border);border-radius:6px;line-height:1.8;">
-    🎯 <b style="color:var(--text)">Title:</b> 50–60 символов &nbsp;·&nbsp; <b style="color:var(--text)">Description:</b> 120–160 символов &nbsp;&nbsp;
-    <span class="seo-cnt ok" style="display:inline;font-size:.75rem;">● зелёный = отлично</span> &nbsp;
-    <span class="seo-cnt warn" style="display:inline;font-size:.75rem;">● жёлтый = допустимо</span> &nbsp;
-    <span class="seo-cnt bad" style="display:inline;font-size:.75rem;">● красный = исправь</span>
-  </p>`;
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px;">
+    <div style="padding:14px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);line-height:1.7;">
+      <div style="font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Title</div>
+      <div style="font-size:.82rem;color:var(--muted);">50–60 символов. Уникальный для каждой страницы. Включи ключевое слово + имя.</div>
+    </div>
+    <div style="padding:14px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);line-height:1.7;">
+      <div style="font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Description</div>
+      <div style="font-size:.82rem;color:var(--muted);">120–160 символов. Опиши содержание страницы. Это текст в результатах Google.</div>
+    </div>
+    <div style="padding:14px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);line-height:1.7;">
+      <div style="font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Подсказки</div>
+      <div style="font-size:.82rem;color:var(--muted);">
+        <span class="seo-cnt ok" style="display:inline;">●</span> отлично &nbsp;
+        <span class="seo-cnt warn" style="display:inline;">●</span> допустимо &nbsp;
+        <span class="seo-cnt bad" style="display:inline;">●</span> исправь
+      </div>
+    </div>
+  </div>`;
   pages.forEach(([key,label])=>{
     const sd=s[key]||{};
     html+=`<div class="fsec">${label}</div>
@@ -2284,6 +2444,96 @@ function colTranslations(){
   if(window.AC_I18N&&window.AC_I18N[adminLang]){
     KEYS.forEach(k=>{ if(ov[k])window.AC_I18N[adminLang][k]=ov[k]; });
   }
+}
+
+// ── MEDIA MANAGER ───────────────────────────
+function edMedia(){
+  return `<div class="ed-header"><div class="ed-tag">Медиафайлы</div><h2>Менеджер медиа</h2>
+    <p>Загружай картинки в Firebase Storage. Нажми на карточку чтобы скопировать URL.</p></div>
+  <div class="media-drop" id="media-drop">
+    <div class="media-drop-icon">📁</div>
+    <div class="media-drop-text"><b>Перетащи файлы</b> или нажми для выбора<br>PNG, JPG, GIF, WebP, SVG — до 5 MB</div>
+    <input type="file" multiple accept="image/*" id="media-file-input" onchange="handleMediaFiles(this.files)">
+    <div class="media-upload-progress" id="media-progress"><div class="bar" id="media-progress-bar"></div></div>
+  </div>
+  <div class="fsec">Загруженные файлы</div>
+  <div id="media-list"><p style="color:var(--muted);font-size:.85rem;">Загрузка...</p></div>`;
+}
+
+function initMediaDrop(){
+  const drop=document.getElementById('media-drop');
+  if(!drop) return;
+  drop.addEventListener('dragover',e=>{ e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));
+  drop.addEventListener('drop',e=>{ e.preventDefault(); drop.classList.remove('dragover'); handleMediaFiles(e.dataTransfer.files); });
+  loadMediaList();
+}
+
+async function handleMediaFiles(files){
+  if(!files||!files.length) return;
+  const prog=document.getElementById('media-progress');
+  const bar=document.getElementById('media-progress-bar');
+  prog.style.display='block';
+  for(let i=0;i<files.length;i++){
+    const file=files[i];
+    if(file.size>5*1024*1024){ showToast('// Файл '+file.name+' > 5 MB, пропущен','error'); continue; }
+    if(!file.type.startsWith('image/')){ showToast('// '+file.name+' — не изображение, пропущен','error'); continue; }
+    const name=Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'');
+    const ref=storage.ref('media/'+name);
+    try{
+      const task=ref.put(file,{contentType:file.type});
+      task.on('state_changed',snap=>{
+        bar.style.width=Math.round((snap.bytesTransferred/snap.totalBytes)*100)+'%';
+      });
+      await task;
+      bar.style.width='100%';
+      showToast('// Загружено: '+file.name,'success');
+    }catch(e){ showToast('// Ошибка загрузки: '+e.message,'error'); }
+  }
+  prog.style.display='none'; bar.style.width='0';
+  loadMediaList();
+}
+
+async function loadMediaList(){
+  const container=document.getElementById('media-list');
+  if(!container) return;
+  try{
+    const res=await storage.ref('media').listAll();
+    if(!res.items.length){
+      container.innerHTML='<p style="color:var(--muted);font-size:.85rem;">Пока нет загруженных файлов</p>';
+      return;
+    }
+    const cards=[];
+    for(const item of res.items){
+      const url=await item.getDownloadURL();
+      cards.push(`<div class="media-card" title="${esc(item.name)}">
+        <img src="${url}" alt="${esc(item.name)}" loading="lazy">
+        <div class="media-card-name">${esc(item.name)}</div>
+        <div class="media-card-overlay">
+          <button class="media-card-btn copy" onclick="event.stopPropagation();copyMediaUrl('${url}')">📋 URL</button>
+          <button class="media-card-btn del" onclick="event.stopPropagation();deleteMedia('${esc(item.fullPath)}')">🗑 Удалить</button>
+        </div>
+      </div>`);
+    }
+    container.innerHTML='<div class="media-grid">'+cards.join('')+'</div>';
+  }catch(e){
+    container.innerHTML='<p style="color:var(--danger);font-size:.85rem;">Ошибка загрузки: '+esc(e.message)+'</p>';
+  }
+}
+
+function copyMediaUrl(url){
+  navigator.clipboard.writeText(url).then(()=>showToast('// URL скопирован','success')).catch(()=>{
+    prompt('Скопируй URL:',url);
+  });
+}
+
+async function deleteMedia(path){
+  if(!confirm('Удалить файл? Это необратимо.')) return;
+  try{
+    await storage.ref(path).delete();
+    showToast('// Файл удалён','success');
+    loadMediaList();
+  }catch(e){ showToast('// Ошибка удаления: '+e.message,'error'); }
 }
 
 // ── KEYBOARD / AUTOSAVE / UNLOAD ─────────────
