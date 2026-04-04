@@ -180,10 +180,8 @@ window.AC_DEFAULTS = {
     pageTitle: "Ты дочитал до этого момента",
     pageDesc:  "Значит, что-то откликнулось. Пиши — если есть что сказать, спросить или просто захотелось.",
     items: [
-      { icon: "✉️", label: "Email",     value: "your@email.com",      href: "mailto:your@email.com"                },
-      { icon: "✈️", label: "Telegram",  value: "@yourusername",       href: "https://t.me/yourusername"            },
-      { icon: "📸", label: "Instagram", value: "@yourusername",       href: "https://instagram.com/yourusername"   },
-      { icon: "💼", label: "LinkedIn",  value: "Andrii Chepelovskyi", href: "https://linkedin.com/in/yourusername" }
+      { icon: "✉️", label: "Email",     value: "Chipon1993@gmail.com", href: "mailto:Chipon1993@gmail.com"  },
+      { icon: "✈️", label: "Telegram",  value: "@Andri4i",            href: "https://t.me/Andri4i"         }
     ],
     textTitle: "Кому стоит написать",
     textParagraphs: [
