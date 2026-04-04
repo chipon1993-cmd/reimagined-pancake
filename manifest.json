@@ -4,8 +4,8 @@
   "description": "Personal site — Ukraine, World, Norway",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#050810",
-  "theme_color": "#00d4ff",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0ad0ff",
   "icons": [
     {
       "src": "favicon.svg",
