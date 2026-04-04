@@ -74,9 +74,13 @@
       base = deepMerge(base, window.AC_TRANSLATIONS[lang]);
     }
 
-    // 3. Russian admin edits (Firestore → localStorage fallback)
+    // 3. Russian admin edits (Firestore → cache in localStorage → fallback)
     let ruData = await safeGet('content', 'ac_content');
-    if (!ruData) {
+    if (ruData) {
+      // Cache in localStorage for offline access
+      try { localStorage.setItem('ac_content', JSON.stringify(ruData)); } catch(e) {}
+    } else {
+      // Firestore unavailable — use cached version
       const ruSaved = localStorage.getItem('ac_content');
       if (ruSaved) { try { ruData = JSON.parse(ruSaved); } catch(e) {} }
     }
@@ -86,9 +90,12 @@
 
     // 4. Language-specific admin fine-tuning
     if (lang !== 'ru') {
-      let langData = await safeGet('content', 'ac_content_' + lang);
-      if (!langData) {
-        const langSaved = localStorage.getItem('ac_content_' + lang);
+      const langKey = 'ac_content_' + lang;
+      let langData = await safeGet('content', langKey);
+      if (langData) {
+        try { localStorage.setItem(langKey, JSON.stringify(langData)); } catch(e) {}
+      } else {
+        const langSaved = localStorage.getItem(langKey);
         if (langSaved) { try { langData = JSON.parse(langSaved); } catch(e) {} }
       }
       if (langData) {
@@ -102,9 +109,10 @@
       if (transNav && base.global) {
         let adminNav = {};
         try {
-          let ld = await safeGet('content', 'ac_content_' + lang);
+          const langKey = 'ac_content_' + lang;
+          let ld = await safeGet('content', langKey);
           if (!ld) {
-            ld = JSON.parse(localStorage.getItem('ac_content_' + lang) || '{}');
+            ld = JSON.parse(localStorage.getItem(langKey) || '{}');
           }
           adminNav = (ld.global && ld.global.nav) || {};
         } catch(e) {}
