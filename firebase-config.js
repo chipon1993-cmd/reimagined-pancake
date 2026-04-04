@@ -10,6 +10,10 @@
     measurementId: "G-CNZ0RBXKPL"
   };
 
+  // Signal that Firebase is ready (resolved) or unavailable (resolved with null)
+  var _resolve;
+  window.firebaseReady = new Promise(function(r) { _resolve = r; });
+
   try {
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
@@ -17,10 +21,12 @@
     window.db = firebase.firestore();
     window.storage = firebase.storage();
     if (typeof firebase.analytics === 'function') { firebase.analytics(); }
+    _resolve(true);
   } catch(e) {
     console.warn('Firebase init failed:', e.message);
     window.db = null;
     window.storage = null;
+    _resolve(false);
   }
 
   // ── Firestore helpers ──────────────────────────

@@ -68,8 +68,12 @@
   // Expose globally for nav.js to use
   window.applyCustomColors = applyCustomColors;
 
-  // Safe Firestore read — returns null if Firebase not available
+  // Safe Firestore read — waits for Firebase init, returns null if unavailable
   async function safeGet(collection, docId) {
+    // Wait for Firebase to initialize (or fail) before reading
+    if (window.firebaseReady) {
+      try { await window.firebaseReady; } catch(e) {}
+    }
     if (typeof window.fsGet === 'function') {
       try { return await window.fsGet(collection, docId); } catch(e) { return null; }
     }
