@@ -726,6 +726,80 @@
       .sb-icon { font-size: .78rem; }
       .adm-main { padding: 14px 12px 100px !important; }
     }
+
+    /* ═══ ICON PICKER ═══ */
+    .ip-overlay {
+      position:fixed; inset:0; z-index:10000;
+      background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .ip-modal {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:16px; width:min(560px,92vw); max-height:80vh;
+      display:flex; flex-direction:column; box-shadow:0 8px 48px rgba(0,0,0,0.5);
+    }
+    .ip-header {
+      display:flex; align-items:center; gap:12px; padding:16px 20px 12px;
+      border-bottom:1px solid var(--border); flex-wrap:wrap;
+    }
+    .ip-header h3 { font-size:1rem; font-weight:700; margin:0; flex:1; }
+    .ip-tabs { display:flex; gap:4px; }
+    .ip-tab {
+      background:transparent; border:1px solid var(--border); color:var(--muted);
+      padding:4px 12px; border-radius:6px; font-size:.72rem; cursor:pointer;
+      font-family:inherit; transition:all .2s;
+    }
+    .ip-tab.active { background:var(--accent); color:#000; border-color:var(--accent); font-weight:700; }
+    .ip-close {
+      background:none; border:none; color:var(--muted); font-size:1.4rem;
+      cursor:pointer; padding:4px 8px; line-height:1;
+    }
+    .ip-close:hover { color:var(--danger); }
+    .ip-search {
+      margin:12px 20px 8px; padding:10px 14px;
+      background:var(--input-bg); border:1px solid var(--border);
+      border-radius:8px; color:var(--text); font-size:.85rem;
+      font-family:inherit; outline:none;
+    }
+    .ip-search:focus { border-color:var(--accent); }
+    .ip-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(52px,1fr));
+      gap:4px; padding:8px 20px; overflow-y:auto; flex:1; min-height:200px;
+      max-height:50vh;
+    }
+    .ip-item {
+      display:flex; align-items:center; justify-content:center;
+      width:48px; height:48px; border-radius:8px; cursor:pointer;
+      border:2px solid transparent; transition:all .15s;
+      background:transparent; color:var(--text); font-size:1.1rem;
+    }
+    .ip-item:hover { background:var(--sb-hover); border-color:var(--border-h); }
+    .ip-item.selected { background:rgba(0,212,255,0.12); border-color:var(--accent); box-shadow:0 0 12px var(--accent-glow); }
+    .ip-item svg { width:22px; height:22px; stroke:currentColor; stroke-width:1.75; fill:none; }
+    .ip-item .ip-emoji { font-size:1.5rem; line-height:1; }
+    .ip-footer {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 20px; border-top:1px solid var(--border);
+    }
+    .ip-current { font-size:.8rem; color:var(--muted); display:flex; align-items:center; gap:8px; }
+    .ip-current .ip-preview { font-size:1.2rem; display:flex; align-items:center; }
+    .ip-current .ip-preview svg { width:20px; height:20px; stroke:var(--accent); stroke-width:1.75; fill:none; }
+    .ip-confirm { padding:6px 18px !important; font-size:.78rem !important; }
+
+    /* Icon input with picker button */
+    .icon-input-wrap {
+      display:flex; gap:6px; align-items:center;
+    }
+    .icon-input-wrap .fi { flex:1; }
+    .icon-pick-btn {
+      background:var(--s3); border:1px solid var(--border); border-radius:8px;
+      padding:8px 12px; cursor:pointer; color:var(--text); font-size:.8rem;
+      font-family:inherit; transition:all .2s; white-space:nowrap;
+      display:flex; align-items:center; gap:4px;
+    }
+    .icon-pick-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .icon-pick-btn .btn-preview { display:flex; align-items:center; font-size:1rem; }
+    .icon-pick-btn .btn-preview svg { width:16px; height:16px; stroke:currentColor; stroke-width:1.75; fill:none; }
   </style>
 </head>
 <body>
@@ -828,6 +902,26 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- ═══ ICON PICKER MODAL ═══ -->
+<div id="icon-picker-overlay" class="ip-overlay" style="display:none" onclick="if(event.target===this)closeIconPicker()">
+  <div class="ip-modal">
+    <div class="ip-header">
+      <h3>Выбери иконку</h3>
+      <div class="ip-tabs">
+        <button class="ip-tab active" data-tab="lucide" onclick="switchIPTab('lucide')">Lucide SVG</button>
+        <button class="ip-tab" data-tab="emoji" onclick="switchIPTab('emoji')">Emoji</button>
+      </div>
+      <button class="ip-close" onclick="closeIconPicker()">&times;</button>
+    </div>
+    <input class="ip-search" id="ip-search" placeholder="Поиск иконок..." oninput="filterIcons()"/>
+    <div class="ip-grid" id="ip-grid"></div>
+    <div class="ip-footer">
+      <span class="ip-current" id="ip-current"></span>
+      <button class="xbtn cyan ip-confirm" onclick="confirmIconPicker()">Выбрать</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── THEME TOGGLE ────────────────────────────
 function toggleAdminTheme(){
@@ -842,12 +936,154 @@ function toggleAdminTheme(){
 })();
 </script>
 
+<script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="site-data.js"></script>
 <script src="translations.js"></script>
+<script>
+// ═══ ICON PICKER ENGINE ═══
+const POPULAR_LUCIDE = [
+  'user','heart','star','search','home','settings','mail','phone','map-pin','globe',
+  'brain','eye','zap','flame','sun','moon','cloud','compass','target','award',
+  'bookmark','camera','film','music','mic','headphones','monitor','smartphone','tablet','laptop',
+  'code','terminal','database','server','wifi','bluetooth','cpu','hard-drive','usb','battery',
+  'lock','unlock','shield','key','fingerprint','scan','alert-triangle','info','help-circle','check-circle',
+  'x-circle','plus-circle','minus-circle','arrow-right','arrow-left','arrow-up','arrow-down','chevron-right','chevron-down','external-link',
+  'link','paperclip','scissors','copy','clipboard','file','file-text','folder','image','video',
+  'calendar','clock','timer','alarm-clock','hourglass','refresh-cw','rotate-cw','download','upload','share',
+  'send','inbox','archive','trash-2','edit-3','pen-tool','type','bold','italic','list',
+  'grid','layout','layers','box','package','gift','shopping-cart','shopping-bag','credit-card','dollar-sign',
+  'trending-up','trending-down','bar-chart','pie-chart','activity','pulse','thermometer','droplet','wind','umbrella',
+  'map','navigation','flag','anchor','truck','car','bike','plane','rocket','ship',
+  'users','user-plus','user-check','message-circle','message-square','at-sign','hash','tag','bell','megaphone',
+  'thumbs-up','thumbs-down','smile','frown','meh','laugh','angry','coffee','utensils','wine',
+  'dumbbell','trophy','medal','crown','gem','sparkles','wand-2','palette','brush','pen',
+  'book','book-open','graduation-cap','lightbulb','lamp','flashlight','binoculars','microscope','telescope','atom',
+  'hexagon','circle','square','triangle','pentagon','octagon','diamond','crop','maximize','minimize',
+  'move','hand','mouse-pointer','crosshair','aperture','focus','scan-line','qr-code','barcode','fingerprint'
+];
+const POPULAR_EMOJI = [
+  '👤','👥','🧠','💡','🔍','🔎','🌍','🌎','🌏','🗺️',
+  '⚡','🔥','✨','💫','🌟','⭐','❤️','💙','💚','💜',
+  '🎯','🏆','🎬','📸','🎵','🎤','🖥️','📱','💻','🖊️',
+  '📧','✉️','📞','☎️','📍','📌','🏠','🏢','🏗️','🏛️',
+  '🚀','✈️','🚗','🚲','🛳️','🚊','🎓','📚','📖','📝',
+  '🔬','🔭','⚗️','🧬','⚙️','🔧','🔨','🛠️','🔐','🔑',
+  '🛡️','💰','💳','📊','📈','📉','🗓️','⏰','⏱️','⌛',
+  '🎨','🖌️','✂️','📎','🔗','📂','🗃️','📁','🗂️','📋',
+  '🤝','🤸','🏋️','🎭','🎪','🌀','🧩','♟️','🎲','🎮',
+  '🍕','☕','🍷','🌱','🌿','🌳','🦋','🐾','🌈','☀️',
+  '🌙','⛅','🌊','💧','❄️','🔔','📣','💬','💭','🗨️'
+];
+
+let _ipTarget = null;
+let _ipSelected = '';
+let _ipTab = 'lucide';
+let _ipLucideNames = null;
+
+function getAllLucideNames(){
+  if(_ipLucideNames) return _ipLucideNames;
+  if(window.lucide && window.lucide.icons){
+    _ipLucideNames = Object.keys(window.lucide.icons).sort();
+    return _ipLucideNames;
+  }
+  return POPULAR_LUCIDE;
+}
+
+function renderIconHTML(val){
+  if(!val) return '';
+  if(val.startsWith('lucide:')){
+    const name = val.slice(7);
+    const icons = window.lucide && window.lucide.icons;
+    if(icons && icons[name]){
+      const [tag,attrs,children] = icons[name];
+      const svgAttrs = Object.entries(attrs).map(([k,v])=>`${k}="${v}"`).join(' ');
+      const inner = children.map(([ct,ca])=>{
+        const a = Object.entries(ca).map(([k,v])=>`${k}="${v}"`).join(' ');
+        return `<${ct} ${a}/>`;
+      }).join('');
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${svgAttrs}>${inner}</svg>`;
+    }
+    return `<i data-lucide="${name}"></i>`;
+  }
+  return val;
+}
+
+function openIconPicker(inputId){
+  _ipTarget = document.getElementById(inputId);
+  if(!_ipTarget) return;
+  _ipSelected = _ipTarget.value || '';
+  _ipTab = _ipSelected.startsWith('lucide:') ? 'lucide' : (_ipSelected ? 'emoji' : 'lucide');
+  document.querySelectorAll('.ip-tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===_ipTab));
+  document.getElementById('ip-search').value='';
+  renderIPGrid();
+  updateIPPreview();
+  document.getElementById('icon-picker-overlay').style.display='flex';
+}
+function closeIconPicker(){
+  document.getElementById('icon-picker-overlay').style.display='none';
+  _ipTarget=null;
+}
+function switchIPTab(tab){
+  _ipTab=tab;
+  document.querySelectorAll('.ip-tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.getElementById('ip-search').value='';
+  renderIPGrid();
+}
+function filterIcons(){ renderIPGrid(); }
+
+function renderIPGrid(){
+  const grid = document.getElementById('ip-grid');
+  const q = (document.getElementById('ip-search')?.value||'').toLowerCase().trim();
+
+  if(_ipTab==='lucide'){
+    let names = getAllLucideNames();
+    if(q) names = names.filter(n=>n.includes(q));
+    else names = names.slice(0, 200);
+    grid.innerHTML = names.map(n=>{
+      const val = 'lucide:'+n;
+      const sel = val===_ipSelected ? ' selected':'';
+      const html = renderIconHTML(val);
+      return `<div class="ip-item${sel}" data-val="${val}" onclick="pickIcon(this)" title="${n}">${html}</div>`;
+    }).join('');
+  } else {
+    let emojis = POPULAR_EMOJI;
+    if(q) emojis = emojis.filter(e=>e.includes(q));
+    grid.innerHTML = emojis.map(e=>{
+      const sel = e===_ipSelected ? ' selected':'';
+      return `<div class="ip-item${sel}" data-val="${e}" onclick="pickIcon(this)" title="${e}"><span class="ip-emoji">${e}</span></div>`;
+    }).join('');
+  }
+}
+
+function pickIcon(el){
+  document.querySelectorAll('.ip-item.selected').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  _ipSelected = el.dataset.val;
+  updateIPPreview();
+}
+function updateIPPreview(){
+  const el = document.getElementById('ip-current');
+  if(!_ipSelected){ el.innerHTML='Ничего не выбрано'; return; }
+  el.innerHTML = `<span class="ip-preview">${renderIconHTML(_ipSelected)}</span> <span>${_ipSelected}</span>`;
+}
+function confirmIconPicker(){
+  if(_ipTarget && _ipSelected){
+    _ipTarget.value = _ipSelected;
+    _ipTarget.dispatchEvent(new Event('input',{bubbles:true}));
+    // update the preview button next to input
+    const wrap = _ipTarget.closest('.icon-input-wrap');
+    if(wrap){
+      const prev = wrap.querySelector('.btn-preview');
+      if(prev) prev.innerHTML = renderIconHTML(_ipSelected);
+    }
+  }
+  closeIconPicker();
+}
+</script>
 <script>
 
 const auth = firebase.auth();
@@ -1120,6 +1356,7 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;
 function escTA(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function v(id){ const el=document.getElementById(id); return el?el.value:''; }
 function inp(id,val){ return `<input class="fi" id="${id}" value="${esc(val)}"/>`; }
+function iconInp(id,val){ return `<div class="icon-input-wrap"><input class="fi" id="${id}" value="${esc(val)}"/><button type="button" class="icon-pick-btn" onclick="openIconPicker('${id}')"><span class="btn-preview">${renderIconHTML(val)||'🎯'}</span> Выбрать</button></div>`; }
 function dateinp(id,val){ return `<input class="fi" type="date" id="${id}" value="${esc(val)}"/>`; }
 function ta(id,val,rows=3){ return `<textarea class="fi" id="${id}" rows="${rows}">${escTA(val)}</textarea>`; }
 function fg(label,content,hint){ return `<div class="fg"><label class="flbl">${label}</label>${content}${hint?'<p class="fhint">'+hint+'</p>':''}</div>`; }
@@ -1236,7 +1473,7 @@ function edIndex(){
   <div class="fsec">Карточки-меню</div>
   <div class="leditor" id="ls-nc">
     ${(d.navCards||[]).map((c,i)=>liW(i,c.title,
-      fg('Иконка (эмодзи)',inp(`nc-ic-${i}`,c.icon))+
+      fg('Иконка',iconInp(`nc-ic-${i}`,c.icon))+
       fg('Заголовок',inp(`nc-ti-${i}`,c.title))+
       fg('Описание',ta(`nc-de-${i}`,c.desc,2))+
       fg('Ссылка',inp(`nc-hr-${i}`,c.href))
@@ -1275,7 +1512,7 @@ function edAbout(){
   <button class="add-btn" onclick="addStat()">+ Добавить карточку</button>
   <div class="fsec">Ценности</div>
   <div class="leditor" id="ls-v">
-    ${(d.values||[]).map((vl,i)=>liW(i,vl.title,fg('Иконка',inp(`v-ic-${i}`,vl.icon))+fg('Заголовок',inp(`v-ti-${i}`,vl.title))+fg('Описание',ta(`v-de-${i}`,vl.desc,2)))).join('')}
+    ${(d.values||[]).map((vl,i)=>liW(i,vl.title,fg('Иконка',iconInp(`v-ic-${i}`,vl.icon))+fg('Заголовок',inp(`v-ti-${i}`,vl.title))+fg('Описание',ta(`v-de-${i}`,vl.desc,2)))).join('')}
   </div>
   <button class="add-btn" onclick="addVal()">+ Добавить ценность</button>`;
 }
@@ -1328,7 +1565,7 @@ function edInterests(){
   <div class="fsec">Карточки</div>
   <div class="leditor" id="ls-in">
     ${(d.cards||[]).map((c,i)=>liW(i,c.title,
-      fg('Иконка',inp(`in-ic-${i}`,c.icon))+fg('Заголовок',inp(`in-ti-${i}`,c.title))+
+      fg('Иконка',iconInp(`in-ic-${i}`,c.icon))+fg('Заголовок',inp(`in-ti-${i}`,c.title))+
       fg('Описание',ta(`in-de-${i}`,c.desc,3))+fg('Вопросы (с новой строки)',ta(`in-q-${i}`,(c.questions||[]).join('\n'),3))
     )).join('')}
   </div>
@@ -1353,7 +1590,7 @@ function edContact(){
   <div class="fsec">Контактные ссылки</div>
   <div class="leditor" id="ls-ci">
     ${(d.items||[]).map((it,i)=>liW(i,it.label+': '+it.value,
-      fg('Иконка',inp(`ci-ic-${i}`,it.icon))+fg('Название',inp(`ci-lb-${i}`,it.label))+
+      fg('��конка',iconInp(`ci-ic-${i}`,it.icon))+fg('Назв��ние',inp(`ci-lb-${i}`,it.label))+
       fg('Значение',inp(`ci-vl-${i}`,it.value))+fg('Ссылка href',inp(`ci-hr-${i}`,it.href))
     )).join('')}
   </div>

@@ -2,6 +2,23 @@
 
 (function () {
 
+  // ── ICON RENDERER (supports emoji + lucide:name) ──
+  function renderIcon(val) {
+    if (!val) return '';
+    if (val.startsWith('lucide:')) {
+      var name = val.slice(7);
+      // Return placeholder that lucide.createIcons() will process
+      return '<i data-lucide="' + name + '"></i>';
+    }
+    return val; // emoji or plain text
+  }
+
+  function activateLucideIcons() {
+    if (window.lucide && window.lucide.createIcons) {
+      window.lucide.createIcons();
+    }
+  }
+
   async function getData() {
     // Preview mode: admin passed a full snapshot via ac_preview
     if (new URLSearchParams(location.search).has('preview')) {
@@ -118,7 +135,7 @@
     if (nc && d.navCards) {
       nc.innerHTML = d.navCards.map(c => `
         <a href="${c.href}" class="nav-card fade-in">
-          <div class="nav-card-icon">${c.icon}</div>
+          <div class="nav-card-icon">${renderIcon(c.icon)}</div>
           <div class="nav-card-title">${c.title}</div>
           <div class="nav-card-desc">${c.desc}</div>
           <div class="nav-card-arrow">→</div>
@@ -153,7 +170,7 @@
     const vals = document.getElementById('about-values');
     if (vals && d.values) vals.innerHTML = d.values.map(v => `
       <div class="value-item fade-in">
-        <div class="value-icon">${v.icon}</div>
+        <div class="value-icon">${renderIcon(v.icon)}</div>
         <div class="value-text"><h4>${v.title}</h4><p>${v.desc}</p></div>
       </div>`).join('');
   }
@@ -191,7 +208,7 @@
       const tag  = href ? 'a' : 'div';
       const hAttr = href ? `href="${href}"` : '';
       return `<${tag} class="interest-card fade-in" ${hAttr}>
-        <div class="interest-icon">${c.icon}</div>
+        <div class="interest-icon">${renderIcon(c.icon)}</div>
         <div class="interest-title">${c.title}</div>
         <div class="interest-desc">${c.desc}</div>
         <div class="interest-questions">${(c.questions||[]).map(q=>`<span>${q}</span>`).join('')}</div>
@@ -283,7 +300,7 @@
     const items = document.getElementById('contact-items');
     if (items && d.items) items.innerHTML = d.items.map(it => `
       <a href="${it.href}" class="contact-card fade-in" ${it.href.startsWith('http')?'target="_blank"':''}>
-        <div class="icon">${it.icon}</div>
+        <div class="icon">${renderIcon(it.icon)}</div>
         <div class="info"><div class="label">${it.label}</div><div class="value">${it.value}</div></div>
         <div class="arrow">→</div>
       </a>`).join('');
@@ -418,6 +435,9 @@
     setTimeout(() => {
       if (window.acObs) document.querySelectorAll('.fade-in:not(.visible)').forEach(el => window.acObs.observe(el));
     }, 60);
+
+    // Activate Lucide SVG icons after rendering
+    activateLucideIcons();
   }
 
   document.addEventListener('DOMContentLoaded', renderPage);
