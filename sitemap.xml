@@ -5,7 +5,8 @@
   <url><loc>https://chepelovskyi.com/journey.html</loc> <changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://chepelovskyi.com/interests.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://chepelovskyi.com/videos.html</loc>  <changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://chepelovskyi.com/contact.html</loc> <changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://chepelovskyi.com/contact.html</loc>   <changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://chepelovskyi.com/bookmarks.html</loc> <changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://chepelovskyi.com/interest.html?id=psychology</loc> <changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://chepelovskyi.com/interest.html?id=philosophy</loc> <changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://chepelovskyi.com/interest.html?id=tech</loc>       <changefreq>weekly</changefreq><priority>0.7</priority></url>
