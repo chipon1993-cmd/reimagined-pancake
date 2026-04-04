@@ -6,7 +6,8 @@ window.AC_DEFAULTS = {
   global: {
     footerLeft:  "© 2026 Andrii Chepelovskyi",
     footerRight: "Норвегия · Всё ещё в процессе",
-    analytics: { plausible: "", ga: "G-H3CLD648NM" },   // ← можно менять в admin → Общие → Аналитика
+    analytics: { plausible: "", ga: "G-H3CLD648NM" },
+    newsletter: { buttondownId: "" },   // ← username из buttondown.com в admin → Общие
     giscus: { repo: "", repoId: "", category: "", categoryId: "" },  // ← настрой на giscus.app
     nav: {
       about: "О себе",

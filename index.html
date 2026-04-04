@@ -106,12 +106,35 @@
     /* Hero wrapper relative for meta */
     .hero-wrap { position: relative; }
 
+    /* Newsletter */
+    .nl-section { text-align:center; padding:64px 0; border-top:1px solid rgba(255,255,255,.06); margin-top:20px; }
+    .nl-heading { font-size:.7rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:12px; text-shadow:0 0 10px rgba(0,212,255,.35); }
+    .nl-heading::before { content:'// '; opacity:.55; }
+    .nl-desc { color:var(--muted); font-size:.92rem; max-width:420px; margin:0 auto 24px; line-height:1.6; }
+    .nl-form { display:flex; gap:10px; max-width:420px; margin:0 auto; }
+    .nl-input {
+      flex:1; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.09);
+      border-radius:var(--radius); padding:13px 16px; color:var(--text); font-size:.9rem;
+      font-family:inherit; outline:none; transition:border-color .2s;
+    }
+    .nl-input:focus { border-color:rgba(0,212,255,.45); }
+    .nl-input::placeholder { color:rgba(241,245,249,.22); }
+    .nl-btn {
+      background:var(--accent); color:#050810; border:none; border-radius:var(--radius);
+      padding:13px 22px; font-size:.85rem; font-weight:700; cursor:pointer;
+      font-family:inherit; white-space:nowrap; transition:opacity .2s;
+    }
+    .nl-btn:hover { opacity:.85; }
+    .nl-status { font-size:.85rem; margin-top:12px; }
+    .nl-status.ok { color:#4ade80; }
+    .nl-status.err { color:#f87171; }
     @media(max-width:768px){
       .hero{padding:100px 0 60px;}
       .home-quote{padding:24px;}
       .hero-meta{flex-wrap:wrap;gap:12px 16px;justify-content:center;}
       .hero-meta-sep{display:none;}
       .hero-meta-item{text-align:center;}
+      .nl-form{flex-direction:column;}
     }
   </style>
   <script type="application/ld+json">
@@ -193,6 +216,19 @@
         <cite id="home-quote-author"></cite>
       </div>
 
+      <!-- Newsletter — shown by loader.js when buttondownId is configured -->
+      <div id="nl-wrap" style="display:none">
+        <div class="nl-section fade-in">
+          <div class="nl-heading">Подписаться</div>
+          <p class="nl-desc">Редкие письма о мышлении, наблюдениях и том, что не помещается в пост.</p>
+          <form class="nl-form" id="nl-form" onsubmit="submitNL(event)">
+            <input class="nl-input" type="email" name="email" required placeholder="you@example.com" autocomplete="email" />
+            <button class="nl-btn" type="submit" id="nl-btn">Подписаться</button>
+          </form>
+          <div class="nl-status" id="nl-status"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -203,5 +239,33 @@
   <script src="loader.js"></script>
   <script src="nav.js"></script>
   <script src="effects.js"></script>
+  <script>
+  function submitNL(e) {
+    e.preventDefault();
+    var form = document.getElementById('nl-form');
+    var btn = document.getElementById('nl-btn');
+    var stat = document.getElementById('nl-status');
+    var email = form.querySelector('input[name="email"]').value;
+    var bdId = form.dataset.bdid;
+    if (!bdId) return;
+    btn.disabled = true; btn.textContent = '...';
+    stat.textContent = ''; stat.className = 'nl-status';
+    fetch('https://buttondown.com/api/emails/embed-subscribe/' + bdId, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'email=' + encodeURIComponent(email)
+    })
+    .then(function() {
+      stat.textContent = '✓ Проверь почту для подтверждения!';
+      stat.className = 'nl-status ok';
+      form.reset();
+    })
+    .catch(function() {
+      stat.textContent = '✕ Ошибка — попробуй ещё раз';
+      stat.className = 'nl-status err';
+    })
+    .finally(function() { btn.disabled = false; btn.textContent = 'Подписаться'; });
+  }
+  </script>
 </body>
 </html>

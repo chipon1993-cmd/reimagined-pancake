@@ -1122,6 +1122,12 @@ function edGlobal(){
   </p>
   <div class="frow">${fg('Репо (user/repo)',inp('gl-gc-repo',(g.giscus&&g.giscus.repo)||''),'Напр.: andrii-ch/my-site')}${fg('Repo ID',inp('gl-gc-repoid',(g.giscus&&g.giscus.repoId)||''),'Напр.: R_kgDOxxxxxx')}</div>
   <div class="frow">${fg('Категория',inp('gl-gc-cat',(g.giscus&&g.giscus.category)||''),'Напр.: General')}${fg('Category ID',inp('gl-gc-catid',(g.giscus&&g.giscus.categoryId)||''),'Напр.: DIC_kwDOxxxxxx')}</div>
+  <div class="fsec">Newsletter (рассылка)</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">
+    <b style="color:var(--text)">Buttondown</b> — бесплатная email-рассылка (100 подписчиков). Форма подписки появится внизу главной страницы.<br>
+    Зарегистрируйся на <a href="https://buttondown.com" target="_blank" style="color:var(--accent);">buttondown.com</a> → скопируй свой username.
+  </p>
+  ${fg('Buttondown Username',inp('gl-nl-bd',(g.newsletter&&g.newsletter.buttondownId)||''),'Твой username из buttondown.com — пустое поле = подписка скрыта')}
   <div class="fsec">Резервная копия</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">Скачайте все данные сайта в JSON или восстановите из файла.</p>
   <div class="backup-row">
@@ -1141,6 +1147,8 @@ function colGlobal(){
   if(!D.global.analytics)D.global.analytics={};
   D.global.analytics.plausible=v('gl-plausible');
   D.global.analytics.ga=v('gl-ga');
+  if(!D.global.newsletter)D.global.newsletter={};
+  D.global.newsletter.buttondownId=v('gl-nl-bd');
   if(!D.global.giscus)D.global.giscus={};
   D.global.giscus.repo=v('gl-gc-repo'); D.global.giscus.repoId=v('gl-gc-repoid');
   D.global.giscus.category=v('gl-gc-cat'); D.global.giscus.categoryId=v('gl-gc-catid');

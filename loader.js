@@ -116,6 +116,17 @@
           <div class="nav-card-arrow">→</div>
         </a>`).join('');
     }
+
+    // Newsletter (Buttondown)
+    const nlWrap = document.getElementById('nl-wrap');
+    if (nlWrap && allData && allData.global && allData.global.newsletter) {
+      const bdId = allData.global.newsletter.buttondownId && allData.global.newsletter.buttondownId.trim();
+      if (bdId) {
+        const nlForm = document.getElementById('nl-form');
+        if (nlForm) nlForm.dataset.bdid = bdId;
+        nlWrap.style.display = '';
+      }
+    }
   }
 
   // ── ABOUT ──────────────────────────────────────────
@@ -420,17 +431,16 @@
   // Expose for language switcher
   window.AC_RERENDER = renderPage;
 
-  // ── ANALYTICS INJECTION ────────────────────────────────
-  // Called from renderPage() after DOMContentLoaded so that window.AC_DEFAULTS
-  // is guaranteed to be available. Domain is set in admin → Общие → Аналитика.
+  // ── ANALYTICS INJECTION (GDPR-gated) ────────────────────
+  // GA only loads after cookie consent. Plausible is cookie-free → no consent needed.
   function injectAnalytics() {
-    if (new URLSearchParams(location.search).has('preview')) return; // skip in preview mode
+    if (new URLSearchParams(location.search).has('preview')) return;
     try {
       const d = getData();
       const analytics = d.global && d.global.analytics;
       if (!analytics) return;
 
-      // Plausible
+      // Plausible (no cookies → always OK)
       const domain = analytics.plausible && analytics.plausible.trim();
       if (domain && !document.querySelector('script[data-domain]')) {
         const s = document.createElement('script');
@@ -440,18 +450,82 @@
         document.head.appendChild(s);
       }
 
-      // Google Analytics 4
+      // Google Analytics 4 (needs cookie consent)
       const gaId = analytics.ga && analytics.ga.trim();
-      if (gaId && !document.querySelector('script[src*="googletagmanager"]')) {
-        const g = document.createElement('script');
-        g.async = true;
-        g.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
-        document.head.appendChild(g);
-        const gi = document.createElement('script');
-        gi.textContent = "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','" + gaId + "');";
-        document.head.appendChild(gi);
+      if (!gaId) return;
+      const consent = localStorage.getItem('ac_cookie_consent');
+      if (consent === 'accepted') {
+        injectGA(gaId);
+      } else if (!consent) {
+        showCookieBanner(gaId);
       }
+      // consent === 'declined' → do nothing
     } catch(e) {}
+  }
+
+  function injectGA(gaId) {
+    if (document.querySelector('script[src*="googletagmanager"]')) return;
+    const g = document.createElement('script');
+    g.async = true;
+    g.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
+    document.head.appendChild(g);
+    const gi = document.createElement('script');
+    gi.textContent = "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','" + gaId + "');";
+    document.head.appendChild(gi);
+  }
+
+  // ── COOKIE CONSENT BANNER (GDPR) ──────────────────────
+  function showCookieBanner(gaId) {
+    if (document.getElementById('ac-cookie-banner')) return;
+    const style = document.createElement('style');
+    style.textContent = `
+      #ac-cookie-banner {
+        position:fixed; bottom:0; left:0; right:0; z-index:99998;
+        background:rgba(5,8,16,0.96); border-top:1px solid rgba(0,212,255,0.15);
+        backdrop-filter:blur(16px); padding:18px 24px;
+        display:flex; align-items:center; justify-content:space-between; gap:16px;
+        font-family:Inter,system-ui,sans-serif; font-size:.85rem;
+        color:rgba(241,245,249,0.75); line-height:1.5;
+        animation:cb-slide .35s ease-out;
+      }
+      @keyframes cb-slide { from { transform:translateY(100%); } to { transform:translateY(0); } }
+      #ac-cookie-banner a { color:var(--accent,#00d4ff); text-decoration:underline; text-underline-offset:2px; }
+      .cb-btns { display:flex; gap:8px; flex-shrink:0; }
+      .cb-btn {
+        border:none; border-radius:8px; padding:9px 20px;
+        font-size:.8rem; font-weight:700; letter-spacing:.06em;
+        cursor:pointer; font-family:inherit; transition:opacity .2s;
+      }
+      .cb-btn:hover { opacity:.85; }
+      .cb-accept { background:var(--accent,#00d4ff); color:#050810; }
+      .cb-decline { background:transparent; border:1px solid rgba(255,255,255,0.15); color:rgba(241,245,249,0.6); }
+      @media(max-width:600px) {
+        #ac-cookie-banner { flex-direction:column; text-align:center; padding:16px 18px; }
+        .cb-btns { width:100%; justify-content:center; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    const bar = document.createElement('div');
+    bar.id = 'ac-cookie-banner';
+    bar.innerHTML = `
+      <span>Этот сайт использует cookies для аналитики (Google Analytics).
+        Данные помогают понять, какие страницы интересны, и улучшить сайт.</span>
+      <div class="cb-btns">
+        <button class="cb-btn cb-accept" id="cb-accept">Принять</button>
+        <button class="cb-btn cb-decline" id="cb-decline">Отклонить</button>
+      </div>`;
+    document.body.appendChild(bar);
+
+    document.getElementById('cb-accept').addEventListener('click', function() {
+      localStorage.setItem('ac_cookie_consent', 'accepted');
+      bar.remove();
+      injectGA(gaId);
+    });
+    document.getElementById('cb-decline').addEventListener('click', function() {
+      localStorage.setItem('ac_cookie_consent', 'declined');
+      bar.remove();
+    });
   }
 
 })();
