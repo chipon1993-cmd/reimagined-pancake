@@ -83,6 +83,7 @@
 
     body::after {
       content:''; position:fixed; inset:0; z-index:-1;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(5,8,16,0.85) 100%);
       background: radial-gradient(ellipse at center, transparent 40%, color-mix(in srgb, var(--bg-solid) 85%, transparent) 100%);
       pointer-events:none;
     }
@@ -451,8 +452,7 @@
       flex-shrink:0;
       transition: transform .25s;
     }
-    .li-body.open ~ .li-hdr::before,
-    .li-hdr:has(+ .li-body.open)::before { transform:rotate(90deg); }
+    .li-hdr.open::before { transform:rotate(90deg); }
 
     .li-idx {
       font-size:.63rem; font-weight:700; letter-spacing:.1em;
@@ -526,6 +526,7 @@
       display:flex; flex-direction:column; gap:8px;
     }
     .toast-item {
+      position:relative;
       padding:14px 22px 14px 18px;
       border-radius:var(--r);
       backdrop-filter:blur(16px);
@@ -535,6 +536,7 @@
       border:1px solid;
       min-width:280px;
       pointer-events:auto;
+      overflow:hidden;
     }
     .toast-item.success {
       background: color-mix(in srgb, var(--success) 10%, var(--bg-solid) 90%);
@@ -657,8 +659,8 @@
       .cdot, .cring { display: none; }
 
       .adm-header { padding:10px 14px; gap:8px; flex-wrap:wrap; }
-      .adm-hdr-r { gap:6px; }
-      .adm-hdr-r .xbtn:not(.red) { display:none; }
+      .adm-hdr-r { gap:6px; flex-wrap:wrap; }
+      .adm-hdr-r > .xbtn:not(.red) { display:none; }
       .adm-subtitle { display:none; }
 
       .adm-layout { flex-direction: column; }
@@ -863,10 +865,10 @@ async function doLogin() {
   const pass  = document.getElementById('inp-pass').value;
   const err   = document.getElementById('login-err');
   err.style.display='none';
-  if (!email||!pass){ err.textContent='Введите данные'; err.style.display='block'; return; }
+  if (!email||!pass){ err.textContent='Введите данные'; err.style.display='block'; err.style.animation='none'; err.offsetHeight; err.style.animation=''; return; }
   try {
     await auth.signInWithEmailAndPassword(email, pass);
-    grantAccess();
+    // grantAccess called by onAuthStateChanged
   } catch(e) {
     const msgs = {
       'auth/user-not-found': 'Пользователь не найден',
@@ -877,17 +879,22 @@ async function doLogin() {
     };
     err.textContent = msgs[e.code] || 'Ошибка входа: ' + e.message;
     err.style.display='block';
+    err.style.animation='none'; err.offsetHeight; err.style.animation='';
   }
 }
 
-function grantAccess(){
+let _granted = false;
+async function grantAccess(){
+  if(_granted) return;
+  _granted = true;
   document.getElementById('login-screen').style.display='none';
   document.getElementById('admin-panel').style.display='flex';
   updateAdminLangBtns();
-  showTab('index');
+  await showTab('index');
 }
 
 async function doLogout(){
+  _granted = false;
   await auth.signOut();
   document.getElementById('admin-panel').style.display='none';
   document.getElementById('login-screen').style.display='flex';
@@ -1134,7 +1141,7 @@ function liW(idx,title,fields){
   </div>`;
 }
 
-function toggleLI(h){ h.nextElementSibling.classList.toggle('open'); }
+function toggleLI(h){ const body=h.nextElementSibling; body.classList.toggle('open'); h.classList.toggle('open', body.classList.contains('open')); }
 function mvUp(btn){ const li=btn.closest('.li-item'),p=li.parentElement,all=[...p.querySelectorAll(':scope>.li-item')],i=all.indexOf(li); if(i>0)p.insertBefore(li,all[i-1]); }
 function mvDn(btn){ const li=btn.closest('.li-item'),p=li.parentElement,all=[...p.querySelectorAll(':scope>.li-item')],i=all.indexOf(li); if(i<all.length-1)p.insertBefore(all[i+1],li); }
 function delLI(btn){ if(confirm('Удалить?'))btn.closest('.li-item').remove(); }
@@ -1163,7 +1170,9 @@ function dupLI(btn){
 }
 
 function toggleAllItems(action){
-  document.querySelectorAll('#adm-main .li-body').forEach(b=>b.classList[action==='open'?'add':'remove']('open'));
+  const method = action==='open' ? 'add' : 'remove';
+  document.querySelectorAll('#adm-main .li-body').forEach(b=>{ b.classList[method]('open'); });
+  document.querySelectorAll('#adm-main .li-hdr').forEach(h=>{ h.classList[method]('open'); });
 }
 
 // ── TABS ─────────────────────────────────────
@@ -1206,6 +1215,7 @@ function collectCurrent(){
 
 // ── INDEX ────────────────────────────────────
 function edIndex(){
+  if(!D.index) return '<p style="color:var(--muted)">Загрузка данных...</p>';
   const d=D.index;
   return `<div class="ed-header"><div class="ed-tag">Главная страница</div><h2>Hero & Menu</h2><p>Главный экран, кнопки, карточки навигации и цитата</p></div>
   ${fg('Бейдж',inp('i-badge',d.badge),'Текст в плашке над главным заголовком, напр. «Украина → Мир → Норвегия»')}
@@ -1665,13 +1675,13 @@ function boardTypeChange(i){
 }
 
 async function switchBoard(id){
-  await colBoards();
+  colBoards();
   currentBoard=id;
   CT='';
   showTab('boards');
 }
 
-async function colBoards(){
+function colBoards(){
   if(!document.getElementById('ls-boards')) return;
   const posts=[...document.querySelectorAll('#ls-boards .li-item')].map(li=>{
     const i=li.dataset.idx;
@@ -1696,11 +1706,11 @@ async function colBoards(){
     }
     return post;
   });
-  await saveBoardPosts(currentBoard, posts);
+  saveBoardPosts(currentBoard, posts).catch(e=>console.warn('Board save failed',e));
 }
 
 async function addBoardPost(){
-  await colBoards();
+  colBoards();
   const posts=await loadBoardPosts(currentBoard);
   posts.unshift({id:Date.now(),type:'note',title:'',content:'',tags:[],date:new Date().toISOString().slice(0,10),published:true});
   await saveBoardPosts(currentBoard,posts);
