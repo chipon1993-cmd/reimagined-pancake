@@ -1075,7 +1075,7 @@ function edContact(){
   </div>
   <button class="add-btn" onclick="addTP()">+ Добавить тему</button>
   <div class="fsec">Форма обратной связи</div>
-  ${fg('Formspree Form ID',inp('cn-fspree',(d.form&&d.form.formspreeId)||''),'ID из URL <b>formspree.io/f/<u>xxxxxxxx</u></b> — оставь пустым, чтобы скрыть форму')}`;
+  ${fg('Web3Forms Access Key',inp('cn-w3key',(d.form&&d.form.web3formsKey)||''),'Получи ключ на <b>web3forms.com</b> (бесплатно) — оставь пустым, чтобы скрыть форму')}`;
 }
 function colContact(){
   if(!document.getElementById('cn-t'))return;
@@ -1084,7 +1084,7 @@ function colContact(){
   D.contact.textParagraphs=[...document.querySelectorAll('#ls-cp .li-item')].map(li=>document.getElementById(`cp-${li.dataset.idx}`)?.value||'');
   D.contact.topics=[...document.querySelectorAll('#ls-tp .li-item')].map(li=>document.getElementById(`tp-${li.dataset.idx}`)?.value||'');
   if(!D.contact.form) D.contact.form={};
-  D.contact.form.formspreeId = v('cn-fspree');
+  D.contact.form.web3formsKey = v('cn-w3key');
 }
 function addCI(){ colContact(); D.contact.items.push({icon:'🔗',label:'Новый',value:'@username',href:'#'}); CT=''; showTab('contact'); }
 function addCP(){ colContact(); D.contact.textParagraphs.push('Новый параграф'); CT=''; showTab('contact'); }

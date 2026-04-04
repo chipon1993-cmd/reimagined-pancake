@@ -133,13 +133,16 @@
         </div>
       </div>
 
-      <!-- Formspree form — shown by loader.js when formspreeId is configured -->
+      <!-- Web3Forms contact form — shown by loader.js when web3formsKey is configured -->
       <div id="contact-form-wrap" style="display:none">
         <div class="contact-form-section fade-in">
           <div class="cform-heading" id="cform-heading">Написать напрямую</div>
-          <form class="cform" id="cform" onsubmit="submitCForm(event)">
-            <!-- Formspree hidden helpers -->
-            <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
+          <form class="cform" id="cform" action="https://api.web3forms.com/submit" onsubmit="submitCForm(event)">
+            <!-- Web3Forms hidden fields -->
+            <input type="hidden" name="access_key" id="cf-access-key" value="" />
+            <input type="hidden" name="subject" value="Новое сообщение с сайта" />
+            <input type="hidden" name="from_name" value="Andrii Chepelovskyi Site" />
+            <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off" />
             <!-- Name -->
             <div class="cform-field">
               <label for="cf-name">Ваше имя</label>
@@ -187,20 +190,23 @@
     lbl.textContent = '⏳ Отправка…';
     stat.textContent = '';
     stat.className = 'cform-status';
-    fetch(form.action, {
+    fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       body: new FormData(form),
       headers: { Accept: 'application/json' }
     })
     .then(r => r.json())
     .then(data => {
-      if (data.ok) {
+      if (data.success) {
         form.reset();
+        // restore access_key after reset
+        const k = document.getElementById('cf-access-key');
+        if (k) k.value = k.dataset.key || '';
         stat.textContent = '✓ Отправлено! Отвечу в ближайшее время.';
         stat.className = 'cform-status ok';
         lbl.textContent = 'Отправить →';
       } else {
-        throw new Error(data.error || 'server_error');
+        throw new Error(data.message || 'server_error');
       }
     })
     .catch(() => {

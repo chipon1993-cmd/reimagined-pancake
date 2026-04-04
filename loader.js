@@ -278,13 +278,13 @@
     const topics = document.getElementById('contact-topics');
     if (topics && d.topics) topics.innerHTML = d.topics.map(t=>`<span class="topic-tag">${t}</span>`).join('');
 
-    // Formspree form — show only when an ID is configured
+    // Web3Forms — show only when an access key is configured
     const formWrap = document.getElementById('contact-form-wrap');
     if (formWrap) {
-      const formId = d.form && d.form.formspreeId && d.form.formspreeId.trim();
-      if (formId) {
-        const cform = document.getElementById('cform');
-        if (cform) cform.setAttribute('action', 'https://formspree.io/f/' + formId);
+      const w3key = d.form && d.form.web3formsKey && d.form.web3formsKey.trim();
+      if (w3key) {
+        const keyEl = document.getElementById('cf-access-key');
+        if (keyEl) { keyEl.value = w3key; keyEl.dataset.key = w3key; }
         formWrap.style.display = '';
       } else {
         formWrap.style.display = 'none';
