@@ -17,13 +17,16 @@
   window.storage = firebase.storage();
 
   // ── Firestore helpers ──────────────────────────
-  // Read a document; returns null if missing or on error
+  // Read with 4s timeout — returns null if Firestore unreachable
   window.fsGet = async function (collection, docId) {
     try {
-      const snap = await db.collection(collection).doc(docId).get();
-      return snap.exists ? snap.data() : null;
+      const result = await Promise.race([
+        db.collection(collection).doc(docId).get(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000))
+      ]);
+      return result.exists ? result.data() : null;
     } catch (e) {
-      console.warn('Firestore read failed:', collection + '/' + docId, e);
+      console.warn('Firestore read failed:', collection + '/' + docId, e.message);
       return null;
     }
   };
