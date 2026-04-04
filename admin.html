@@ -454,6 +454,24 @@
     }
     .li-hdr.open::before { transform:rotate(90deg); }
 
+    .drag-handle {
+      cursor:grab; font-size:1rem; color:var(--muted); opacity:.4;
+      flex-shrink:0; user-select:none; padding:0 2px;
+      transition:opacity .15s, color .15s;
+    }
+    .drag-handle:hover { opacity:1; color:var(--accent); }
+    .drag-handle:active { cursor:grabbing; }
+    .li-item.sortable-ghost {
+      opacity:.35; border-color:var(--accent) !important;
+      box-shadow:0 0 16px var(--accent-glow) !important;
+    }
+    .li-item.sortable-chosen {
+      box-shadow:0 8px 32px rgba(0,0,0,0.4) !important;
+      border-color:var(--accent) !important;
+      z-index:10;
+    }
+    .li-item.sortable-drag { opacity:1 !important; }
+
     .li-idx {
       font-size:.63rem; font-weight:700; letter-spacing:.1em;
       color:var(--accent); opacity:.5; flex-shrink:0; width:20px;
@@ -726,6 +744,106 @@
       .sb-icon { font-size: .78rem; }
       .adm-main { padding: 14px 12px 100px !important; }
     }
+
+    /* ═══ ICON PICKER ═══ */
+    .ip-overlay {
+      position:fixed; inset:0; z-index:10000;
+      background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .ip-modal {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:16px; width:min(560px,92vw); max-height:80vh;
+      display:flex; flex-direction:column; box-shadow:0 8px 48px rgba(0,0,0,0.5);
+    }
+    .ip-header {
+      display:flex; align-items:center; gap:12px; padding:16px 20px 12px;
+      border-bottom:1px solid var(--border); flex-wrap:wrap;
+    }
+    .ip-header h3 { font-size:1rem; font-weight:700; margin:0; flex:1; }
+    .ip-tabs { display:flex; gap:4px; }
+    .ip-tab {
+      background:transparent; border:1px solid var(--border); color:var(--muted);
+      padding:4px 12px; border-radius:6px; font-size:.72rem; cursor:pointer;
+      font-family:inherit; transition:all .2s;
+    }
+    .ip-tab.active { background:var(--accent); color:#000; border-color:var(--accent); font-weight:700; }
+    .ip-close {
+      background:none; border:none; color:var(--muted); font-size:1.4rem;
+      cursor:pointer; padding:4px 8px; line-height:1;
+    }
+    .ip-close:hover { color:var(--danger); }
+    .ip-search {
+      margin:12px 20px 8px; padding:10px 14px;
+      background:var(--input-bg); border:1px solid var(--border);
+      border-radius:8px; color:var(--text); font-size:.85rem;
+      font-family:inherit; outline:none;
+    }
+    .ip-search:focus { border-color:var(--accent); }
+    .ip-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(52px,1fr));
+      gap:4px; padding:8px 20px; overflow-y:auto; flex:1; min-height:200px;
+      max-height:50vh;
+    }
+    .ip-item {
+      display:flex; align-items:center; justify-content:center;
+      width:48px; height:48px; border-radius:8px; cursor:pointer;
+      border:2px solid transparent; transition:all .15s;
+      background:transparent; color:var(--text); font-size:1.1rem;
+    }
+    .ip-item:hover { background:var(--sb-hover); border-color:var(--border-h); }
+    .ip-item.selected { background:rgba(0,212,255,0.12); border-color:var(--accent); box-shadow:0 0 12px var(--accent-glow); }
+    .ip-item svg { width:22px; height:22px; stroke:currentColor; stroke-width:1.75; fill:none; }
+    .ip-item .ip-emoji { font-size:1.5rem; line-height:1; }
+    .ip-footer {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 20px; border-top:1px solid var(--border);
+    }
+    .ip-current { font-size:.8rem; color:var(--muted); display:flex; align-items:center; gap:8px; }
+    .ip-current .ip-preview { font-size:1.2rem; display:flex; align-items:center; }
+    .ip-current .ip-preview svg { width:20px; height:20px; stroke:var(--accent); stroke-width:1.75; fill:none; }
+    .ip-confirm { padding:6px 18px !important; font-size:.78rem !important; }
+
+    /* ═══ COLOR PICKER ═══ */
+    .color-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;
+    }
+    @media(max-width:600px){ .color-grid { grid-template-columns:1fr; } }
+    .color-item { display:flex; flex-direction:column; gap:6px; }
+    .color-pick-wrap { display:flex; align-items:center; gap:8px; }
+    .color-inp {
+      width:48px; height:40px; border:2px solid var(--border); border-radius:8px;
+      cursor:pointer; background:transparent; padding:2px; flex-shrink:0;
+    }
+    .color-inp::-webkit-color-swatch-wrapper { padding:0; }
+    .color-inp::-webkit-color-swatch { border:none; border-radius:5px; }
+    .color-inp::-moz-color-swatch { border:none; border-radius:5px; }
+    .color-inp:hover { border-color:var(--accent); }
+    .color-hex { flex:1; font-family:'Inter',monospace; font-size:.82rem; letter-spacing:.05em; }
+    .color-preview-bar { margin-top:4px; margin-bottom:20px; }
+    .cprev-bg {
+      padding:16px 24px; border-radius:10px; border:1px solid var(--border);
+      display:flex; align-items:center; gap:20px;
+      background:#050810; transition:background .2s;
+    }
+    .cprev-text { font-weight:600; font-size:.9rem; color:#f1f5f9; }
+    .cprev-accent { font-weight:700; font-size:.9rem; color:#00d4ff; }
+    .cprev-accent2 { font-weight:800; font-size:.9rem; }
+
+    /* Icon input with picker button */
+    .icon-input-wrap {
+      display:flex; gap:6px; align-items:center;
+    }
+    .icon-input-wrap .fi { flex:1; }
+    .icon-pick-btn {
+      background:var(--s3); border:1px solid var(--border); border-radius:8px;
+      padding:8px 12px; cursor:pointer; color:var(--text); font-size:.8rem;
+      font-family:inherit; transition:all .2s; white-space:nowrap;
+      display:flex; align-items:center; gap:4px;
+    }
+    .icon-pick-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .icon-pick-btn .btn-preview { display:flex; align-items:center; font-size:1rem; }
+    .icon-pick-btn .btn-preview svg { width:16px; height:16px; stroke:currentColor; stroke-width:1.75; fill:none; }
   </style>
 </head>
 <body>
@@ -828,6 +946,26 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- ═══ ICON PICKER MODAL ═══ -->
+<div id="icon-picker-overlay" class="ip-overlay" style="display:none" onclick="if(event.target===this)closeIconPicker()">
+  <div class="ip-modal">
+    <div class="ip-header">
+      <h3>Выбери иконку</h3>
+      <div class="ip-tabs">
+        <button class="ip-tab active" data-tab="lucide" onclick="switchIPTab('lucide')">Lucide SVG</button>
+        <button class="ip-tab" data-tab="emoji" onclick="switchIPTab('emoji')">Emoji</button>
+      </div>
+      <button class="ip-close" onclick="closeIconPicker()">&times;</button>
+    </div>
+    <input class="ip-search" id="ip-search" placeholder="Поиск иконок..." oninput="filterIcons()"/>
+    <div class="ip-grid" id="ip-grid"></div>
+    <div class="ip-footer">
+      <span class="ip-current" id="ip-current"></span>
+      <button class="xbtn cyan ip-confirm" onclick="confirmIconPicker()">Выбрать</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── THEME TOGGLE ────────────────────────────
 function toggleAdminTheme(){
@@ -842,12 +980,155 @@ function toggleAdminTheme(){
 })();
 </script>
 
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="site-data.js"></script>
 <script src="translations.js"></script>
+<script>
+// ═══ ICON PICKER ENGINE ═══
+const POPULAR_LUCIDE = [
+  'user','heart','star','search','home','settings','mail','phone','map-pin','globe',
+  'brain','eye','zap','flame','sun','moon','cloud','compass','target','award',
+  'bookmark','camera','film','music','mic','headphones','monitor','smartphone','tablet','laptop',
+  'code','terminal','database','server','wifi','bluetooth','cpu','hard-drive','usb','battery',
+  'lock','unlock','shield','key','fingerprint','scan','alert-triangle','info','help-circle','check-circle',
+  'x-circle','plus-circle','minus-circle','arrow-right','arrow-left','arrow-up','arrow-down','chevron-right','chevron-down','external-link',
+  'link','paperclip','scissors','copy','clipboard','file','file-text','folder','image','video',
+  'calendar','clock','timer','alarm-clock','hourglass','refresh-cw','rotate-cw','download','upload','share',
+  'send','inbox','archive','trash-2','edit-3','pen-tool','type','bold','italic','list',
+  'grid','layout','layers','box','package','gift','shopping-cart','shopping-bag','credit-card','dollar-sign',
+  'trending-up','trending-down','bar-chart','pie-chart','activity','pulse','thermometer','droplet','wind','umbrella',
+  'map','navigation','flag','anchor','truck','car','bike','plane','rocket','ship',
+  'users','user-plus','user-check','message-circle','message-square','at-sign','hash','tag','bell','megaphone',
+  'thumbs-up','thumbs-down','smile','frown','meh','laugh','angry','coffee','utensils','wine',
+  'dumbbell','trophy','medal','crown','gem','sparkles','wand-2','palette','brush','pen',
+  'book','book-open','graduation-cap','lightbulb','lamp','flashlight','binoculars','microscope','telescope','atom',
+  'hexagon','circle','square','triangle','pentagon','octagon','diamond','crop','maximize','minimize',
+  'move','hand','mouse-pointer','crosshair','aperture','focus','scan-line','qr-code','barcode','fingerprint'
+];
+const POPULAR_EMOJI = [
+  '👤','👥','🧠','💡','🔍','🔎','🌍','🌎','🌏','🗺️',
+  '⚡','🔥','✨','💫','🌟','⭐','❤️','💙','💚','💜',
+  '🎯','🏆','🎬','📸','🎵','🎤','🖥️','📱','💻','🖊️',
+  '📧','✉️','📞','☎️','📍','📌','🏠','🏢','🏗️','🏛️',
+  '🚀','✈️','🚗','🚲','🛳️','🚊','🎓','📚','📖','📝',
+  '🔬','🔭','⚗️','🧬','⚙️','🔧','🔨','🛠️','🔐','🔑',
+  '🛡️','💰','💳','📊','📈','📉','🗓️','⏰','⏱️','⌛',
+  '🎨','🖌️','✂️','📎','🔗','📂','🗃️','📁','🗂️','📋',
+  '🤝','🤸','🏋️','🎭','🎪','🌀','🧩','♟️','🎲','🎮',
+  '🍕','☕','🍷','🌱','🌿','🌳','🦋','🐾','🌈','☀️',
+  '🌙','⛅','🌊','💧','❄️','🔔','📣','💬','💭','🗨️'
+];
+
+let _ipTarget = null;
+let _ipSelected = '';
+let _ipTab = 'lucide';
+let _ipLucideNames = null;
+
+function getAllLucideNames(){
+  if(_ipLucideNames) return _ipLucideNames;
+  if(window.lucide && window.lucide.icons){
+    _ipLucideNames = Object.keys(window.lucide.icons).sort();
+    return _ipLucideNames;
+  }
+  return POPULAR_LUCIDE;
+}
+
+function renderIconHTML(val){
+  if(!val) return '';
+  if(val.startsWith('lucide:')){
+    const name = val.slice(7);
+    const icons = window.lucide && window.lucide.icons;
+    if(icons && icons[name]){
+      const [tag,attrs,children] = icons[name];
+      const svgAttrs = Object.entries(attrs).map(([k,v])=>`${k}="${v}"`).join(' ');
+      const inner = children.map(([ct,ca])=>{
+        const a = Object.entries(ca).map(([k,v])=>`${k}="${v}"`).join(' ');
+        return `<${ct} ${a}/>`;
+      }).join('');
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${svgAttrs}>${inner}</svg>`;
+    }
+    return `<i data-lucide="${name}"></i>`;
+  }
+  return val;
+}
+
+function openIconPicker(inputId){
+  _ipTarget = document.getElementById(inputId);
+  if(!_ipTarget) return;
+  _ipSelected = _ipTarget.value || '';
+  _ipTab = _ipSelected.startsWith('lucide:') ? 'lucide' : (_ipSelected ? 'emoji' : 'lucide');
+  document.querySelectorAll('.ip-tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===_ipTab));
+  document.getElementById('ip-search').value='';
+  renderIPGrid();
+  updateIPPreview();
+  document.getElementById('icon-picker-overlay').style.display='flex';
+}
+function closeIconPicker(){
+  document.getElementById('icon-picker-overlay').style.display='none';
+  _ipTarget=null;
+}
+function switchIPTab(tab){
+  _ipTab=tab;
+  document.querySelectorAll('.ip-tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.getElementById('ip-search').value='';
+  renderIPGrid();
+}
+function filterIcons(){ renderIPGrid(); }
+
+function renderIPGrid(){
+  const grid = document.getElementById('ip-grid');
+  const q = (document.getElementById('ip-search')?.value||'').toLowerCase().trim();
+
+  if(_ipTab==='lucide'){
+    let names = getAllLucideNames();
+    if(q) names = names.filter(n=>n.includes(q));
+    else names = names.slice(0, 200);
+    grid.innerHTML = names.map(n=>{
+      const val = 'lucide:'+n;
+      const sel = val===_ipSelected ? ' selected':'';
+      const html = renderIconHTML(val);
+      return `<div class="ip-item${sel}" data-val="${val}" onclick="pickIcon(this)" title="${n}">${html}</div>`;
+    }).join('');
+  } else {
+    let emojis = POPULAR_EMOJI;
+    if(q) emojis = emojis.filter(e=>e.includes(q));
+    grid.innerHTML = emojis.map(e=>{
+      const sel = e===_ipSelected ? ' selected':'';
+      return `<div class="ip-item${sel}" data-val="${e}" onclick="pickIcon(this)" title="${e}"><span class="ip-emoji">${e}</span></div>`;
+    }).join('');
+  }
+}
+
+function pickIcon(el){
+  document.querySelectorAll('.ip-item.selected').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  _ipSelected = el.dataset.val;
+  updateIPPreview();
+}
+function updateIPPreview(){
+  const el = document.getElementById('ip-current');
+  if(!_ipSelected){ el.innerHTML='Ничего не выбрано'; return; }
+  el.innerHTML = `<span class="ip-preview">${renderIconHTML(_ipSelected)}</span> <span>${_ipSelected}</span>`;
+}
+function confirmIconPicker(){
+  if(_ipTarget && _ipSelected){
+    _ipTarget.value = _ipSelected;
+    _ipTarget.dispatchEvent(new Event('input',{bubbles:true}));
+    // update the preview button next to input
+    const wrap = _ipTarget.closest('.icon-input-wrap');
+    if(wrap){
+      const prev = wrap.querySelector('.btn-preview');
+      if(prev) prev.innerHTML = renderIconHTML(_ipSelected);
+    }
+  }
+  closeIconPicker();
+}
+</script>
 <script>
 
 const auth = firebase.auth();
@@ -1120,6 +1401,7 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;
 function escTA(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function v(id){ const el=document.getElementById(id); return el?el.value:''; }
 function inp(id,val){ return `<input class="fi" id="${id}" value="${esc(val)}"/>`; }
+function iconInp(id,val){ return `<div class="icon-input-wrap"><input class="fi" id="${id}" value="${esc(val)}"/><button type="button" class="icon-pick-btn" onclick="openIconPicker('${id}')"><span class="btn-preview">${renderIconHTML(val)||'🎯'}</span> Выбрать</button></div>`; }
 function dateinp(id,val){ return `<input class="fi" type="date" id="${id}" value="${esc(val)}"/>`; }
 function ta(id,val,rows=3){ return `<textarea class="fi" id="${id}" rows="${rows}">${escTA(val)}</textarea>`; }
 function fg(label,content,hint){ return `<div class="fg"><label class="flbl">${label}</label>${content}${hint?'<p class="fhint">'+hint+'</p>':''}</div>`; }
@@ -1128,11 +1410,10 @@ function liW(idx,title,fields){
   const n=String(idx+1).padStart(2,'0');
   return `<div class="li-item" data-idx="${idx}">
     <div class="li-hdr" onclick="toggleLI(this)">
+      <span class="drag-handle" title="Перетащить">⠿</span>
       <span class="li-idx">${n}</span>
       <span class="li-title">${esc(title)}</span>
       <div class="li-acts">
-        <button class="lib" onclick="event.stopPropagation();mvUp(this)"  title="Вверх">↑</button>
-        <button class="lib" onclick="event.stopPropagation();mvDn(this)"  title="Вниз">↓</button>
         <button class="lib" onclick="event.stopPropagation();dupLI(this)" title="Дублировать">⧉</button>
         <button class="lib del" onclick="event.stopPropagation();delLI(this)" title="Удалить">✕</button>
       </div>
@@ -1142,8 +1423,6 @@ function liW(idx,title,fields){
 }
 
 function toggleLI(h){ const body=h.nextElementSibling; body.classList.toggle('open'); h.classList.toggle('open', body.classList.contains('open')); }
-function mvUp(btn){ const li=btn.closest('.li-item'),p=li.parentElement,all=[...p.querySelectorAll(':scope>.li-item')],i=all.indexOf(li); if(i>0)p.insertBefore(li,all[i-1]); }
-function mvDn(btn){ const li=btn.closest('.li-item'),p=li.parentElement,all=[...p.querySelectorAll(':scope>.li-item')],i=all.indexOf(li); if(i<all.length-1)p.insertBefore(all[i+1],li); }
 function delLI(btn){ if(confirm('Удалить?'))btn.closest('.li-item').remove(); }
 
 function dupLI(btn){
@@ -1196,7 +1475,32 @@ async function showTab(tab){
     case 'security':   m.innerHTML=edSecurity();   break;
     case 'i18n':       m.innerHTML=await edTranslations(); break;
   }
+  initSortables();
 }
+
+function initSortables(){
+  document.querySelectorAll('.leditor').forEach(el=>{
+    if(el._sortable) el._sortable.destroy();
+    el._sortable = new Sortable(el, {
+      handle: '.drag-handle',
+      animation: 200,
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      dragClass: 'sortable-drag',
+      easing: 'cubic-bezier(0.22,1,0.36,1)',
+      onEnd: function(){
+        markDirty();
+        // Re-number indices after drag
+        el.querySelectorAll('.li-item').forEach((li,i)=>{
+          li.dataset.idx = i;
+          const idx = li.querySelector('.li-idx');
+          if(idx) idx.textContent = String(i+1).padStart(2,'0');
+        });
+      }
+    });
+  });
+}
+
 function collectCurrent(){
   switch(CT){
     case 'index':      colIndex();      break;
@@ -1236,7 +1540,7 @@ function edIndex(){
   <div class="fsec">Карточки-меню</div>
   <div class="leditor" id="ls-nc">
     ${(d.navCards||[]).map((c,i)=>liW(i,c.title,
-      fg('Иконка (эмодзи)',inp(`nc-ic-${i}`,c.icon))+
+      fg('Иконка',iconInp(`nc-ic-${i}`,c.icon))+
       fg('Заголовок',inp(`nc-ti-${i}`,c.title))+
       fg('Описание',ta(`nc-de-${i}`,c.desc,2))+
       fg('Ссылка',inp(`nc-hr-${i}`,c.href))
@@ -1275,7 +1579,7 @@ function edAbout(){
   <button class="add-btn" onclick="addStat()">+ Добавить карточку</button>
   <div class="fsec">Ценности</div>
   <div class="leditor" id="ls-v">
-    ${(d.values||[]).map((vl,i)=>liW(i,vl.title,fg('Иконка',inp(`v-ic-${i}`,vl.icon))+fg('Заголовок',inp(`v-ti-${i}`,vl.title))+fg('Описание',ta(`v-de-${i}`,vl.desc,2)))).join('')}
+    ${(d.values||[]).map((vl,i)=>liW(i,vl.title,fg('Иконка',iconInp(`v-ic-${i}`,vl.icon))+fg('Заголовок',inp(`v-ti-${i}`,vl.title))+fg('Описание',ta(`v-de-${i}`,vl.desc,2)))).join('')}
   </div>
   <button class="add-btn" onclick="addVal()">+ Добавить ценность</button>`;
 }
@@ -1328,7 +1632,7 @@ function edInterests(){
   <div class="fsec">Карточки</div>
   <div class="leditor" id="ls-in">
     ${(d.cards||[]).map((c,i)=>liW(i,c.title,
-      fg('Иконка',inp(`in-ic-${i}`,c.icon))+fg('Заголовок',inp(`in-ti-${i}`,c.title))+
+      fg('Иконка',iconInp(`in-ic-${i}`,c.icon))+fg('Заголовок',inp(`in-ti-${i}`,c.title))+
       fg('Описание',ta(`in-de-${i}`,c.desc,3))+fg('Вопросы (с новой строки)',ta(`in-q-${i}`,(c.questions||[]).join('\n'),3))
     )).join('')}
   </div>
@@ -1353,7 +1657,7 @@ function edContact(){
   <div class="fsec">Контактные ссылки</div>
   <div class="leditor" id="ls-ci">
     ${(d.items||[]).map((it,i)=>liW(i,it.label+': '+it.value,
-      fg('Иконка',inp(`ci-ic-${i}`,it.icon))+fg('Название',inp(`ci-lb-${i}`,it.label))+
+      fg('��конка',iconInp(`ci-ic-${i}`,it.icon))+fg('Назв��ние',inp(`ci-lb-${i}`,it.label))+
       fg('Значение',inp(`ci-vl-${i}`,it.value))+fg('Ссылка href',inp(`ci-hr-${i}`,it.href))
     )).join('')}
   </div>
@@ -1778,10 +2082,12 @@ function colSEO(){
 // ── APPEARANCE ───────────────────────────────
 function edAppearance(){
   const a=D.appearance||{};
-  const themes=[['cyan','Cyan — синий (по умолчанию)'],['purple','Purple — фиолетовый'],['green','Green — зелёный'],['orange','Orange — оранжевый']];
+  const colors = a.customColors||{};
+  const themes=[['cyan','Cyan — синий (по умолчанию)'],['purple','Purple — фиолетовый'],['green','Green — зелёный'],['orange','Orange — оранжевый'],['custom','🎨 Свой цвет']];
   const opts=themes.map(([val,lbl])=>`<option value="${val}"${a.defaultTheme===val?' selected':''}>${lbl}</option>`).join('');
   const checked=a.showHeroStats!==false;
   const pg=a.pages||{};
+  const isCustom = a.defaultTheme==='custom';
   const pgRow=(key,label,hint)=>{
     const vis=pg[key]!==false;
     return `<label class="chk-row" style="margin-bottom:10px;align-items:flex-start;">
@@ -1789,10 +2095,55 @@ function edAppearance(){
       <div><span>${label}</span><p class="fhint" style="margin:3px 0 0;">${hint}</p></div>
     </label>`;
   };
-  return `<div class="ed-header"><div class="ed-tag">Внешний вид</div><h2>Настройки отображения</h2><p>Тема, видимость разделов и элементов страниц</p></div>
-  ${fg('Тема по умолчанию (для новых посетителей)',`<select class="fi" id="ap-theme">${opts}</select>`,'Посетители смогут менять тему самостоятельно — эта настройка только для первого открытия')}
+  return `<div class="ed-header"><div class="ed-tag">Внешний вид</div><h2>Настройки отображения</h2><p>Тема, цвета, видимость разделов и элементов</p></div>
+  ${fg('Тема по умолчанию',`<select class="fi" id="ap-theme" onchange="toggleCustomColors()">${opts}</select>`,'Для новых посетителей. Выбери «Свой цвет» чтобы задать любые цвета')}
+  <div id="custom-colors-panel" style="display:${isCustom?'block':'none'};">
+    <div class="fsec">Свои цвета</div>
+    <p style="color:var(--muted);font-size:.82rem;margin-bottom:16px;line-height:1.5;">Выбери свои цвета для сайта. Изменения будут видны после сохранения.</p>
+    <div class="color-grid">
+      <div class="color-item">
+        <label class="flbl">Основной акцент</label>
+        <div class="color-pick-wrap">
+          <input type="color" id="cc-accent" value="${colors.accent||'#00d4ff'}" class="color-inp" oninput="previewColor()"/>
+          <input class="fi color-hex" id="cc-accent-hex" value="${colors.accent||'#00d4ff'}" oninput="syncColorFromHex('accent')"/>
+        </div>
+        <p class="fhint">Кнопки, ссылки, иконки, свечение</p>
+      </div>
+      <div class="color-item">
+        <label class="flbl">Второй акцент</label>
+        <div class="color-pick-wrap">
+          <input type="color" id="cc-accent2" value="${colors.accent2||'#a855f7'}" class="color-inp" oninput="previewColor()"/>
+          <input class="fi color-hex" id="cc-accent2-hex" value="${colors.accent2||'#a855f7'}" oninput="syncColorFromHex('accent2')"/>
+        </div>
+        <p class="fhint">Градиент имени, детали</p>
+      </div>
+      <div class="color-item">
+        <label class="flbl">Фон</label>
+        <div class="color-pick-wrap">
+          <input type="color" id="cc-bg" value="${colors.bg||'#050810'}" class="color-inp" oninput="previewColor()"/>
+          <input class="fi color-hex" id="cc-bg-hex" value="${colors.bg||'#050810'}" oninput="syncColorFromHex('bg')"/>
+        </div>
+        <p class="fhint">Основной фон страницы</p>
+      </div>
+      <div class="color-item">
+        <label class="flbl">Текст</label>
+        <div class="color-pick-wrap">
+          <input type="color" id="cc-text" value="${colors.text||'#f1f5f9'}" class="color-inp" oninput="previewColor()"/>
+          <input class="fi color-hex" id="cc-text-hex" value="${colors.text||'#f1f5f9'}" oninput="syncColorFromHex('text')"/>
+        </div>
+        <p class="fhint">Основной цвет текста</p>
+      </div>
+    </div>
+    <div class="color-preview-bar" id="color-preview">
+      <div class="cprev-bg" id="cprev-bg">
+        <span class="cprev-text" id="cprev-text">Превью текста</span>
+        <span class="cprev-accent" id="cprev-accent">Акцент</span>
+        <span class="cprev-accent2" id="cprev-accent2">Градиент</span>
+      </div>
+    </div>
+  </div>
   <div class="fsec">Видимость разделов</div>
-  <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;line-height:1.6;">Снятая галочка — раздел исчезает из меню и с главной страницы. Используй для разделов, которые ещё не готовы. Прямая ссылка на страницу всё ещё работает.</p>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;line-height:1.6;">Снятая галочка — раздел исчезает из меню и с главной страницы. Прямая ссылка всё ещё работает.</p>
   ${pgRow('about',   'О себе',   'about.html')}
   ${pgRow('journey', 'Мой путь', 'journey.html')}
   ${pgRow('interests','Интересы','interests.html')}
@@ -1804,6 +2155,41 @@ function edAppearance(){
     <span>Показывать блок со счётчиками (10+ лет, 5+ стран...)</span>
   </label>`;
 }
+
+function toggleCustomColors(){
+  const sel=document.getElementById('ap-theme');
+  const panel=document.getElementById('custom-colors-panel');
+  if(sel&&panel) panel.style.display=sel.value==='custom'?'block':'none';
+}
+function syncColorFromHex(key){
+  const hex=document.getElementById('cc-'+key+'-hex');
+  const clr=document.getElementById('cc-'+key);
+  if(hex&&clr&&/^#[0-9a-fA-F]{6}$/.test(hex.value)){ clr.value=hex.value; previewColor(); }
+}
+function previewColor(){
+  const bg=document.getElementById('cc-bg')?.value||'#050810';
+  const accent=document.getElementById('cc-accent')?.value||'#00d4ff';
+  const accent2=document.getElementById('cc-accent2')?.value||'#a855f7';
+  const text=document.getElementById('cc-text')?.value||'#f1f5f9';
+  // Sync hex inputs
+  ['accent','accent2','bg','text'].forEach(k=>{
+    const c=document.getElementById('cc-'+k);
+    const h=document.getElementById('cc-'+k+'-hex');
+    if(c&&h) h.value=c.value;
+  });
+  // Preview bar
+  const bar=document.getElementById('cprev-bg');
+  if(bar){
+    bar.style.background=bg;
+    document.getElementById('cprev-text').style.color=text;
+    document.getElementById('cprev-accent').style.color=accent;
+    const a2=document.getElementById('cprev-accent2');
+    a2.style.background=`linear-gradient(90deg,${accent},${accent2})`;
+    a2.style.webkitBackgroundClip='text';
+    a2.style.webkitTextFillColor='transparent';
+  }
+}
+
 function colAppearance(){
   if(!document.getElementById('ap-theme'))return;
   if(!D.appearance)D.appearance={};
@@ -1813,6 +2199,15 @@ function colAppearance(){
   ['about','journey','interests','videos','contact'].forEach(key=>{
     D.appearance.pages[key]=!!document.getElementById('ap-pg-'+key)?.checked;
   });
+  // Save custom colors
+  if(D.appearance.defaultTheme==='custom'){
+    D.appearance.customColors={
+      accent: document.getElementById('cc-accent')?.value||'#00d4ff',
+      accent2: document.getElementById('cc-accent2')?.value||'#a855f7',
+      bg: document.getElementById('cc-bg')?.value||'#050810',
+      text: document.getElementById('cc-text')?.value||'#f1f5f9'
+    };
+  }
 }
 
 // ── SECURITY ─────────────────────────────────

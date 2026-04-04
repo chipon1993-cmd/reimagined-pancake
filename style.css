@@ -249,6 +249,7 @@ nav::after {
 .theme-dot.t-purple { background: #bf5af2; }
 .theme-dot.t-green  { background: #00ff88; }
 .theme-dot.t-orange { background: #f97316; }
+.theme-dot.t-custom { border:1px solid rgba(255,255,255,0.3); }
 
 /* =====================
    ОБЩИЕ КОМПОНЕНТЫ

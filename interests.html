@@ -20,7 +20,8 @@
     .interest-card { display:block; border-radius:var(--radius); padding:32px 28px; transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition); text-decoration:none; color:inherit; border:1px solid transparent; }
     a.interest-card { cursor:pointer; }
     a.interest-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.3); border-color:rgba(0,212,255,0.2); }
-    .interest-icon { font-size:2.2rem; margin-bottom:16px; filter:drop-shadow(0 0 10px rgba(0,212,255,0.4)); }
+    .interest-icon { font-size:2.2rem; margin-bottom:16px; filter:drop-shadow(0 0 10px rgba(0,212,255,0.4)); display:flex; align-items:center; }
+    .interest-icon svg { width:36px; height:36px; stroke:var(--accent); stroke-width:1.75; fill:none; }
     .interest-title { font-size:1rem; font-weight:700; margin-bottom:10px; letter-spacing:.04em; text-transform:uppercase; }
     .interest-desc { font-size:.9rem; color:var(--muted); line-height:1.65; }
     .interest-questions { margin-top:16px; display:flex; flex-direction:column; gap:7px; }
@@ -76,6 +77,7 @@
 
   <footer></footer>
 
+  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>

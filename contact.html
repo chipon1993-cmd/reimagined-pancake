@@ -20,7 +20,8 @@
     #contact-items { display:flex; flex-direction:column; gap:12px; }
     .contact-card { display:flex; align-items:center; gap:18px; border-radius:var(--radius); padding:20px 24px; text-decoration:none; color:var(--text); transition:transform var(--transition); }
     .contact-card:hover { transform:translateX(8px); }
-    .contact-card .icon { font-size:1.6rem; flex-shrink:0; width:44px; text-align:center; filter:drop-shadow(0 0 6px rgba(0,212,255,0.4)); }
+    .contact-card .icon { font-size:1.6rem; flex-shrink:0; width:44px; text-align:center; filter:drop-shadow(0 0 6px rgba(0,212,255,0.4)); display:flex; align-items:center; justify-content:center; }
+    .contact-card .icon svg { width:26px; height:26px; stroke:var(--accent); stroke-width:1.75; fill:none; }
     .contact-card .info .label { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; margin-bottom:2px; }
     .contact-card .info .value { font-size:.95rem; font-weight:600; }
     .contact-card .arrow { margin-left:auto; color:var(--accent); font-size:1.1rem; opacity:0; transition:opacity var(--transition),transform var(--transition); text-shadow:0 0 8px var(--accent); }
@@ -174,6 +175,7 @@
 
   <footer></footer>
 
+  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
