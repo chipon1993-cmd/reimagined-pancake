@@ -89,6 +89,17 @@
       } catch(e) {}
     }
 
+    // Check if admin saved new data — if so, clear stale caches
+    var cacheBust = localStorage.getItem('ac_cache_bust');
+    if (cacheBust) {
+      try {
+        localStorage.removeItem('ac_content');
+        localStorage.removeItem('ac_content_uk');
+        localStorage.removeItem('ac_content_no');
+        localStorage.removeItem('ac_cache_bust');
+      } catch(e) {}
+    }
+
     const lang = localStorage.getItem('ac_lang') || 'ru';
 
     // 1. Base defaults — always works, no Firebase needed

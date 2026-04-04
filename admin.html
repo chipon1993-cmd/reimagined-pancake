@@ -1350,6 +1350,10 @@ async function switchAdminLang(lang){
 
 async function persistCurrentLang(){
   await fsSet('content', langKey(adminLang), JSON.parse(JSON.stringify(D)));
+  // Signal site to invalidate cache on next load
+  try { localStorage.setItem('ac_cache_bust', Date.now().toString()); } catch(e) {}
+  // Also clear cached content so next site visit reads fresh from Firestore
+  try { localStorage.removeItem('ac_content'); localStorage.removeItem('ac_content_uk'); localStorage.removeItem('ac_content_no'); } catch(e) {}
 }
 
 function updateAdminLangBtns(){
