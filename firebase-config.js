@@ -6,7 +6,8 @@
     projectId: "chepelovskyi-site",
     storageBucket: "chepelovskyi-site.firebasestorage.app",
     messagingSenderId: "842651562800",
-    appId: "1:842651562800:web:5f986d50fc9eefd519cef5"
+    appId: "1:842651562800:web:5f986d50fc9eefd519cef5",
+    measurementId: "G-CNZ0RBXKPL"
   };
 
   if (!firebase.apps.length) {
@@ -15,6 +16,11 @@
 
   window.db = firebase.firestore();
   window.storage = firebase.storage();
+
+  // Analytics (if SDK loaded)
+  if (firebase.analytics) {
+    try { firebase.analytics(); } catch(e) {}
+  }
 
   // ── Firestore helpers ──────────────────────────
   // Read with 4s timeout — returns null if Firestore unreachable
