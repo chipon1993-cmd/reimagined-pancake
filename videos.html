@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://plausible.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://img.youtube.com data:; connect-src 'self' https://firestore.googleapis.com https://*.firebaseio.com https://api.web3forms.com https://buttondown.com https://plausible.io https://www.google-analytics.com; frame-src https://www.youtube.com https://player.vimeo.com; object-src 'none'; base-uri 'self';" />
   <title>Видео · Andrii Chepelovskyi</title>
   <meta name="description" content="Видео-контент Андрия Чепеловского — смотреть, а не читать." />
   <meta property="og:type" content="website" />
@@ -317,7 +321,7 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@0.469.0"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
@@ -378,30 +382,33 @@
     const vmEl = document.querySelector(`[data-vid="${id}"] .vmeta-views`);
     if (vmEl) vmEl.textContent = '👁 ' + views;
 
-    // Build player
+    // Build player — validate embed IDs to prevent injection
     let player = '';
-    if (v.type === 'youtube') {
-      player = `<iframe src="https://www.youtube.com/embed/${v.embedId}?autoplay=1&rel=0&modestbranding=1"
-        allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
-    } else if (v.type === 'vimeo') {
-      player = `<iframe src="https://player.vimeo.com/video/${v.embedId}?autoplay=1&color=00d4ff"
-        allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-    } else if (v.type === 'file') {
-      player = `<video controls autoplay src="${v.embedId}" style="width:100%;height:100%;background:#000"></video>`;
+    var embedId = String(v.embedId || '');
+    if (v.type === 'youtube' && /^[\w\-]{6,15}$/.test(embedId)) {
+      player = `<iframe src="https://www.youtube.com/embed/${embedId}?autoplay=1&rel=0&modestbranding=1"
+        allow="autoplay; fullscreen; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>`;
+    } else if (v.type === 'vimeo' && /^\d{5,12}$/.test(embedId)) {
+      player = `<iframe src="https://player.vimeo.com/video/${embedId}?autoplay=1&color=00d4ff"
+        allow="autoplay; fullscreen" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>`;
+    } else if (v.type === 'file' && /^https?:\/\//i.test(embedId) && !/<|>|"|'/.test(embedId)) {
+      var safeUrl = embedId.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+      player = `<video controls autoplay src="${safeUrl}" style="width:100%;height:100%;background:#000"></video>`;
     }
 
     document.getElementById('vmodal-player').innerHTML = player;
     document.getElementById('vmodal-title').textContent = v.title || '';
     document.getElementById('vmodal-desc').textContent  = v.desc  || '';
 
+    function escH(s) { var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
     const meta = [];
-    if (v.date)     meta.push(`<span>📅 ${v.date}</span>`);
-    if (v.duration) meta.push(`<span>⏱ ${v.duration}</span>`);
+    if (v.date)     meta.push(`<span>📅 ${escH(v.date)}</span>`);
+    if (v.duration) meta.push(`<span>⏱ ${escH(v.duration)}</span>`);
     meta.push(`<span>👁 ${views} просмотров</span>`);
     document.getElementById('vmodal-meta').innerHTML = meta.join('');
 
     document.getElementById('vmodal-tags').innerHTML =
-      (v.tags || []).map(t => `<span class="vtag">${t}</span>`).join('');
+      (v.tags || []).map(t => `<span class="vtag">${escH(t)}</span>`).join('');
 
     document.getElementById('video-modal').classList.add('open');
     document.body.style.overflow = 'hidden';

@@ -1003,7 +1003,7 @@
         <span class="theme-toggle-label">🌙</span>
       </div>
       <button class="xbtn cyan" onclick="previewSite()" title="Предпросмотр">👁 Превью</button>
-      <a href="index.html" target="_blank" class="xbtn cyan">↗ Сайт</a>
+      <a href="index.html" target="_blank" rel="noopener noreferrer" class="xbtn cyan">↗ Сайт</a>
       <button class="xbtn red" onclick="doLogout()">✕ Выйти</button>
     </div>
   </div>
@@ -1084,7 +1084,7 @@ function toggleAdminTheme(){
 })();
 </script>
 
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@0.469.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -1881,7 +1881,7 @@ async function edGlobal(){
   <div class="fsec">Аналитика</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">
     <b style="color:var(--text)">Plausible Analytics</b> — приватная статистика без cookie-баннера, не замедляет сайт (скрипт 1 KB).<br>
-    Зарегистрируй домен на <a href="https://plausible.io" target="_blank" style="color:var(--accent);">plausible.io</a> ($9/мес) или self-host через <a href="https://umami.is" target="_blank" style="color:var(--accent);">umami.is</a> (бесплатно) — и вставь домен ниже.
+    Зарегистрируй домен на <a href="https://plausible.io" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">plausible.io</a> ($9/мес) или self-host через <a href="https://umami.is" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">umami.is</a> (бесплатно) — и вставь домен ниже.
   </p>
   <div class="frow">
     ${fg('Plausible (домен)',inp('gl-plausible',(g.analytics&&g.analytics.plausible)||''),'Напр.: chepelovskyi.no — без https://')}
@@ -1893,14 +1893,14 @@ async function edGlobal(){
   <div class="fsec">Giscus (комментарии)</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">
     <b style="color:var(--text)">Giscus</b> — комментарии на досках интересов через GitHub Discussions. Бесплатно, без бэкенда.<br>
-    Настрой на <a href="https://giscus.app" target="_blank" style="color:var(--accent);">giscus.app</a> → скопируй 4 значения ниже. Пустые поля = комментарии скрыты.
+    Настрой на <a href="https://giscus.app" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">giscus.app</a> → скопируй 4 значения ниже. Пустые поля = комментарии скрыты.
   </p>
   <div class="frow">${fg('Репо (user/repo)',inp('gl-gc-repo',(g.giscus&&g.giscus.repo)||''),'Напр.: andrii-ch/my-site')}${fg('Repo ID',inp('gl-gc-repoid',(g.giscus&&g.giscus.repoId)||''),'Напр.: R_kgDOxxxxxx')}</div>
   <div class="frow">${fg('Категория',inp('gl-gc-cat',(g.giscus&&g.giscus.category)||''),'Напр.: General')}${fg('Category ID',inp('gl-gc-catid',(g.giscus&&g.giscus.categoryId)||''),'Напр.: DIC_kwDOxxxxxx')}</div>
   <div class="fsec">Newsletter (рассылка)</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">
     <b style="color:var(--text)">Buttondown</b> — бесплатная email-рассылка (100 подписчиков). Форма подписки появится внизу главной страницы.<br>
-    Зарегистрируйся на <a href="https://buttondown.com" target="_blank" style="color:var(--accent);">buttondown.com</a> → скопируй свой username.
+    Зарегистрируйся на <a href="https://buttondown.com" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">buttondown.com</a> → скопируй свой username.
   </p>
   ${fg('Buttondown Username',inp('gl-nl-bd',(g.newsletter&&g.newsletter.buttondownId)||''),'Твой username из buttondown.com — пустое поле = подписка скрыта')}
   <div class="fsec">Резервная копия</div>
