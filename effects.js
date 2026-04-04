@@ -601,7 +601,7 @@
   // ─────────────────────────────────────────────
   // INIT
   // ─────────────────────────────────────────────
-  document.addEventListener('DOMContentLoaded', () => {
+  function initAll() {
     initTransitions();
     initScrollProgress();
     initCursor();
@@ -620,6 +620,13 @@
     // Typewriter на героях
     const tw = document.querySelector('[data-typewriter]');
     if (tw) typeWriter(tw);
-  });
+  }
+
+  // Support both eager and lazy loading
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
 
 })();
