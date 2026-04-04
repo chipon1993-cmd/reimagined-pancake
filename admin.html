@@ -1027,6 +1027,7 @@
       <div class="sb-item" data-tab="global"     onclick="showTab('global')">     <span class="sb-icon">⚙️</span> Общие</div>
       <div class="sb-item" data-tab="security"   onclick="showTab('security')">   <span class="sb-icon">🔐</span> Безопасность</div>
       <div class="sb-item" data-tab="media"    onclick="showTab('media')">    <span class="sb-icon">🖼️</span> Медиа</div>
+      <div class="sb-item" data-tab="bookmarks"   onclick="showTab('bookmarks')">   <span class="sb-icon">🔖</span> Закладки</div>
       <div class="sb-item" data-tab="i18n"        onclick="showTab('i18n')">        <span class="sb-icon">🌐</span> Переводы</div>
       <div class="sb-status">Система активна</div>
     </div>
@@ -1640,6 +1641,7 @@ async function showTab(tab){
     case 'security':   m.innerHTML=edSecurity();   break;
     case 'media':      m.innerHTML=edMedia(); initMediaDrop(); break;
     case 'i18n':       m.innerHTML=await edTranslations(); break;
+    case 'bookmarks':  m.innerHTML=await edBookmarks(); initBookmarksSearch(); break;
   }
   initSortables();
 }
@@ -2593,6 +2595,89 @@ setInterval(()=>{
     if(el) el.textContent=`Автосохранение через ${autoSec} с`;
   }
 },1000);
+
+// ── BOOKMARKS TAB ────────────────────────────
+let _bmData=null;
+async function edBookmarks(){
+  try{
+    const r=await fetch('bookmarks.json');
+    _bmData=await r.json();
+  }catch(e){ _bmData=null; }
+  if(!_bmData||!_bmData.bookmarks||!_bmData.bookmarks.length){
+    return `<div class="ed-header"><div class="ed-tag">Firefox</div><h2>Закладки</h2>
+      <p>Файл bookmarks.json не найден. Запусти <code>python3 export-bookmarks.py</code> и закоммить результат.</p></div>`;
+  }
+  const all=_bmFlatten(_bmData.bookmarks);
+  const total=all.filter(b=>b.type==='bookmark').length;
+  const folders=all.filter(b=>b.type==='folder').length;
+  return `<div class="ed-header"><div class="ed-tag">Firefox</div><h2>Закладки</h2>
+    <p>Всего <b>${total}</b> закладок в <b>${folders}</b> папках · Источник: ${_bmData.source||'Firefox'} · Экспорт: ${_bmData.exportDate?new Date(_bmData.exportDate).toLocaleDateString('ru'):'—'}</p></div>
+  <input type="text" id="bm-admin-search" placeholder="Поиск по закладкам..." style="width:100%;padding:12px 16px;margin-bottom:20px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:.9rem;outline:none;">
+  <div id="bm-admin-list">${_bmRenderTree(_bmData.bookmarks,false)}</div>`;
+}
+function initBookmarksSearch(){
+  const inp=document.getElementById('bm-admin-search');
+  if(!inp) return;
+  inp.addEventListener('input',function(){
+    const q=this.value.toLowerCase().trim();
+    const el=document.getElementById('bm-admin-list');
+    if(!q){ el.innerHTML=_bmRenderTree(_bmData.bookmarks,false); return; }
+    const filtered=_bmFilter(_bmData.bookmarks,q);
+    el.innerHTML=filtered.length?_bmRenderTree(filtered,true):'<p style="color:var(--muted);text-align:center;padding:30px">Ничего не найдено</p>';
+  });
+}
+function _bmFlatten(nodes){
+  const r=[];
+  nodes.forEach(n=>{ r.push(n); if(n.children) r.push(..._bmFlatten(n.children)); });
+  return r;
+}
+function _bmFilter(nodes,q){
+  return nodes.map(n=>{
+    if(n.type==='folder'){
+      const f=_bmFilter(n.children||[],q);
+      return f.length?{...n,children:f}:null;
+    }
+    if(n.type==='bookmark'){
+      return((n.title||'')+' '+(n.url||'')).toLowerCase().includes(q)?n:null;
+    }
+    return null;
+  }).filter(Boolean);
+}
+function _bmEsc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function _bmDomain(url){ try{return new URL(url).hostname;}catch{return url;} }
+function _bmRenderTree(nodes,allOpen){
+  let h='';
+  nodes.forEach(n=>{
+    if(n.type==='folder'&&n.children&&n.children.length){
+      const cnt=_bmFlatten([n]).filter(x=>x.type==='bookmark'&&x.url).length;
+      if(!cnt) return;
+      h+=`<div style="margin-bottom:12px">
+        <div onclick="this.classList.toggle('_bop');this.nextElementSibling.classList.toggle('_bop')" style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;user-select:none">
+          <span style="font-size:.7rem;color:var(--muted);transition:transform .2s">▶</span>
+          <b style="font-size:.9rem">${_bmEsc(n.title||'Без названия')}</b>
+          <span style="color:var(--muted);font-size:.75rem;margin-left:auto">${cnt}</span>
+        </div>
+        <div style="display:${allOpen?'block':'none'};padding:4px 0 0 20px" class="${allOpen?'_bop':''}">
+          ${_bmRenderTree(n.children,allOpen)}
+        </div>
+      </div>`;
+    } else if(n.type==='bookmark'&&n.url){
+      const dom=_bmDomain(n.url);
+      h+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;transition:background .2s" onmouseover="this.style.background='var(--sb-hover)'" onmouseout="this.style.background=''">
+        <img src="https://www.google.com/s2/favicons?domain=${_bmEsc(dom)}&sz=32" width="16" height="16" style="border-radius:2px" onerror="this.style.display='none'">
+        <a href="${_bmEsc(n.url)}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;font-size:.85rem">${_bmEsc(n.title||n.url)}</a>
+        <span style="color:var(--muted);font-size:.7rem;margin-left:auto;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_bmEsc(dom)}</span>
+      </div>`;
+    }
+  });
+  return h;
+}
+// Toggle folder open/close via CSS class
+(function(){
+  const s=document.createElement('style');
+  s.textContent='._bop > span:first-child { transform:rotate(90deg)!important } div._bop { display:block!important }';
+  document.head.appendChild(s);
+})();
 
 // ── INIT (Firebase Auth state) ───────────────
 auth.onAuthStateChanged(async function(user){
