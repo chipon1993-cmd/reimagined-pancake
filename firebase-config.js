@@ -14,6 +14,7 @@
   }
 
   window.db = firebase.firestore();
+  window.storage = firebase.storage();
 
   // ── Firestore helpers ──────────────────────────
   // Read a document; returns null if missing or on error
