@@ -1,0 +1,18 @@
+{
+  "exportDate": "2026-04-04T00:00:00",
+  "source": "Firefox",
+  "note": "Запусти export-bookmarks.py на своём компьютере чтобы заполнить этот файл реальными закладками",
+  "bookmarks": [
+    {
+      "title": "Панель закладок",
+      "type": "folder",
+      "children": [
+        {
+          "title": "Пример — добавь свои закладки через export-bookmarks.py",
+          "type": "bookmark",
+          "url": "https://example.com"
+        }
+      ]
+    }
+  ]
+}
