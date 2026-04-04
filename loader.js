@@ -76,7 +76,7 @@
 
   function renderFooter(g) {
     const f = document.querySelector('footer');
-    if (f) f.innerHTML = `<span>${g.footerLeft}</span><span>${g.footerRight}</span>`;
+    if (f) f.innerHTML = `<span>${g.footerLeft}</span><span>${g.footerRight}</span><a href="admin.html" class="admin-link" title="Админ-панель">⚙</a>`;
   }
 
   // ── INDEX ──────────────────────────────────────────

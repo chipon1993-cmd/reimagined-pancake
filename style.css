@@ -404,6 +404,15 @@ footer {
   letter-spacing: 0.06em;
   position: relative;
 }
+.admin-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 1rem;
+  opacity: 0.3;
+  transition: opacity 0.3s;
+  margin-left: 8px;
+}
+.admin-link:hover { opacity: 1; color: var(--accent); }
 footer::before {
   content: '';
   position: absolute;
