@@ -454,6 +454,24 @@
     }
     .li-hdr.open::before { transform:rotate(90deg); }
 
+    .drag-handle {
+      cursor:grab; font-size:1rem; color:var(--muted); opacity:.4;
+      flex-shrink:0; user-select:none; padding:0 2px;
+      transition:opacity .15s, color .15s;
+    }
+    .drag-handle:hover { opacity:1; color:var(--accent); }
+    .drag-handle:active { cursor:grabbing; }
+    .li-item.sortable-ghost {
+      opacity:.35; border-color:var(--accent) !important;
+      box-shadow:0 0 16px var(--accent-glow) !important;
+    }
+    .li-item.sortable-chosen {
+      box-shadow:0 8px 32px rgba(0,0,0,0.4) !important;
+      border-color:var(--accent) !important;
+      z-index:10;
+    }
+    .li-item.sortable-drag { opacity:1 !important; }
+
     .li-idx {
       font-size:.63rem; font-weight:700; letter-spacing:.1em;
       color:var(--accent); opacity:.5; flex-shrink:0; width:20px;
@@ -937,6 +955,7 @@ function toggleAdminTheme(){
 </script>
 
 <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -1365,11 +1384,10 @@ function liW(idx,title,fields){
   const n=String(idx+1).padStart(2,'0');
   return `<div class="li-item" data-idx="${idx}">
     <div class="li-hdr" onclick="toggleLI(this)">
+      <span class="drag-handle" title="Перетащить">⠿</span>
       <span class="li-idx">${n}</span>
       <span class="li-title">${esc(title)}</span>
       <div class="li-acts">
-        <button class="lib" onclick="event.stopPropagation();mvUp(this)"  title="Вверх">↑</button>
-        <button class="lib" onclick="event.stopPropagation();mvDn(this)"  title="Вниз">↓</button>
         <button class="lib" onclick="event.stopPropagation();dupLI(this)" title="Дублировать">⧉</button>
         <button class="lib del" onclick="event.stopPropagation();delLI(this)" title="Удалить">✕</button>
       </div>
@@ -1379,8 +1397,6 @@ function liW(idx,title,fields){
 }
 
 function toggleLI(h){ const body=h.nextElementSibling; body.classList.toggle('open'); h.classList.toggle('open', body.classList.contains('open')); }
-function mvUp(btn){ const li=btn.closest('.li-item'),p=li.parentElement,all=[...p.querySelectorAll(':scope>.li-item')],i=all.indexOf(li); if(i>0)p.insertBefore(li,all[i-1]); }
-function mvDn(btn){ const li=btn.closest('.li-item'),p=li.parentElement,all=[...p.querySelectorAll(':scope>.li-item')],i=all.indexOf(li); if(i<all.length-1)p.insertBefore(all[i+1],li); }
 function delLI(btn){ if(confirm('Удалить?'))btn.closest('.li-item').remove(); }
 
 function dupLI(btn){
@@ -1433,7 +1449,32 @@ async function showTab(tab){
     case 'security':   m.innerHTML=edSecurity();   break;
     case 'i18n':       m.innerHTML=await edTranslations(); break;
   }
+  initSortables();
 }
+
+function initSortables(){
+  document.querySelectorAll('.leditor').forEach(el=>{
+    if(el._sortable) el._sortable.destroy();
+    el._sortable = new Sortable(el, {
+      handle: '.drag-handle',
+      animation: 200,
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      dragClass: 'sortable-drag',
+      easing: 'cubic-bezier(0.22,1,0.36,1)',
+      onEnd: function(){
+        markDirty();
+        // Re-number indices after drag
+        el.querySelectorAll('.li-item').forEach((li,i)=>{
+          li.dataset.idx = i;
+          const idx = li.querySelector('.li-idx');
+          if(idx) idx.textContent = String(i+1).padStart(2,'0');
+        });
+      }
+    });
+  });
+}
+
 function collectCurrent(){
   switch(CT){
     case 'index':      colIndex();      break;
