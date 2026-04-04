@@ -317,6 +317,9 @@
   <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <script>
   (function () {
+    // Safe Firestore read — works even if Firebase not loaded
+    async function safeGet(c,d){ if(typeof window.fsGet==='function'){try{return await window.fsGet(c,d);}catch(e){return null;}} return null; }
+
     /* ── SETUP ───────────────────────────────────── */
     const params     = new URLSearchParams(location.search);
     const interestId = params.get('id') || '';
@@ -332,7 +335,7 @@
       const iconToId = {'🧠':'psychology','🌀':'philosophy','⚡':'tech','🌍':'sociology','🤸':'acrobatics','🚗':'cars'};
       let cards = (window.AC_DEFAULTS && window.AC_DEFAULTS.interests && window.AC_DEFAULTS.interests.cards) || [];
       try {
-        const saved = await fsGet('content', 'ac_content');
+        const saved = await safeGet('content', 'ac_content');
         if (saved && saved.interests && saved.interests.cards) cards = saved.interests.cards;
       } catch(e) {}
       return cards.find(c => (c.id || iconToId[c.icon]) === interestId) || null;
@@ -356,7 +359,7 @@
     /* ── STORAGE (read-only, Firestore) ─────────── */
     async function loadPosts() {
       try {
-        const doc = await fsGet('boards', interestId);
+        const doc = await safeGet('boards', interestId);
         posts = (doc && doc.posts) || [];
       } catch(e) { posts = []; }
     }
@@ -551,7 +554,7 @@
       try {
         let g = window.AC_DEFAULTS && window.AC_DEFAULTS.global && window.AC_DEFAULTS.global.giscus;
         try {
-          const saved = await fsGet('content', 'ac_content');
+          const saved = await safeGet('content', 'ac_content');
           if (saved && saved.global && saved.global.giscus) g = Object.assign({}, g, saved.global.giscus);
         } catch(e) {}
         if (!g || !g.repo || !g.repo.trim()) return;

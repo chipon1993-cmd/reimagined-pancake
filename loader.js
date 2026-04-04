@@ -47,6 +47,14 @@
   // Expose globally for nav.js to use
   window.applyCustomColors = applyCustomColors;
 
+  // Safe Firestore read — returns null if Firebase not available
+  async function safeGet(collection, docId) {
+    if (typeof window.fsGet === 'function') {
+      try { return await window.fsGet(collection, docId); } catch(e) { return null; }
+    }
+    return null;
+  }
+
   async function getData() {
     // Preview mode: admin passed a full snapshot via ac_preview
     if (new URLSearchParams(location.search).has('preview')) {
@@ -58,7 +66,7 @@
 
     const lang = localStorage.getItem('ac_lang') || 'ru';
 
-    // 1. Base defaults
+    // 1. Base defaults — always works, no Firebase needed
     let base = JSON.parse(JSON.stringify(window.AC_DEFAULTS));
 
     // 2. Merge language-specific translations (UK / NO)
@@ -66,10 +74,9 @@
       base = deepMerge(base, window.AC_TRANSLATIONS[lang]);
     }
 
-    // 3. Russian admin edits apply to ALL languages (master content)
-    let ruData = await fsGet('content', 'ac_content');
+    // 3. Russian admin edits (Firestore → localStorage fallback)
+    let ruData = await safeGet('content', 'ac_content');
     if (!ruData) {
-      // Fallback to localStorage for offline/migration
       const ruSaved = localStorage.getItem('ac_content');
       if (ruSaved) { try { ruData = JSON.parse(ruSaved); } catch(e) {} }
     }
@@ -77,9 +84,9 @@
       base = deepMerge(base, ruData);
     }
 
-    // 4. Language-specific admin fine-tuning on top
+    // 4. Language-specific admin fine-tuning
     if (lang !== 'ru') {
-      let langData = await fsGet('content', 'ac_content_' + lang);
+      let langData = await safeGet('content', 'ac_content_' + lang);
       if (!langData) {
         const langSaved = localStorage.getItem('ac_content_' + lang);
         if (langSaved) { try { langData = JSON.parse(langSaved); } catch(e) {} }
@@ -89,13 +96,13 @@
       }
     }
 
-    // 5. Restore nav translations lost during RU master merge (step 3).
+    // 5. Restore nav translations lost during RU master merge
     if (lang !== 'ru' && window.AC_TRANSLATIONS && window.AC_TRANSLATIONS[lang]) {
       const transNav = window.AC_TRANSLATIONS[lang].global && window.AC_TRANSLATIONS[lang].global.nav;
       if (transNav && base.global) {
         let adminNav = {};
         try {
-          let ld = await fsGet('content', 'ac_content_' + lang);
+          let ld = await safeGet('content', 'ac_content_' + lang);
           if (!ld) {
             ld = JSON.parse(localStorage.getItem('ac_content_' + lang) || '{}');
           }
