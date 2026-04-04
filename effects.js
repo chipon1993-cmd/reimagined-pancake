@@ -113,8 +113,9 @@
         this.vx = (Math.random() - 0.5) * 0.25;
         this.vy = (Math.random() - 0.5) * 0.25;
         this.r  = Math.random() * 1.4 + 0.4;
-        this.a  = Math.random() * 0.4 + 0.1;
-        this.c  = Math.random() > 0.65 ? '#00d4ff' : '#a855f7';
+        var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        this.a  = isLight ? Math.random() * 0.2 + 0.05 : Math.random() * 0.4 + 0.1;
+        this.c  = Math.random() > 0.65 ? (isLight ? '#0077ed' : '#00d4ff') : (isLight ? '#7c3aed' : '#a855f7');
       }
       update() {
         // Subtle mouse repulsion
@@ -152,8 +153,9 @@
           const d  = Math.sqrt(dx*dx + dy*dy);
           if (d < CONNECT_DIST) {
             ctx.save();
-            ctx.globalAlpha = (1 - d / CONNECT_DIST) * 0.12;
-            ctx.strokeStyle = '#00d4ff';
+            var isLt = document.documentElement.getAttribute('data-theme') === 'light';
+            ctx.globalAlpha = (1 - d / CONNECT_DIST) * (isLt ? 0.06 : 0.12);
+            ctx.strokeStyle = isLt ? '#0077ed' : '#00d4ff';
             ctx.lineWidth   = 0.6;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
@@ -400,6 +402,27 @@
       .interest-questions span { color: #00d4ff !important; }
       /* Nav card arrow */
       .nav-card-arrow { color: #00d4ff !important; }
+
+      /* ── LIGHT THEME OVERRIDES ── */
+      [data-theme="light"] .nav-card,
+      [data-theme="light"] .interest-card { background: rgba(255,255,255,0.8) !important; border-color: rgba(0,0,0,0.08) !important; }
+      [data-theme="light"] .nav-card:hover,
+      [data-theme="light"] .interest-card:hover { border-color: rgba(0,119,237,0.4) !important; box-shadow: 0 4px 24px rgba(0,119,237,0.1) !important; }
+      [data-theme="light"] .stat-card { background: rgba(255,255,255,0.85) !important; border-color: rgba(0,0,0,0.08) !important; }
+      [data-theme="light"] .stat-card:hover { border-color: rgba(0,119,237,0.3) !important; box-shadow: 0 4px 20px rgba(0,119,237,0.08) !important; }
+      [data-theme="light"] .stat-card .num { color: #0077ed !important; text-shadow: none; }
+      [data-theme="light"] .value-item { background: rgba(255,255,255,0.8) !important; border-color: rgba(0,0,0,0.08) !important; }
+      [data-theme="light"] .value-item:hover { border-color: rgba(124,58,237,0.35) !important; box-shadow: 0 4px 20px rgba(124,58,237,0.08) !important; }
+      [data-theme="light"] .contact-card { background: rgba(255,255,255,0.8) !important; border-color: rgba(0,0,0,0.08) !important; }
+      [data-theme="light"] .contact-card:hover { border-color: rgba(0,119,237,0.35) !important; box-shadow: 0 4px 20px rgba(0,119,237,0.08) !important; }
+      [data-theme="light"] .now-block { background: rgba(255,255,255,0.85) !important; border-color: rgba(124,58,237,0.2) !important; box-shadow: 0 4px 20px rgba(124,58,237,0.06); }
+      [data-theme="light"] .home-quote { background: rgba(255,255,255,0.8) !important; border-color: rgba(124,58,237,0.15) !important; border-left-color: #7c3aed !important; }
+      [data-theme="light"] .tag { background: rgba(0,119,237,0.06) !important; border-color: rgba(0,119,237,0.15) !important; color: #0077ed !important; }
+      [data-theme="light"] .topic-tag { background: rgba(124,58,237,0.06) !important; border-color: rgba(124,58,237,0.15) !important; }
+      [data-theme="light"] .timeline-year { color: #0077ed !important; background: rgba(0,119,237,0.08) !important; border-color: rgba(0,119,237,0.2) !important; text-shadow: none; }
+      [data-theme="light"] .timeline-item::before { border-color: #0077ed !important; box-shadow: 0 0 6px rgba(0,119,237,0.25); }
+      [data-theme="light"] .interest-questions span { color: #0077ed !important; }
+      [data-theme="light"] .nav-card-arrow { color: #0077ed !important; }
     `;
     document.head.appendChild(style);
   }
