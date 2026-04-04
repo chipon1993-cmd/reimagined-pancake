@@ -13,11 +13,20 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://plausible.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://img.youtube.com data:; connect-src 'self' https://firestore.googleapis.com https://*.firebaseio.com https://api.web3forms.com https://buttondown.com https://plausible.io https://www.google-analytics.com; frame-src https://www.youtube.com https://player.vimeo.com; object-src 'none'; base-uri 'self';" />
   <title>Andrii Chepelovskyi</title>
   <meta name="description" content="Персональный сайт Андрия Чепеловского. Украина → Мир → Норвегия. Путь, интересы, мысли." />
+  <link rel="canonical" href="https://chepelovskyi.com/" />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://chepelovskyi.com/" />
   <meta property="og:title" content="Andrii Chepelovskyi" />
   <meta property="og:description" content="Персональный сайт Андрия Чепеловского. Украина → Мир → Норвегия." />
   <meta property="og:image" content="https://chepelovskyi.com/og-image.png" />
+  <meta property="og:locale" content="ru_RU" />
+  <meta property="og:locale:alternate" content="uk_UA" />
+  <meta property="og:locale:alternate" content="nb_NO" />
   <meta name="twitter:card" content="summary_large_image" />
+  <link rel="alternate" hreflang="ru" href="https://chepelovskyi.com/" />
+  <link rel="alternate" hreflang="uk" href="https://chepelovskyi.com/" />
+  <link rel="alternate" hreflang="nb" href="https://chepelovskyi.com/" />
+  <link rel="alternate" hreflang="x-default" href="https://chepelovskyi.com/" />
   <link rel="icon" href="favicon.ico" sizes="any" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="manifest.json" />
@@ -150,7 +159,7 @@
     }
   </style>
   <script type="application/ld+json">
-  {
+  [{
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "Andrii Chepelovskyi",
@@ -158,12 +167,27 @@
     "url": "https://chepelovskyi.com",
     "image": "https://chepelovskyi.com/og-image.png",
     "description": "Акробат, мыслитель, наблюдатель. Украинец в Норвегии. 10+ лет на сцене, 5+ стран.",
-    "nationality": "Ukrainian",
+    "nationality": {"@type": "Country", "name": "Ukraine"},
     "knowsAbout": ["Cognitive Psychology", "Philosophy of Language", "Artificial Intelligence", "Acrobatics", "Cross-cultural Sociology"],
-    "knowsLanguage": ["ru", "uk", "no", "en"],
+    "knowsLanguage": [
+      {"@type": "Language", "name": "Russian", "alternateName": "ru"},
+      {"@type": "Language", "name": "Ukrainian", "alternateName": "uk"},
+      {"@type": "Language", "name": "Norwegian", "alternateName": "no"},
+      {"@type": "Language", "name": "English", "alternateName": "en"}
+    ],
     "email": "Chipon1993@gmail.com",
-    "sameAs": ["https://t.me/Andri4i"]
-  }
+    "sameAs": ["https://t.me/Andri4i"],
+    "jobTitle": "Acrobat & Thinker",
+    "address": {"@type": "PostalAddress", "addressCountry": "NO"}
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Andrii Chepelovskyi",
+    "url": "https://chepelovskyi.com",
+    "inLanguage": ["ru", "uk", "nb"],
+    "description": "Персональный сайт Андрия Чепеловского. Украина → Мир → Норвегия."
+  }]
   </script>
 </head>
 <body data-page="index">

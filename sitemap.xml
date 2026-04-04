@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://chepelovskyi.com/</loc>            <changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://chepelovskyi.com/about.html</loc>   <changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://chepelovskyi.com/journey.html</loc> <changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://chepelovskyi.com/interests.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://chepelovskyi.com/videos.html</loc>  <changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://chepelovskyi.com/contact.html</loc>   <changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://chepelovskyi.com/interest.html?id=psychology</loc> <changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://chepelovskyi.com/interest.html?id=philosophy</loc> <changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://chepelovskyi.com/interest.html?id=tech</loc>       <changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://chepelovskyi.com/interest.html?id=sociology</loc>  <changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://chepelovskyi.com/interest.html?id=acrobatics</loc> <changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://chepelovskyi.com/interest.html?id=cars</loc>       <changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://chepelovskyi.com/</loc>            <lastmod>2026-04-04</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://chepelovskyi.com/about.html</loc>   <lastmod>2026-04-04</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://chepelovskyi.com/journey.html</loc> <lastmod>2026-04-04</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://chepelovskyi.com/interests.html</loc><lastmod>2026-04-04</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://chepelovskyi.com/videos.html</loc>  <lastmod>2026-04-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://chepelovskyi.com/contact.html</loc> <lastmod>2026-04-04</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://chepelovskyi.com/interest.html?id=psychology</loc> <lastmod>2026-04-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://chepelovskyi.com/interest.html?id=philosophy</loc> <lastmod>2026-04-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://chepelovskyi.com/interest.html?id=tech</loc>       <lastmod>2026-04-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://chepelovskyi.com/interest.html?id=sociology</loc>  <lastmod>2026-04-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://chepelovskyi.com/interest.html?id=acrobatics</loc> <lastmod>2026-04-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://chepelovskyi.com/interest.html?id=cars</loc>       <lastmod>2026-04-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
