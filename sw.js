@@ -1,5 +1,5 @@
 // Service Worker — offline caching for Andrii Chepelovskyi site
-const CACHE = 'ac-v6';
+const CACHE = 'ac-v7';
 const SHELL = [
   '/', '/index.html', '/about.html', '/journey.html',
   '/interests.html', '/videos.html', '/contact.html',
@@ -37,8 +37,8 @@ self.addEventListener('fetch', e => {
   if (url.pathname.includes('admin')) return;
   if (url.hostname.includes('firebaseio') || url.hostname.includes('googleapis') || url.hostname.includes('gstatic')) return;
 
-  // HTML pages: network-first (always fresh, offline fallback)
-  if (e.request.mode === 'navigate' || (e.request.headers.get('accept') || '').includes('text/html')) {
+  // HTML pages + site-data: network-first (always fresh, offline fallback)
+  if (e.request.mode === 'navigate' || (e.request.headers.get('accept') || '').includes('text/html') || url.pathname.endsWith('site-data.js')) {
     e.respondWith(
       fetch(e.request)
         .then(r => {
