@@ -2,15 +2,36 @@
 
 (function () {
 
+  // ── HTML SANITIZATION ──
+  function esc(s) {
+    if (!s && s !== 0) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  // Sanitize a URL: only allow http(s), mailto, tel, and relative paths
+  function safeHref(url) {
+    if (!url) return '';
+    var s = String(url).trim();
+    if (/^(https?:\/\/|mailto:|tel:|\/|[a-zA-Z0-9][\w.\-]*\.html)/i.test(s)) return esc(s);
+    return '';
+  }
+  // Allow limited safe HTML tags (b, i, br) for admin-authored rich text; strip everything else
+  function safeParagraph(s) {
+    if (!s) return '';
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')
+      .replace(/<(?!\/?(?:b|i|br|strong|em)\s*\/?>)/gi, '&lt;')
+      .replace(/on\w+\s*=/gi, '');
+  }
+
   // ── ICON RENDERER (supports emoji + lucide:name) ──
   function renderIcon(val) {
     if (!val) return '';
     if (val.startsWith('lucide:')) {
-      var name = val.slice(7);
+      var name = esc(val.slice(7)).replace(/[^a-z0-9\-]/gi, '');
       // Return placeholder that lucide.createIcons() will process
       return '<i data-lucide="' + name + '"></i>';
     }
-    return val; // emoji or plain text
+    return esc(val); // emoji or plain text — escaped
   }
 
   function activateLucideIcons() {
@@ -144,18 +165,18 @@
 
   function renderFooter(g) {
     const f = document.querySelector('footer');
-    if (f) f.innerHTML = `<span>${g.footerLeft}</span><span>${g.footerRight}</span><a href="admin.html" class="admin-link" title="Админ-панель">⚙</a>`;
+    if (f) f.innerHTML = `<span>${esc(g.footerLeft)}</span><span>${esc(g.footerRight)}</span><a href="admin.html" class="admin-link" title="Админ-панель">⚙</a>`;
   }
 
   // ── INDEX ──────────────────────────────────────────
   function renderIndex(d, allData) {
-    set('hero-badge-text', d.badge);
-    set('hero-tagline', d.tagline);
-    set('hero-sub', d.sub);
-    set('home-quote-text', d.quote);
-    set('home-quote-author', d.quoteAuthor);
-    if (d.btnPrimary) { set('btn-primary-text', d.btnPrimary.text); attr('btn-primary', 'href', d.btnPrimary.href); }
-    if (d.btnGhost)   { set('btn-ghost-text', d.btnGhost.text);     attr('btn-ghost',   'href', d.btnGhost.href);   }
+    set('hero-badge-text', esc(d.badge));
+    set('hero-tagline', esc(d.tagline));
+    set('hero-sub', esc(d.sub));
+    set('home-quote-text', esc(d.quote));
+    set('home-quote-author', esc(d.quoteAuthor));
+    if (d.btnPrimary) { set('btn-primary-text', esc(d.btnPrimary.text)); attr('btn-primary', 'href', safeHref(d.btnPrimary.href)); }
+    if (d.btnGhost)   { set('btn-ghost-text', esc(d.btnGhost.text));     attr('btn-ghost',   'href', safeHref(d.btnGhost.href));   }
 
     // Hero stats (editable)
     const hm = document.getElementById('hero-meta');
@@ -167,8 +188,8 @@
         hm.innerHTML = d.heroStats.map((s, i) =>
           (i > 0 ? '<div class="hero-meta-sep"></div>' : '') +
           `<div class="hero-meta-item">
-            <div class="hero-meta-num">${s.num}</div>
-            <div class="hero-meta-lbl">${s.lbl}</div>
+            <div class="hero-meta-num">${esc(s.num)}</div>
+            <div class="hero-meta-lbl">${esc(s.lbl)}</div>
           </div>`
         ).join('');
       }
@@ -177,10 +198,10 @@
     const nc = document.getElementById('nav-cards');
     if (nc && d.navCards) {
       nc.innerHTML = d.navCards.map(c => `
-        <a href="${c.href}" class="nav-card fade-in">
+        <a href="${safeHref(c.href)}" class="nav-card fade-in">
           <div class="nav-card-icon">${renderIcon(c.icon)}</div>
-          <div class="nav-card-title">${c.title}</div>
-          <div class="nav-card-desc">${c.desc}</div>
+          <div class="nav-card-title">${esc(c.title)}</div>
+          <div class="nav-card-desc">${esc(c.desc)}</div>
           <div class="nav-card-arrow">→</div>
         </a>`).join('');
     }
@@ -199,63 +220,64 @@
 
   // ── ABOUT ──────────────────────────────────────────
   function renderAbout(d) {
-    set('about-section-label', d.sectionLabel || i18n('lbl_about','Обо мне'));
-    set('about-page-title', d.pageTitle);
-    set('about-page-desc', d.pageDesc);
+    set('about-section-label', esc(d.sectionLabel || i18n('lbl_about','Обо мне')));
+    set('about-page-title', esc(d.pageTitle));
+    set('about-page-desc', esc(d.pageDesc));
     const paras = document.getElementById('about-paragraphs');
-    if (paras && d.paragraphs) paras.innerHTML = d.paragraphs.map(p => `<p>${p}</p>`).join('');
+    if (paras && d.paragraphs) paras.innerHTML = d.paragraphs.map(p => `<p>${safeParagraph(p)}</p>`).join('');
     const stats = document.getElementById('about-stats');
     if (stats && d.stats) stats.innerHTML = d.stats.map(s => `
       <div class="stat-card">
-        <div class="num">${s.num}</div>
-        <div class="lbl">${s.label}</div>
+        <div class="num">${esc(s.num)}</div>
+        <div class="lbl">${esc(s.label)}</div>
       </div>`).join('');
     const vals = document.getElementById('about-values');
     if (vals && d.values) vals.innerHTML = d.values.map(v => `
       <div class="value-item fade-in">
         <div class="value-icon">${renderIcon(v.icon)}</div>
-        <div class="value-text"><h4>${v.title}</h4><p>${v.desc}</p></div>
+        <div class="value-text"><h4>${esc(v.title)}</h4><p>${esc(v.desc)}</p></div>
       </div>`).join('');
   }
 
   // ── JOURNEY ────────────────────────────────────────
   function renderJourney(d) {
-    set('journey-section-label', d.sectionLabel || i18n('lbl_journey','Хронология'));
-    set('journey-page-title', d.pageTitle);
-    set('journey-page-desc', d.pageDesc);
-    set('now-title', d.nowTitle);
-    set('now-text', d.nowText);
+    set('journey-section-label', esc(d.sectionLabel || i18n('lbl_journey','Хронология')));
+    set('journey-page-title', esc(d.pageTitle));
+    set('journey-page-desc', esc(d.pageDesc));
+    set('now-title', esc(d.nowTitle));
+    set('now-text', esc(d.nowText));
     const tl = document.getElementById('timeline');
     if (tl && d.items) tl.innerHTML = d.items.map(item => `
       <div class="timeline-item fade-in">
         <div class="timeline-header">
-          <span class="timeline-year">${item.year}</span>
-          <span class="timeline-title">${item.title}</span>
+          <span class="timeline-year">${esc(item.year)}</span>
+          <span class="timeline-title">${esc(item.title)}</span>
         </div>
-        <div class="timeline-location">${item.location}</div>
-        <p class="timeline-desc">${item.desc}</p>
-        <div class="timeline-tags">${(item.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        <div class="timeline-location">${esc(item.location)}</div>
+        <p class="timeline-desc">${esc(item.desc)}</p>
+        <div class="timeline-tags">${(item.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
       </div>`).join('');
   }
 
   // ── INTERESTS ──────────────────────────────────────
   function renderInterests(d) {
-    set('interests-section-label', d.sectionLabel || i18n('lbl_interests','Интересы'));
-    set('interests-page-title', d.pageTitle);
-    set('interests-page-desc', d.pageDesc);
+    set('interests-section-label', esc(d.sectionLabel || i18n('lbl_interests','Интересы')));
+    set('interests-page-title', esc(d.pageTitle));
+    set('interests-page-desc', esc(d.pageDesc));
     const iconToId = {'🧠':'psychology','🌀':'philosophy','⚡':'tech','🌍':'sociology','🤸':'acrobatics','🚗':'cars'};
     const grid = document.getElementById('interests-grid');
     if (grid && d.cards) grid.innerHTML = d.cards.map(c => {
       const cId  = c.id || iconToId[c.icon] || null;
-      const href = cId ? `interest.html?id=${cId}` : null;
+      const safeId = cId ? esc(cId).replace(/[^a-z0-9_\-]/gi, '') : null;
+      const href = safeId ? `interest.html?id=${safeId}` : null;
       const tag  = href ? 'a' : 'div';
       const hAttr = href ? `href="${href}"` : '';
       return `<${tag} class="interest-card fade-in" ${hAttr}>
         <div class="interest-icon">${renderIcon(c.icon)}</div>
-        <div class="interest-title">${c.title}</div>
-        <div class="interest-desc">${c.desc}</div>
-        <div class="interest-questions">${(c.questions||[]).map(q=>`<span>${q}</span>`).join('')}</div>
-        ${href ? `<div class="interest-open-link">${i18n('open_board','Открыть доску →')}</div>` : ''}
+        <div class="interest-title">${esc(c.title)}</div>
+        <div class="interest-desc">${esc(c.desc)}</div>
+        <div class="interest-questions">${(c.questions||[]).map(q=>`<span>${esc(q)}</span>`).join('')}</div>
+        ${href ? `<div class="interest-open-link">${esc(i18n('open_board','Открыть доску →'))}</div>` : ''}
       </${tag}>`;
     }).join('');
   }
@@ -273,21 +295,23 @@
     const thumb  = getThumb(v);
     const views  = parseInt(localStorage.getItem('ac_views_' + v.id) || '0');
     const labels = { youtube: 'YouTube', vimeo: 'Vimeo', file: 'Файл' };
-    const typeLabel = labels[v.type] || v.type;
-    const tagsHtml  = (v.tags || []).map(t => `<span class="vtag">${t}</span>`).join('');
-    return `<div class="vcard fade-in" data-vid="${v.id}" data-tags="${(v.tags||[]).join(',')}" onclick="openVideo(this.dataset.vid)">
+    const typeLabel = labels[v.type] || esc(v.type);
+    const safeType = esc(v.type).replace(/[^a-z]/gi,'');
+    const tagsHtml  = (v.tags || []).map(t => `<span class="vtag">${esc(t)}</span>`).join('');
+    const fallbackSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360' style='background:%23050810'%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' fill='%2300d4ff' font-size='56'%3E%E2%96%B6%3C/text%3E%3C/svg%3E";
+    return `<div class="vcard fade-in" data-vid="${esc(v.id)}" data-tags="${esc((v.tags||[]).join(','))}" onclick="openVideo(this.dataset.vid)">
       <div class="vthumb">
-        <img src="${thumb}" alt="${v.title}" loading="lazy"
-             onerror="this.src=${JSON.stringify("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360' style='background:%23050810'%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' fill='%2300d4ff' font-size='56'%3E%E2%96%B6%3C/text%3E%3C/svg%3E")}">
+        <img src="${esc(thumb)}" alt="${esc(v.title)}" loading="lazy"
+             onerror="this.onerror=null;this.src='${fallbackSvg}'">
         <div class="vplay-btn"><div class="vplay-icon">▶</div></div>
-        ${v.duration ? `<div class="vduration">${v.duration}</div>` : ''}
-        <div class="vtype-badge vtype-${v.type}">${typeLabel}</div>
+        ${v.duration ? `<div class="vduration">${esc(v.duration)}</div>` : ''}
+        <div class="vtype-badge vtype-${safeType}">${typeLabel}</div>
       </div>
       <div class="vinfo">
         ${tagsHtml ? `<div class="vtags">${tagsHtml}</div>` : ''}
-        <div class="vtitle">${v.title}</div>
+        <div class="vtitle">${esc(v.title)}</div>
         <div class="vmeta">
-          ${v.date ? `<span>${v.date}</span>` : ''}
+          ${v.date ? `<span>${esc(v.date)}</span>` : ''}
           ${views ? `<span class="vmeta-views">👁 ${views}</span>` : ''}
         </div>
       </div>
@@ -295,9 +319,9 @@
   }
 
   function renderVideos(d) {
-    set('videos-section-label', d.sectionLabel || i18n('lbl_videos','Контент'));
-    set('videos-page-title', d.pageTitle);
-    set('videos-page-desc', d.pageDesc);
+    set('videos-section-label', esc(d.sectionLabel || i18n('lbl_videos','Контент')));
+    set('videos-page-title', esc(d.pageTitle));
+    set('videos-page-desc', esc(d.pageDesc));
 
     const items = (d.items || []).filter(v => v.published !== false);
     window.AC_VIDEOS = items;
@@ -307,13 +331,13 @@
     if (featEl) {
       if (featured) {
         const thumb = getThumb(featured);
-        featEl.innerHTML = `<div class="vfeatured fade-in" data-vid="${featured.id}" onclick="openVideo(this.dataset.vid)">
-          <div class="vthumb"><img src="${thumb}" alt="${featured.title}" loading="lazy"></div>
+        featEl.innerHTML = `<div class="vfeatured fade-in" data-vid="${esc(featured.id)}" onclick="openVideo(this.dataset.vid)">
+          <div class="vthumb"><img src="${esc(thumb)}" alt="${esc(featured.title)}" loading="lazy"></div>
           <div class="vfeatured-overlay">
-            <div class="vfeatured-label">${i18n('featured_label','Избранное')}</div>
-            <div class="vfeatured-title">${featured.title}</div>
-            ${featured.desc ? `<div class="vfeatured-desc">${featured.desc}</div>` : ''}
-            <div class="vfeatured-play">${i18n('watch_btn','▶ Смотреть')}</div>
+            <div class="vfeatured-label">${esc(i18n('featured_label','Избранное'))}</div>
+            <div class="vfeatured-title">${esc(featured.title)}</div>
+            ${featured.desc ? `<div class="vfeatured-desc">${esc(featured.desc)}</div>` : ''}
+            <div class="vfeatured-play">${esc(i18n('watch_btn','▶ Смотреть'))}</div>
           </div>
         </div>`;
       } else featEl.innerHTML = '';
@@ -336,21 +360,24 @@
   }
 
   function renderContact(d) {
-    set('contact-section-label', d.sectionLabel || i18n('lbl_contact','Контакт'));
-    set('contact-page-title', d.pageTitle);
-    set('contact-page-desc', d.pageDesc);
-    set('contact-text-title', d.textTitle);
+    set('contact-section-label', esc(d.sectionLabel || i18n('lbl_contact','Контакт')));
+    set('contact-page-title', esc(d.pageTitle));
+    set('contact-page-desc', esc(d.pageDesc));
+    set('contact-text-title', esc(d.textTitle));
     const items = document.getElementById('contact-items');
-    if (items && d.items) items.innerHTML = d.items.map(it => `
-      <a href="${it.href}" class="contact-card fade-in" ${it.href.startsWith('http')?'target="_blank"':''}>
+    if (items && d.items) items.innerHTML = d.items.map(it => {
+      const href = safeHref(it.href);
+      return `
+      <a href="${href}" class="contact-card fade-in" ${href.startsWith('http')?'target="_blank" rel="noopener noreferrer"':''}>
         <div class="icon">${renderIcon(it.icon)}</div>
-        <div class="info"><div class="label">${it.label}</div><div class="value">${it.value}</div></div>
+        <div class="info"><div class="label">${esc(it.label)}</div><div class="value">${esc(it.value)}</div></div>
         <div class="arrow">→</div>
-      </a>`).join('');
+      </a>`;
+    }).join('');
     const paras = document.getElementById('contact-text-paras');
-    if (paras && d.textParagraphs) paras.innerHTML = d.textParagraphs.map(p=>`<p>${p}</p>`).join('');
+    if (paras && d.textParagraphs) paras.innerHTML = d.textParagraphs.map(p=>`<p>${safeParagraph(p)}</p>`).join('');
     const topics = document.getElementById('contact-topics');
-    if (topics && d.topics) topics.innerHTML = d.topics.map(t=>`<span class="topic-tag">${t}</span>`).join('');
+    if (topics && d.topics) topics.innerHTML = d.topics.map(t=>`<span class="topic-tag">${esc(t)}</span>`).join('');
 
     const formWrap = document.getElementById('contact-form-wrap');
     if (formWrap) {
@@ -518,7 +545,8 @@
     if (!analytics) return;
 
     const domain = analytics.plausible && analytics.plausible.trim();
-    if (domain && !document.querySelector('script[data-domain]')) {
+    // Validate domain format to prevent attribute injection
+    if (domain && /^[a-z0-9][a-z0-9.\-]+\.[a-z]{2,}$/i.test(domain) && !document.querySelector('script[data-domain]')) {
       const s = document.createElement('script');
       s.defer = true;
       s.setAttribute('data-domain', domain);
@@ -537,13 +565,15 @@
   }
 
   function injectGA(gaId) {
+    // Validate GA measurement ID format (G-XXXXXXXXXX or UA-XXXXX-X)
+    if (!/^(G-[A-Z0-9]{4,15}|UA-\d{4,10}-\d{1,4})$/i.test(gaId)) return;
     if (document.querySelector('script[src*="googletagmanager"]')) return;
     const g = document.createElement('script');
     g.async = true;
-    g.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
+    g.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gaId);
     document.head.appendChild(g);
     const gi = document.createElement('script');
-    gi.textContent = "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','" + gaId + "');";
+    gi.textContent = "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','" + gaId.replace(/[^A-Z0-9\-]/gi, '') + "');";
     document.head.appendChild(gi);
   }
 
