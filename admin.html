@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>// ADMIN · AC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:      #050810;
+      --surface: rgba(10,16,30,0.9);
+      --s2:      rgba(13,20,38,0.95);
+      --border:  rgba(0,212,255,0.12);
+      --border-h:rgba(0,212,255,0.45);
+      --accent:  #00d4ff;
+      --accent2: #a855f7;
+      --text:    #f1f5f9;
+      --muted:   #64748b;
+      --danger:  #ef4444;
+      --success: #00ff88;
+      --r:       10px;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      cursor: none;
+    }
+
+    /* Grid background */
+    body::before {
+      content:'';
+      position: fixed; inset:0; z-index:-2;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: grid-d 30s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes grid-d { 0%{background-position:0 0} 100%{background-position:40px 40px} }
+
+    body::after {
+      content:''; position:fixed; inset:0; z-index:-1;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(5,8,16,0.85) 100%);
+      pointer-events:none;
+    }
+
+    /* Custom cursor */
+    .cdot { position:fixed; width:6px; height:6px; background:var(--accent); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); box-shadow:0 0 10px var(--accent),0 0 20px var(--accent); transition:width .15s,height .15s,background .15s; }
+    .cring { position:fixed; width:28px; height:28px; border:1px solid rgba(0,212,255,0.5); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); }
+
+    /* ═══════════════════ LOGIN ═══════════════════ */
+    #login-screen {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .login-wrap {
+      width: 100%; max-width: 440px;
+      position: relative;
+    }
+
+    /* Угловые декорации */
+    .login-corner {
+      position: absolute; width: 20px; height: 20px;
+      border-color: var(--accent); border-style: solid; opacity: 0.6;
+    }
+    .login-corner.tl { top:-8px; left:-8px; border-width:2px 0 0 2px; }
+    .login-corner.tr { top:-8px; right:-8px; border-width:2px 2px 0 0; }
+    .login-corner.bl { bottom:-8px; left:-8px; border-width:0 0 2px 2px; }
+    .login-corner.br { bottom:-8px; right:-8px; border-width:0 2px 2px 0; }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 52px 48px;
+      backdrop-filter: blur(20px);
+      position: relative;
+    }
+
+    .login-tag {
+      font-size: .68rem; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
+      color: var(--accent); margin-bottom: 12px;
+      text-shadow: 0 0 10px rgba(0,212,255,0.5);
+    }
+    .login-tag::before { content:'// '; opacity:.6; }
+
+    .login-title {
+      font-size: 2rem; font-weight:900; letter-spacing:-.02em;
+      margin-bottom: 6px;
+    }
+    .login-title span { color:var(--accent); text-shadow: 0 0 16px rgba(0,212,255,0.5); }
+
+    .login-sub { font-size:.85rem; color:var(--muted); margin-bottom:40px; }
+
+    .login-err {
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.3);
+      border-radius:8px; padding:12px 16px;
+      font-size:.85rem; color:#f87171;
+      margin-bottom:20px; display:none;
+    }
+
+    .field { margin-bottom:20px; }
+    .field label {
+      display:block; font-size:.68rem; font-weight:700;
+      letter-spacing:.18em; text-transform:uppercase;
+      color:var(--muted); margin-bottom:8px;
+    }
+    .field input {
+      width:100%;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      border-radius:6px; padding:13px 16px;
+      color:var(--text); font-size:.95rem;
+      outline:none; transition:border-color .2s, box-shadow .2s;
+      font-family:inherit;
+    }
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 16px rgba(0,212,255,0.15);
+    }
+
+    .login-btn {
+      width:100%; padding:14px;
+      background: transparent;
+      border: 1px solid var(--accent);
+      border-radius:6px;
+      color: var(--accent);
+      font-size:.85rem; font-weight:700;
+      letter-spacing:.16em; text-transform:uppercase;
+      cursor:pointer; transition:.25s;
+      position: relative; overflow:hidden;
+    }
+    .login-btn::before {
+      content:'';
+      position:absolute; inset:0;
+      background: var(--accent);
+      transform: translateX(-100%);
+      transition: transform .35s ease;
+    }
+    .login-btn:hover::before { transform: translateX(0); }
+    .login-btn span { position:relative; z-index:1; transition:color .35s; }
+    .login-btn:hover span { color:#000; }
+
+    /* ═══════════════════ ADMIN ═══════════════════ */
+    #admin-panel { display:none; min-height:100vh; flex-direction:column; }
+
+    /* Header */
+    .adm-header {
+      background: rgba(5,8,16,0.9);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex; align-items:center; justify-content:space-between;
+      position: sticky; top:0; z-index:50;
+      backdrop-filter: blur(20px);
+    }
+    .adm-header::after {
+      content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity:.35;
+    }
+
+    .adm-logo {
+      font-size:.95rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase;
+    }
+    .adm-logo span { color:var(--accent); text-shadow:0 0 10px var(--accent); }
+    .adm-subtitle { font-size:.7rem; color:var(--muted); letter-spacing:.14em; text-transform:uppercase; padding-left:16px; border-left:1px solid var(--border); }
+
+    .adm-hdr-l, .adm-hdr-r { display:flex; align-items:center; gap:16px; }
+
+    /* Buttons */
+    .xbtn {
+      padding:8px 18px; border-radius:4px;
+      font-size:.75rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      cursor:pointer; border:1px solid; transition:.2s;
+      text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+      font-family:inherit;
+    }
+    .xbtn.cyan { color:var(--accent); border-color:rgba(0,212,255,0.3); background:transparent; }
+    .xbtn.cyan:hover { background:rgba(0,212,255,0.1); border-color:var(--accent); box-shadow:0 0 14px rgba(0,212,255,0.2); }
+    .xbtn.red { color:#f87171; border-color:rgba(239,68,68,.3); background:transparent; }
+    .xbtn.red:hover { background:rgba(239,68,68,.08); }
+    .xbtn.save { color:#000; background:var(--accent); border-color:var(--accent); box-shadow:0 0 20px rgba(0,212,255,0.35); }
+    .xbtn.save:hover { box-shadow:0 0 35px rgba(0,212,255,0.55); transform:translateY(-1px); }
+
+    /* Layout */
+    .adm-layout { display:flex; flex:1; }
+
+    /* Sidebar */
+    .adm-sidebar {
+      width: 230px; flex-shrink:0;
+      background: rgba(5,8,16,0.7);
+      border-right: 1px solid var(--border);
+      padding: 28px 0;
+      min-height: calc(100vh - 55px);
+      backdrop-filter: blur(12px);
+    }
+
+    .sb-label {
+      font-size:.62rem; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
+      color:var(--muted); padding:0 22px; margin-bottom:10px;
+    }
+    .sb-label::before { content:'// '; color:var(--accent); opacity:.5; }
+
+    .sb-item {
+      display:flex; align-items:center; gap:12px;
+      padding:11px 22px; cursor:pointer;
+      font-size:.82rem; font-weight:600; letter-spacing:.06em;
+      color:var(--muted); transition:.2s;
+      border-left:2px solid transparent;
+      text-transform:uppercase;
+    }
+    .sb-item:hover { color:var(--text); background:rgba(0,212,255,0.04); }
+    .sb-item.active {
+      color:var(--accent);
+      background: rgba(0,212,255,0.07);
+      border-left-color: var(--accent);
+      text-shadow: 0 0 10px rgba(0,212,255,0.4);
+    }
+    .sb-icon { font-size:1rem; }
+    .sb-div { height:1px; background:var(--border); margin:16px 0; }
+
+    /* Status dot */
+    .sb-status {
+      margin: 20px 22px 0;
+      padding: 12px 14px;
+      background: rgba(0,255,136,0.05);
+      border: 1px solid rgba(0,255,136,0.15);
+      border-radius:6px;
+      font-size:.7rem; color:rgba(0,255,136,0.7);
+      letter-spacing:.08em;
+      display:flex; align-items:center; gap:8px;
+    }
+    .sb-status::before {
+      content:''; width:6px; height:6px; border-radius:50%;
+      background:var(--success); flex-shrink:0;
+      box-shadow:0 0 6px var(--success);
+      animation:pulse2 2s infinite;
+    }
+    @keyframes pulse2{0%,100%{opacity:1}50%{opacity:.4}}
+
+    /* Main */
+    .adm-main {
+      flex:1; padding:40px 52px 120px;
+      overflow-y:auto;
+    }
+
+    .ed-header { margin-bottom:40px; }
+    .ed-header .ed-tag {
+      font-size:.68rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+      color:var(--accent); margin-bottom:8px;
+      text-shadow:0 0 8px rgba(0,212,255,0.5);
+    }
+    .ed-header .ed-tag::before { content:'// '; opacity:.6; }
+    .ed-header h2 { font-size:1.6rem; font-weight:900; letter-spacing:-.01em; }
+    .ed-header p { font-size:.85rem; color:var(--muted); margin-top:6px; }
+
+    /* Form */
+    .fg { margin-bottom:22px; }
+    .flbl {
+      display:block; font-size:.65rem; font-weight:700;
+      letter-spacing:.18em; text-transform:uppercase;
+      color:var(--muted); margin-bottom:8px;
+    }
+    .fi {
+      width:100%;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+      border-radius:6px; padding:11px 14px;
+      color:var(--text); font-size:.9rem;
+      outline:none; transition:border-color .2s,box-shadow .2s;
+      font-family:inherit;
+    }
+    .fi:focus { border-color:var(--accent); box-shadow:0 0 14px rgba(0,212,255,0.12); }
+    textarea.fi { resize:vertical; min-height:80px; line-height:1.6; }
+    .frow { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .fsec {
+      font-size:.72rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+      color:var(--accent); margin:40px 0 16px;
+      padding-bottom:10px;
+      border-bottom:1px solid var(--border);
+      text-shadow:0 0 8px rgba(0,212,255,0.3);
+    }
+    .fsec::before { content:'// '; opacity:.6; }
+
+    /* List */
+    .leditor { display:flex; flex-direction:column; gap:10px; margin-bottom:10px; }
+
+    .li-item {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius:8px; overflow:hidden;
+      transition: border-color .2s;
+    }
+    .li-item:hover { border-color:rgba(0,212,255,0.25); }
+
+    .li-hdr {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 16px; cursor:pointer; user-select:none;
+    }
+    .li-hdr:hover { background:rgba(0,212,255,0.03); }
+
+    .li-idx {
+      font-size:.65rem; font-weight:700; letter-spacing:.1em;
+      color:var(--accent); opacity:.6; flex-shrink:0; width:20px;
+    }
+    .li-title { flex:1; font-size:.88rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .li-acts { display:flex; gap:4px; flex-shrink:0; }
+    .lib {
+      background:none; border:none; cursor:pointer;
+      padding:4px 8px; border-radius:4px;
+      font-size:.8rem; color:var(--muted); transition:.15s;
+      font-family:inherit;
+    }
+    .lib:hover { background:rgba(255,255,255,.06); color:var(--text); }
+    .lib.del:hover { color:#f87171; }
+
+    .li-body { padding:0 16px 16px; display:none; }
+    .li-body.open { display:block; }
+    .li-body .fg { margin-bottom:12px; }
+    .li-body .fg:last-child { margin-bottom:0; }
+
+    .add-btn {
+      display:flex; align-items:center; gap:8px;
+      padding:11px 16px;
+      background:transparent;
+      border:1px dashed rgba(0,212,255,0.2);
+      border-radius:8px;
+      color:var(--muted); font-size:.82rem; letter-spacing:.06em; text-transform:uppercase;
+      cursor:pointer; width:100%; transition:.2s;
+      font-family:inherit;
+    }
+    .add-btn:hover { border-color:var(--accent); color:var(--accent); box-shadow:0 0 12px rgba(0,212,255,0.1); }
+
+    /* Save bar */
+    .save-bar {
+      position:fixed; bottom:0; left:230px; right:0;
+      background: rgba(5,8,16,0.92);
+      border-top:1px solid var(--border);
+      padding:14px 52px;
+      display:flex; align-items:center; justify-content:space-between;
+      z-index:40;
+      backdrop-filter:blur(20px);
+    }
+    .save-bar::before {
+      content:''; position:absolute; top:-1px; left:0; right:0; height:1px;
+      background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+      opacity:.3;
+    }
+
+    .save-status { font-size:.75rem; color:var(--muted); letter-spacing:.08em; }
+    .save-status.ok { color:var(--success); text-shadow:0 0 8px rgba(0,255,136,0.4); }
+
+    /* Toast */
+    .toast {
+      position:fixed; top:24px; right:24px;
+      background:rgba(0,255,136,0.1);
+      border:1px solid rgba(0,255,136,0.3);
+      color:var(--success);
+      padding:12px 20px; border-radius:8px;
+      font-size:.82rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+      z-index:999; opacity:0; transform:translateY(-12px);
+      transition:.3s; pointer-events:none;
+      text-shadow:0 0 8px rgba(0,255,136,0.4);
+      box-shadow:0 0 20px rgba(0,255,136,0.1);
+    }
+    .toast.show { opacity:1; transform:translateY(0); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:rgba(0,212,255,0.2); border-radius:4px; }
+    ::-webkit-scrollbar-thumb:hover { background:rgba(0,212,255,0.4); }
+
+    /* ── NEW FEATURES ── */
+    .save-bar-l { display:flex; flex-direction:column; gap:2px; }
+    .save-auto  { font-size:.65rem; color:var(--muted); letter-spacing:.06em; }
+    .chk-row { display:flex; align-items:center; gap:10px; margin-top:6px; cursor:pointer; }
+    .chk-row input[type=checkbox] { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+    .chk-row span { font-size:.9rem; color:var(--text); }
+    .backup-row { display:flex; gap:12px; flex-wrap:wrap; margin-top:4px; }
+    .imp-label { display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+    .sec-msg-ok  { color:var(--success); text-shadow:0 0 8px rgba(0,255,136,0.3); }
+    .sec-msg-err { color:#f87171; }
+    .seo-hint { font-size:.75rem; color:var(--muted); margin-top:4px; font-style:italic; }
+    .seo-cnt { font-size:.72rem; margin-top:5px; display:block; letter-spacing:.03em; min-height:16px; }
+    .seo-cnt.ok   { color:var(--success); }
+    .seo-cnt.warn { color:#fbbf24; }
+    .seo-cnt.bad  { color:#f87171; }
+    .bk-item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; background:var(--s2); border:1px solid var(--border); border-radius:6px; margin-bottom:8px; }
+    .bk-meta strong { color:var(--text); font-size:.82rem; }
+    .bk-meta span   { color:var(--muted); font-size:.78rem; }
+    .fhint { font-size:.73rem; color:var(--muted); margin-top:4px; margin-bottom:0; font-style:italic; opacity:.7; }
+    .warn-panel { position:fixed; bottom:55px; left:230px; right:0; background:rgba(251,191,36,0.06); border-top:1px solid rgba(251,191,36,0.2); padding:12px 52px; z-index:39; }
+    .warn-panel ul { margin:4px 0 0 16px; padding:0; font-size:.75rem; color:#fbbf24; opacity:.9; }
+    .warn-panel-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+    .warn-panel-title { font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#fbbf24; }
+    .warn-panel-x { background:none; border:none; cursor:pointer; color:#fbbf24; font-size:1rem; opacity:.7; padding:0; }
+    .warn-panel-x:hover { opacity:1; }
+    @media(max-width:900px){ .warn-panel { left:0; padding:12px 16px; } }
+
+    /* Admin language switcher */
+    .adm-lang-sw {
+      display:flex; gap:3px;
+      background:rgba(0,0,0,0.35); border:1px solid var(--border);
+      border-radius:6px; padding:3px;
+    }
+    .alb {
+      background:none; border:none; cursor:pointer;
+      padding:5px 11px; border-radius:4px;
+      font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--muted); transition:.15s; font-family:inherit;
+    }
+    .alb:hover { color:var(--text); background:rgba(255,255,255,.05); }
+    .alb.active { background:var(--accent); color:#000; box-shadow:0 0 10px rgba(0,212,255,0.4); }
+    .lang-badge {
+      display:inline-block; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.25);
+      color:var(--accent); font-size:.62rem; font-weight:700; letter-spacing:.12em;
+      padding:2px 8px; border-radius:999px; text-transform:uppercase; margin-left:10px;
+      vertical-align:middle;
+    }
+
+    /* ═══════ MOBILE ADMIN ═══════ */
+    @media (max-width: 900px) {
+      body { cursor: auto; }
+      .cdot, .cring { display: none; }
+
+      .adm-layout { flex-direction: column; }
+
+      .adm-sidebar {
+        width: 100%;
+        min-height: auto;
+        padding: 12px 0;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: center;
+      }
+      .sb-label { display: none; }
+      .sb-div { display: none; }
+      .sb-status { display: none; }
+      .sb-item {
+        padding: 8px 14px;
+        font-size: .72rem;
+        border-left: none;
+        border-bottom: 2px solid transparent;
+        white-space: nowrap;
+      }
+      .sb-item.active {
+        border-left-color: transparent;
+        border-bottom-color: var(--accent);
+      }
+      .sb-icon { font-size: .85rem; }
+
+      .adm-main { padding: 16px !important; }
+      .adm-main h2 { font-size: 1.2rem !important; }
+
+      .sec-header { flex-direction: column; align-items: flex-start !important; gap: 8px; }
+
+      .field input, .field textarea, .field select {
+        font-size: 16px !important; /* prevent iOS zoom */
+      }
+
+      .xbtn { font-size: .72rem; padding: 8px 14px; }
+
+      .login-card { padding: 32px 24px; }
+
+      .adm-topbar { padding: 12px 16px !important; }
+      .adm-topbar span { font-size: .7rem !important; }
+    }
+
+    @media (max-width: 500px) {
+      .adm-sidebar { padding: 8px 4px; }
+      .sb-item { padding: 6px 10px; font-size: .65rem; gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cdot" id="cdot"></div>
+<div class="cring" id="cring"></div>
+
+<!-- ═════════════════════ LOGIN ═════════════════════ -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-corner tl"></div>
+    <div class="login-corner tr"></div>
+    <div class="login-corner bl"></div>
+    <div class="login-corner br"></div>
+    <div class="login-card">
+      <div class="login-tag">System Access</div>
+      <div class="login-title">A<span>.</span>C Admin</div>
+      <div class="login-sub">Панель управления сайтом</div>
+      <div class="login-err" id="login-err">Неверный email или пароль</div>
+      <div class="field">
+        <label>Идентификатор</label>
+        <input type="email" id="inp-email" placeholder="user@domain.com" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label>Код доступа</label>
+        <input type="password" id="inp-pass" placeholder="••••••••••"
+               autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')doLogin()" />
+      </div>
+      <button class="login-btn" onclick="doLogin()"><span>→ Войти в систему</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════ ADMIN ═════════════════════ -->
+<div id="admin-panel">
+
+  <div class="adm-header">
+    <div class="adm-hdr-l">
+      <div class="adm-logo">A<span>.</span>C</div>
+      <div class="adm-subtitle">Control Panel</div>
+    </div>
+    <div class="adm-hdr-r">
+      <button class="xbtn cyan" onclick="toggleAllItems('open')"  title="Раскрыть все блоки">▾ Развернуть</button>
+      <button class="xbtn cyan" onclick="toggleAllItems('close')" title="Свернуть все блоки">▴ Свернуть</button>
+      <div class="adm-lang-sw" title="Язык редактирования">
+        <button class="alb active" data-alang="ru" onclick="switchAdminLang('ru')">RU</button>
+        <button class="alb"        data-alang="uk" onclick="switchAdminLang('uk')">UK</button>
+        <button class="alb"        data-alang="no" onclick="switchAdminLang('no')">NO</button>
+      </div>
+      <button class="xbtn cyan" onclick="previewSite()" title="Предпросмотр несохранённых изменений в новой вкладке">👁 Предпросмотр</button>
+      <a href="index.html" target="_blank" class="xbtn cyan">↗ Открыть сайт</a>
+      <button class="xbtn red" onclick="doLogout()">✕ Выйти</button>
+    </div>
+  </div>
+
+  <div class="adm-layout">
+
+    <!-- Sidebar -->
+    <div class="adm-sidebar">
+      <div class="sb-label">Страницы</div>
+      <div class="sb-item" data-tab="index"     onclick="showTab('index')">    <span class="sb-icon">🏠</span> Главная</div>
+      <div class="sb-item" data-tab="about"     onclick="showTab('about')">    <span class="sb-icon">👤</span> О себе</div>
+      <div class="sb-item" data-tab="journey"   onclick="showTab('journey')">  <span class="sb-icon">🗺️</span> Мой путь</div>
+      <div class="sb-item" data-tab="interests" onclick="showTab('interests')"><span class="sb-icon">🧠</span> Интересы</div>
+      <div class="sb-item" data-tab="boards"    onclick="showTab('boards')">   <span class="sb-icon">📋</span> Доски</div>
+      <div class="sb-item" data-tab="contact"   onclick="showTab('contact')">  <span class="sb-icon">✉️</span> Контакт</div>
+      <div class="sb-div"></div>
+      <div class="sb-label">Настройки</div>
+      <div class="sb-item" data-tab="videos"     onclick="showTab('videos')">     <span class="sb-icon">🎬</span> Видео</div>
+      <div class="sb-item" data-tab="seo"        onclick="showTab('seo')">        <span class="sb-icon">🔎</span> SEO</div>
+      <div class="sb-item" data-tab="appearance" onclick="showTab('appearance')"> <span class="sb-icon">🎨</span> Внешний вид</div>
+      <div class="sb-item" data-tab="global"     onclick="showTab('global')">     <span class="sb-icon">⚙️</span> Общие</div>
+      <div class="sb-item" data-tab="security"   onclick="showTab('security')">   <span class="sb-icon">🔐</span> Безопасность</div>
+      <div class="sb-item" data-tab="i18n"        onclick="showTab('i18n')">        <span class="sb-icon">🌐</span> Переводы</div>
+      <div class="sb-status">Система активна</div>
+    </div>
+
+    <!-- Main -->
+    <div class="adm-main" id="adm-main"></div>
+  </div>
+
+  <div class="save-bar">
+    <div class="save-bar-l">
+      <span class="save-status" id="save-st">Изменения не сохранены</span>
+      <span class="save-auto"   id="save-auto"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:.7rem;color:var(--muted);">Язык: <strong id="save-lang" style="color:var(--accent)">RU</strong></span>
+      <button class="xbtn save" onclick="saveAll()">💾 Сохранить <span style="opacity:.6;font-size:.7em">Ctrl+S</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="site-data.js"></script>
+<script src="translations.js"></script>
+<script>
+
+// ── CURSOR ───────────────────────────────────
+const cdot = document.getElementById('cdot');
+const cring = document.getElementById('cring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',(e)=>{ mx=e.clientX; my=e.clientY; cdot.style.left=mx+'px'; cdot.style.top=my+'px'; });
+(function anim(){ rx+=(mx-rx)*.11; ry+=(my-ry)*.11; cring.style.left=rx+'px'; cring.style.top=ry+'px'; requestAnimationFrame(anim); })();
+
+// ── AUTH ─────────────────────────────────────
+async function sha256(s) {
+  const b = await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+async function doLogin() {
+  const email = document.getElementById('inp-email').value.trim();
+  const pass  = document.getElementById('inp-pass').value;
+  const err   = document.getElementById('login-err');
+  err.style.display='none';
+  if (!email||!pass){ err.textContent='Введите данные'; err.style.display='block'; return; }
+  const inputHash = await sha256(email+':'+pass);
+  const stored    = localStorage.getItem('ac_admin_hash');
+  if (!stored) {
+    const expected = await sha256('chipon1993@gmail.com:Kunfor527_');
+    if (inputHash===expected){ localStorage.setItem('ac_admin_hash',inputHash); grantAccess(); }
+    else { err.textContent='Неверный идентификатор или код'; err.style.display='block'; }
+  } else {
+    if (inputHash===stored) grantAccess();
+    else { err.textContent='Неверный идентификатор или код'; err.style.display='block'; }
+  }
+}
+
+function grantAccess(){
+  sessionStorage.setItem('ac_s','1');
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('admin-panel').style.display='flex';
+  updateAdminLangBtns();
+  showTab('index');
+}
+
+function doLogout(){
+  sessionStorage.removeItem('ac_s');
+  document.getElementById('admin-panel').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// ── DATA ─────────────────────────────────────
+function deepMerge(base,over){
+  if(!over) return base;
+  const r=Object.assign({},base);
+  for(const k of Object.keys(over)){
+    if(Array.isArray(over[k])) r[k]=over[k];
+    else if(over[k]&&typeof over[k]==='object') r[k]=deepMerge(base[k]||{},over[k]);
+    else r[k]=over[k];
+  }
+  return r;
+}
+
+let adminLang='ru';
+
+function langKey(lang){ return lang==='ru'?'ac_content':'ac_content_'+lang; }
+
+function getDataForLang(lang){
+  // 1. Defaults
+  let base=JSON.parse(JSON.stringify(window.AC_DEFAULTS));
+  // 2. Language translations
+  if(lang!=='ru'&&window.AC_TRANSLATIONS&&window.AC_TRANSLATIONS[lang]){
+    base=deepMerge(base,window.AC_TRANSLATIONS[lang]);
+  }
+  // 3. Russian master edits (always applied — changes propagate to all languages)
+  const ruSaved=localStorage.getItem('ac_content');
+  if(ruSaved){ try{ base=deepMerge(base,JSON.parse(ruSaved)); }catch(e){} }
+  // 4. Language-specific overrides (UK/NO fine-tuning)
+  if(lang!=='ru'){
+    const langSaved=localStorage.getItem(langKey(lang));
+    if(langSaved){ try{ base=deepMerge(base,JSON.parse(langSaved)); }catch(e){} }
+  }
+  // 5. Restore nav translations lost during RU master merge (step 3).
+  //    Per-key: only fill keys the admin hasn't explicitly overridden in step 4.
+  if(lang!=='ru'&&window.AC_TRANSLATIONS&&window.AC_TRANSLATIONS[lang]){
+    const transNav=window.AC_TRANSLATIONS[lang].global&&window.AC_TRANSLATIONS[lang].global.nav;
+    if(transNav&&base.global){
+      let adminNav={};
+      try{const ld=JSON.parse(localStorage.getItem(langKey(lang))||'{}');adminNav=(ld.global&&ld.global.nav)||{};}catch(e){}
+      Object.keys(transNav).forEach(k=>{ if(!adminNav[k]) base.global.nav[k]=transNav[k]; });
+    }
+  }
+  return base;
+}
+
+let D=getDataForLang('ru');
+
+// ── LANG SWITCH (admin editor) ────────────────
+function switchAdminLang(lang){
+  if(lang===adminLang) return;
+  collectCurrent();
+  persistCurrentLang();          // auto-save current lang before switching
+  adminLang=lang;
+  D=getDataForLang(lang);
+  updateAdminLangBtns();
+  const savedCT=CT; CT='';      // CT='' → showTab's collectCurrent() finds no match → не перезапишет D
+  showTab(savedCT);
+  showToast('// Язык редактора: '+lang.toUpperCase());
+}
+
+function persistCurrentLang(){
+  localStorage.setItem(langKey(adminLang),JSON.stringify(D));
+}
+
+function updateAdminLangBtns(){
+  document.querySelectorAll('.alb').forEach(b=>b.classList.toggle('active',b.dataset.alang===adminLang));
+  // Update save bar hint
+  const hints={ru:'Русский',uk:'Українська',no:'Norsk'};
+  const el=document.getElementById('save-lang');
+  if(el) el.textContent=hints[adminLang]||adminLang.toUpperCase();
+}
+
+let isDirty=false, autoSec=60;
+function markDirty(){ isDirty=true; }
+
+function validateBeforeSave(){
+  const w=[];
+  // Контакты с плейсхолдерами
+  if(D.contact&&D.contact.items){
+    D.contact.items.forEach((it,i)=>{
+      if(!it.href||it.href==='#'||it.href.includes('yourusername')||it.href.includes('your@email')){
+        w.push('Контакт «'+(it.label||'#'+(i+1))+'»: заполни настоящую ссылку');
+      }
+    });
+  }
+  // Опубликованные видео без заголовка или ID
+  if(D.videos&&D.videos.items){
+    D.videos.items.filter(v=>v.published!==false).forEach((v,i)=>{
+      if(!v.title) w.push('Видео #'+(i+1)+': пустой заголовок');
+      if(v.type!=='file'&&!v.embedId) w.push('Видео «'+(v.title||'#'+(i+1))+'»: не заполнен ID видео');
+    });
+  }
+  // Пустые заголовки страниц
+  [{k:'about',n:'О себе'},{k:'journey',n:'Мой путь'},{k:'interests',n:'Интересы'},{k:'contact',n:'Контакт'},{k:'videos',n:'Видео'}].forEach(({k,n})=>{
+    if(D[k]&&!D[k].pageTitle) w.push('Страница «'+n+'»: пустой заголовок');
+  });
+  return w;
+}
+
+function showValidationWarnings(warns){
+  const old=document.getElementById('warn-panel');
+  if(old)old.remove();
+  if(!warns.length)return;
+  const p=document.createElement('div');
+  p.id='warn-panel'; p.className='warn-panel';
+  p.innerHTML='<div class="warn-panel-hd"><span class="warn-panel-title">⚠ '+warns.length+(warns.length===1?' предупреждение':warns.length<5?' предупреждения':' предупреждений')+' — данные сохранены, но проверь</span>'
+    +'<button class="warn-panel-x" onclick="document.getElementById(\'warn-panel\').remove()" title="Закрыть">✕</button></div>'
+    +'<ul>'+warns.map(w=>'<li>'+w+'</li>').join('')+'</ul>';
+  document.body.appendChild(p);
+}
+
+// ── PREVIEW ──────────────────────────────────
+function previewSite(){
+  collectCurrent();
+  // Map admin tab → site page file
+  const pageMap={
+    index:'index.html', about:'about.html', journey:'journey.html',
+    interests:'interests.html', videos:'videos.html', contact:'contact.html'
+  };
+  const file = pageMap[CT] || 'index.html';
+  // Write full current state snapshot (for getData() in loader.js)
+  localStorage.setItem('ac_preview', JSON.stringify(D));
+  window.open(file+'?preview=1', '_blank');
+  showToast('// Предпросмотр → '+file);
+}
+
+// ── BACKUPS ──────────────────────────────────
+function pushBackup(){
+  try{
+    const backups=JSON.parse(localStorage.getItem('ac_backups')||'[]');
+    backups.unshift({ts:Date.now(), lang:adminLang, data:JSON.stringify(D)});
+    if(backups.length>5) backups.length=5;
+    localStorage.setItem('ac_backups',JSON.stringify(backups));
+  }catch(e){}
+}
+
+function renderBackups(){
+  try{
+    const backups=JSON.parse(localStorage.getItem('ac_backups')||'[]');
+    if(!backups.length) return '<p style="color:var(--muted);font-size:.85rem;">Сохранений пока нет — появятся после первого нажатия «Сохранить»</p>';
+    const fmtDate=ts=>{
+      const d=new Date(ts);
+      return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    };
+    const hints={ru:'Русский',uk:'Українська',no:'Norsk'};
+    return backups.map((b,i)=>`<div class="bk-item">
+      <div class="bk-meta"><strong>${fmtDate(b.ts)}</strong> &nbsp;<span>· ${hints[b.lang]||b.lang.toUpperCase()}</span></div>
+      <button class="xbtn cyan" style="padding:6px 14px;font-size:.72rem;" onclick="restoreBackup(${i})">↩ Восстановить</button>
+    </div>`).join('');
+  }catch(e){ return '<p style="color:#f87171;font-size:.85rem;">Ошибка чтения бэкапов</p>'; }
+}
+
+function restoreBackup(i){
+  try{
+    const backups=JSON.parse(localStorage.getItem('ac_backups')||'[]');
+    const b=backups[i];
+    if(!b) return;
+    const ts=new Date(b.ts).toLocaleString('ru-RU');
+    if(!confirm('Восстановить версию от '+ts+'?\n\nТекущие несохранённые изменения будут потеряны.')) return;
+    D=JSON.parse(b.data);
+    adminLang=b.lang;
+    updateAdminLangBtns();
+    persistCurrentLang();
+    showToast('// Версия от '+ts+' восстановлена');
+    showTab(CT);
+  }catch(e){ alert('Ошибка восстановления: '+e.message); }
+}
+
+function saveAll(){
+  collectCurrent();
+  pushBackup();
+  persistCurrentLang();
+  isDirty=false; autoSec=60;
+  document.getElementById('save-auto').textContent='';
+  const st=document.getElementById('save-st');
+  const hints={ru:'RU',uk:'UK',no:'NO'};
+  st.textContent='✓ Сохранено ('+hints[adminLang]+')'; st.className='save-status ok';
+  setTimeout(()=>{ st.textContent='Изменения не сохранены'; st.className='save-status'; },3000);
+  const warns=validateBeforeSave();
+  if(warns.length){
+    showValidationWarnings(warns);
+    showToast('// Сохранено · ⚠ '+warns.length+' предупреждений');
+  } else {
+    const old=document.getElementById('warn-panel');
+    if(old)old.remove();
+    showToast('// Сохранено · '+adminLang.toUpperCase());
+  }
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ── HELPERS ──────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escTA(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function v(id){ const el=document.getElementById(id); return el?el.value:''; }
+function inp(id,val){ return `<input class="fi" id="${id}" value="${esc(val)}"/>`; }
+function dateinp(id,val){ return `<input class="fi" type="date" id="${id}" value="${esc(val)}"/>`; }
+function ta(id,val,rows=3){ return `<textarea class="fi" id="${id}" rows="${rows}">${escTA(val)}</textarea>`; }
+function fg(label,content,hint){ return `<div class="fg"><label class="flbl">${label}</label>${content}${hint?'<p class="fhint">'+hint+'</p>':''}</div>`; }
+
+function liW(idx,title,fields){
+  const n=String(idx+1).padStart(2,'0');
+  return `<div class="li-item" data-idx="${idx}">
+    <div class="li-hdr" onclick="toggleLI(this)">
+      <span class="li-idx">${n}</span>
+      <span class="li-title">${esc(title)}</span>
+      <div class="li-acts">
+        <button class="lib" onclick="event.stopPropagation();mvUp(this)"  title="Вверх">↑</button>
+        <button class="lib" onclick="event.stopPropagation();mvDn(this)"  title="Вниз">↓</button>
+        <button class="lib" onclick="event.stopPropagation();dupLI(this)" title="Дублировать">⧉</button>
+        <button class="lib del" onclick="event.stopPropagation();delLI(this)" title="Удалить">✕</button>
+      </div>
+    </div>
+    <div class="li-body">${fields}</div>
+  </div>`;
+}
+
+function toggleLI(h){ h.nextElementSibling.classList.toggle('open'); }
+function mvUp(btn){ const li=btn.closest('.li-item'),p=li.parentElement,all=[...p.querySelectorAll(':scope>.li-item')],i=all.indexOf(li); if(i>0)p.insertBefore(li,all[i-1]); }
+function mvDn(btn){ const li=btn.closest('.li-item'),p=li.parentElement,all=[...p.querySelectorAll(':scope>.li-item')],i=all.indexOf(li); if(i<all.length-1)p.insertBefore(all[i+1],li); }
+function delLI(btn){ if(confirm('Удалить?'))btn.closest('.li-item').remove(); }
+
+function dupLI(btn){
+  const li=btn.closest('.li-item'), led=btn.closest('.leditor');
+  if(!li||!led) return;
+  collectCurrent();
+  const items=[...led.querySelectorAll(':scope>.li-item')], pos=items.indexOf(li);
+  if(pos<0) return;
+  const cloneArr = (arr,i) => arr.splice(i+1,0,JSON.parse(JSON.stringify(arr[i])));
+  const map={
+    'ls-nc': ()=>{ cloneArr(D.index.navCards,pos);   showTab('index');     },
+    'ls-hs': ()=>{ cloneArr(D.index.heroStats,pos);  showTab('index');     },
+    'ls-p':  ()=>{ D.about.paragraphs.splice(pos+1,0,D.about.paragraphs[pos]); showTab('about'); },
+    'ls-st': ()=>{ cloneArr(D.about.stats,pos);      showTab('about');     },
+    'ls-v':  ()=>{ cloneArr(D.about.values,pos);     showTab('about');     },
+    'ls-jn': ()=>{ cloneArr(D.journey.items,pos);    showTab('journey');   },
+    'ls-in': ()=>{ cloneArr(D.interests.cards,pos);  showTab('interests'); },
+    'ls-ci': ()=>{ cloneArr(D.contact.items,pos);    showTab('contact');   },
+    'ls-cp': ()=>{ D.contact.textParagraphs.splice(pos+1,0,D.contact.textParagraphs[pos]); showTab('contact'); },
+    'ls-tp': ()=>{ D.contact.topics.splice(pos+1,0,D.contact.topics[pos]); showTab('contact'); },
+    'ls-vid':()=>{ if(!D.videos)D.videos={items:[]}; cloneArr(D.videos.items,pos); showTab('videos'); },
+  };
+  if(map[led.id]){ CT=''; map[led.id](); showToast('// Элемент продублирован'); }
+}
+
+function toggleAllItems(action){
+  document.querySelectorAll('#adm-main .li-body').forEach(b=>b.classList[action==='open'?'add':'remove']('open'));
+}
+
+// ── TABS ─────────────────────────────────────
+let CT='index';
+function showTab(tab){
+  collectCurrent(); CT=tab;
+  document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
+  const m=document.getElementById('adm-main');
+  switch(tab){
+    case 'index':      m.innerHTML=edIndex();      break;
+    case 'about':      m.innerHTML=edAbout();      break;
+    case 'journey':    m.innerHTML=edJourney();    break;
+    case 'interests':  m.innerHTML=edInterests();  break;
+    case 'contact':    m.innerHTML=edContact();    break;
+    case 'global':     m.innerHTML=edGlobal();     break;
+    case 'videos':     m.innerHTML=edVideos();     break;
+    case 'boards':     m.innerHTML=edBoards();     break;
+    case 'seo':        m.innerHTML=edSEO(); initSeoCounters(); break;
+    case 'appearance': m.innerHTML=edAppearance(); break;
+    case 'security':   m.innerHTML=edSecurity();   break;
+    case 'i18n':       m.innerHTML=edTranslations(); break;
+  }
+}
+function collectCurrent(){
+  switch(CT){
+    case 'index':      colIndex();      break;
+    case 'about':      colAbout();      break;
+    case 'journey':    colJourney();    break;
+    case 'interests':  colInterests();  break;
+    case 'contact':    colContact();    break;
+    case 'global':     colGlobal();     break;
+    case 'videos':     colVideos();     break;
+    case 'boards':     colBoards();     break;
+    case 'seo':        colSEO();        break;
+    case 'appearance': colAppearance(); break;
+    case 'i18n':       colTranslations(); break;
+  }
+}
+
+// ── INDEX ────────────────────────────────────
+function edIndex(){
+  const d=D.index;
+  return `<div class="ed-header"><div class="ed-tag">Главная страница</div><h2>Hero & Menu</h2><p>Главный экран, кнопки, карточки навигации и цитата</p></div>
+  ${fg('Бейдж',inp('i-badge',d.badge),'Текст в плашке над главным заголовком, напр. «Украина → Мир → Норвегия»')}
+  ${fg('Tagline',inp('i-tl',d.tagline),'Главная фраза — первое, что видит посетитель на сайте')}
+  ${fg('Подпись под tagline',ta('i-sub',d.sub,2),'Дополнительный текст под основной фразой')}
+  <div class="frow">${fg('Кнопка 1 — текст',inp('i-b1t',d.btnPrimary?.text),'Основная кнопка (яркая)')}${fg('Кнопка 1 — ссылка',inp('i-b1h',d.btnPrimary?.href),'Куда ведёт, напр. journey.html')}</div>
+  <div class="frow">${fg('Кнопка 2 — текст',inp('i-b2t',d.btnGhost?.text),'Второстепенная кнопка (контур)')}${fg('Кнопка 2 — ссылка',inp('i-b2h',d.btnGhost?.href),'Куда ведёт, напр. about.html')}</div>
+  ${fg('Цитата',ta('i-qt',d.quote,3),'Блок с цитатой внизу главной страницы')}
+  ${fg('Автор цитаты',inp('i-qa',d.quoteAuthor),'Подпись под цитатой')}
+  <div class="fsec">Счётчики (Hero-статистика)</div>
+  <div class="leditor" id="ls-hs">
+    ${(d.heroStats||[]).map((s,i)=>liW(i,s.num+' '+s.lbl,
+      fg('Число / текст',inp(`hs-n-${i}`,s.num))+
+      fg('Подпись',inp(`hs-l-${i}`,s.lbl))
+    )).join('')}
+  </div>
+  <button class="add-btn" onclick="addHS()">+ Добавить счётчик</button>
+  <div class="fsec">Карточки-меню</div>
+  <div class="leditor" id="ls-nc">
+    ${(d.navCards||[]).map((c,i)=>liW(i,c.title,
+      fg('Иконка (эмодзи)',inp(`nc-ic-${i}`,c.icon))+
+      fg('Заголовок',inp(`nc-ti-${i}`,c.title))+
+      fg('Описание',ta(`nc-de-${i}`,c.desc,2))+
+      fg('Ссылка',inp(`nc-hr-${i}`,c.href))
+    )).join('')}
+  </div>
+  <button class="add-btn" onclick="addNC()">+ Добавить карточку</button>`;
+}
+function colIndex(){
+  if(!document.getElementById('i-badge'))return;
+  D.index.badge=v('i-badge'); D.index.tagline=v('i-tl'); D.index.sub=v('i-sub');
+  D.index.btnPrimary={text:v('i-b1t'),href:v('i-b1h')};
+  D.index.btnGhost={text:v('i-b2t'),href:v('i-b2h')};
+  D.index.quote=v('i-qt'); D.index.quoteAuthor=v('i-qa');
+  D.index.heroStats=[...document.querySelectorAll('#ls-hs .li-item')].map(li=>{const i=li.dataset.idx;return{num:document.getElementById(`hs-n-${i}`)?.value||'',lbl:document.getElementById(`hs-l-${i}`)?.value||''};});
+  D.index.navCards=[...document.querySelectorAll('#ls-nc .li-item')].map(li=>{const i=li.dataset.idx;return{icon:document.getElementById(`nc-ic-${i}`)?.value||'',title:document.getElementById(`nc-ti-${i}`)?.value||'',desc:document.getElementById(`nc-de-${i}`)?.value||'',href:document.getElementById(`nc-hr-${i}`)?.value||''};});
+}
+function addNC(){ colIndex(); D.index.navCards.push({icon:'🔗',title:'Новая карточка',desc:'Описание',href:'#'}); CT=''; showTab('index'); }
+function addHS(){ colIndex(); if(!D.index.heroStats) D.index.heroStats=[]; D.index.heroStats.push({num:'0',lbl:'подпись'}); CT=''; showTab('index'); }
+
+// ── ABOUT ────────────────────────────────────
+function edAbout(){
+  const d=D.about;
+  return `<div class="ed-header"><div class="ed-tag">Страница</div><h2>О себе</h2><p>Текст, статистика, ценности</p></div>
+  ${fg('Метка раздела',inp('ab-sl',d.sectionLabel||''),'Маленький текст-подпись над заголовком, напр. «Обо мне»')}
+  ${fg('Заголовок страницы',inp('ab-t',d.pageTitle),'Крупный жирный текст в начале страницы')}
+  ${fg('Подзаголовок',ta('ab-d',d.pageDesc,2),'Описание под заголовком — 1-2 предложения')}
+  <div class="fsec">Параграфы</div>
+  <div class="leditor" id="ls-p">
+    ${(d.paragraphs||[]).map((p,i)=>liW(i,p.replace(/<[^>]+>/g,'').substring(0,50)+'…',fg('Текст (можно &lt;b&gt;жирный&lt;/b&gt;)',ta(`p-${i}`,p,3)))).join('')}
+  </div>
+  <button class="add-btn" onclick="addPara()">+ Добавить параграф</button>
+  <div class="fsec">Статистика</div>
+  <div class="leditor" id="ls-st">
+    ${(d.stats||[]).map((s,i)=>liW(i,s.num+' — '+s.label,fg('Число',inp(`st-n-${i}`,s.num))+fg('Подпись',inp(`st-l-${i}`,s.label)))).join('')}
+  </div>
+  <button class="add-btn" onclick="addStat()">+ Добавить карточку</button>
+  <div class="fsec">Ценности</div>
+  <div class="leditor" id="ls-v">
+    ${(d.values||[]).map((vl,i)=>liW(i,vl.title,fg('Иконка',inp(`v-ic-${i}`,vl.icon))+fg('Заголовок',inp(`v-ti-${i}`,vl.title))+fg('Описание',ta(`v-de-${i}`,vl.desc,2)))).join('')}
+  </div>
+  <button class="add-btn" onclick="addVal()">+ Добавить ценность</button>`;
+}
+function colAbout(){
+  if(!document.getElementById('ab-t'))return;
+  D.about.sectionLabel=v('ab-sl'); D.about.pageTitle=v('ab-t'); D.about.pageDesc=v('ab-d');
+  D.about.paragraphs=[...document.querySelectorAll('#ls-p .li-item')].map(li=>document.getElementById(`p-${li.dataset.idx}`)?.value||'');
+  D.about.stats=[...document.querySelectorAll('#ls-st .li-item')].map(li=>{const i=li.dataset.idx;return{num:document.getElementById(`st-n-${i}`)?.value||'',label:document.getElementById(`st-l-${i}`)?.value||''};});
+  D.about.values=[...document.querySelectorAll('#ls-v .li-item')].map(li=>{const i=li.dataset.idx;return{icon:document.getElementById(`v-ic-${i}`)?.value||'',title:document.getElementById(`v-ti-${i}`)?.value||'',desc:document.getElementById(`v-de-${i}`)?.value||''};});
+}
+function addPara(){ colAbout(); D.about.paragraphs.push('Новый параграф'); CT=''; showTab('about'); }
+function addStat(){ colAbout(); D.about.stats.push({num:'0',label:'подпись'}); CT=''; showTab('about'); }
+function addVal(){  colAbout(); D.about.values.push({icon:'⭐',title:'Новая ценность',desc:'Описание'}); CT=''; showTab('about'); }
+
+// ── JOURNEY ──────────────────────────────────
+function edJourney(){
+  const d=D.journey;
+  return `<div class="ed-header"><div class="ed-tag">Страница</div><h2>Мой путь</h2><p>Таймлайн и блок "Сейчас"</p></div>
+  ${fg('Метка раздела',inp('jn-sl',d.sectionLabel||''),'Маленький текст-подпись, напр. «Хронология»')}
+  ${fg('Заголовок',inp('jn-t',d.pageTitle),'Крупный текст на странице')}
+  ${fg('Подзаголовок',ta('jn-d',d.pageDesc,2),'Описание под заголовком')}
+  <div class="fsec">Этапы пути</div>
+  <div class="leditor" id="ls-jn">
+    ${(d.items||[]).map((it,i)=>liW(i,it.title,
+      fg('Период',inp(`jn-y-${i}`,it.year))+fg('Заголовок',inp(`jn-ti-${i}`,it.title))+
+      fg('Место',inp(`jn-lo-${i}`,it.location))+fg('Описание',ta(`jn-de-${i}`,it.desc,3))+
+      fg('Теги (через запятую)',inp(`jn-tg-${i}`,(it.tags||[]).join(', ')))
+    )).join('')}
+  </div>
+  <button class="add-btn" onclick="addJn()">+ Добавить этап</button>
+  <div class="fsec">Блок "Где я сейчас"</div>
+  ${fg('Заголовок',inp('jn-nt',d.nowTitle))}
+  ${fg('Текст',ta('jn-nx',d.nowText,3))}`;
+}
+function colJourney(){
+  if(!document.getElementById('jn-t'))return;
+  D.journey.sectionLabel=v('jn-sl'); D.journey.pageTitle=v('jn-t'); D.journey.pageDesc=v('jn-d');
+  D.journey.nowTitle=v('jn-nt'); D.journey.nowText=v('jn-nx');
+  D.journey.items=[...document.querySelectorAll('#ls-jn .li-item')].map(li=>{const i=li.dataset.idx;return{year:document.getElementById(`jn-y-${i}`)?.value||'',title:document.getElementById(`jn-ti-${i}`)?.value||'',location:document.getElementById(`jn-lo-${i}`)?.value||'',desc:document.getElementById(`jn-de-${i}`)?.value||'',tags:(document.getElementById(`jn-tg-${i}`)?.value||'').split(',').map(s=>s.trim()).filter(Boolean)};});
+}
+function addJn(){ colJourney(); D.journey.items.push({year:'Новый',title:'Заголовок',location:'📍 Место',desc:'Описание',tags:[]}); CT=''; showTab('journey'); }
+
+// ── INTERESTS ────────────────────────────────
+function edInterests(){
+  const d=D.interests;
+  return `<div class="ed-header"><div class="ed-tag">Страница</div><h2>Интересы</h2><p>Карточки интересов</p></div>
+  ${fg('Метка раздела',inp('in-sl',d.sectionLabel||''),'Маленький текст-подпись, напр. «Интересы»')}
+  ${fg('Заголовок',inp('in-t',d.pageTitle),'Крупный текст на странице')}
+  ${fg('Подзаголовок',ta('in-d',d.pageDesc,2),'Описание под заголовком')}
+  <div class="fsec">Карточки</div>
+  <div class="leditor" id="ls-in">
+    ${(d.cards||[]).map((c,i)=>liW(i,c.title,
+      fg('Иконка',inp(`in-ic-${i}`,c.icon))+fg('Заголовок',inp(`in-ti-${i}`,c.title))+
+      fg('Описание',ta(`in-de-${i}`,c.desc,3))+fg('Вопросы (с новой строки)',ta(`in-q-${i}`,(c.questions||[]).join('\n'),3))
+    )).join('')}
+  </div>
+  <button class="add-btn" onclick="addIn()">+ Добавить карточку</button>`;
+}
+function colInterests(){
+  if(!document.getElementById('in-t'))return;
+  D.interests.sectionLabel=v('in-sl'); D.interests.pageTitle=v('in-t'); D.interests.pageDesc=v('in-d');
+  const iconToId={'🧠':'psychology','🌀':'philosophy','⚡':'tech','🌍':'sociology','🤸':'acrobatics','🚗':'cars'};
+  const oldCards=D.interests.cards||[];
+  D.interests.cards=[...document.querySelectorAll('#ls-in .li-item')].map((li,idx)=>{const i=li.dataset.idx;const icon=document.getElementById(`in-ic-${i}`)?.value||'';const oldCard=oldCards[idx]||{};return{id:oldCard.id||iconToId[icon]||'interest_'+idx,icon,title:document.getElementById(`in-ti-${i}`)?.value||'',desc:document.getElementById(`in-de-${i}`)?.value||'',questions:(document.getElementById(`in-q-${i}`)?.value||'').split('\n').map(s=>s.trim()).filter(Boolean)};});
+}
+function addIn(){ colInterests(); D.interests.cards.push({icon:'🌟',title:'Новый интерес',desc:'Описание',questions:[]}); CT=''; showTab('interests'); }
+
+// ── CONTACT ──────────────────────────────────
+function edContact(){
+  const d=D.contact;
+  return `<div class="ed-header"><div class="ed-tag">Страница</div><h2>Контакт</h2><p>Ссылки, текст, темы</p></div>
+  ${fg('Метка раздела',inp('cn-sl',d.sectionLabel||''),'Маленький текст-подпись, напр. «Контакт»')}
+  ${fg('Заголовок',inp('cn-t',d.pageTitle),'Крупный текст на странице')}
+  ${fg('Подзаголовок',ta('cn-d',d.pageDesc,2),'Описание под заголовком')}
+  <div class="fsec">Контактные ссылки</div>
+  <div class="leditor" id="ls-ci">
+    ${(d.items||[]).map((it,i)=>liW(i,it.label+': '+it.value,
+      fg('Иконка',inp(`ci-ic-${i}`,it.icon))+fg('Название',inp(`ci-lb-${i}`,it.label))+
+      fg('Значение',inp(`ci-vl-${i}`,it.value))+fg('Ссылка href',inp(`ci-hr-${i}`,it.href))
+    )).join('')}
+  </div>
+  <button class="add-btn" onclick="addCI()">+ Добавить контакт</button>
+  <div class="fsec">Текст справа</div>
+  ${fg('Заголовок',inp('cn-tt',d.textTitle))}
+  <div class="leditor" id="ls-cp">
+    ${(d.textParagraphs||[]).map((p,i)=>liW(i,p.replace(/<[^>]+>/g,'').substring(0,50)+'…',fg('Параграф',ta(`cp-${i}`,p,2)))).join('')}
+  </div>
+  <button class="add-btn" onclick="addCP()">+ Добавить параграф</button>
+  <div class="fsec">Теги / Темы</div>
+  <div class="leditor" id="ls-tp">
+    ${(d.topics||[]).map((t,i)=>liW(i,t,fg('Тема',inp(`tp-${i}`,t)))).join('')}
+  </div>
+  <button class="add-btn" onclick="addTP()">+ Добавить тему</button>
+  <div class="fsec">Форма обратной связи</div>
+  ${fg('Formspree Form ID',inp('cn-fspree',(d.form&&d.form.formspreeId)||''),'ID из URL <b>formspree.io/f/<u>xxxxxxxx</u></b> — оставь пустым, чтобы скрыть форму')}`;
+}
+function colContact(){
+  if(!document.getElementById('cn-t'))return;
+  D.contact.sectionLabel=v('cn-sl'); D.contact.pageTitle=v('cn-t'); D.contact.pageDesc=v('cn-d'); D.contact.textTitle=v('cn-tt');
+  D.contact.items=[...document.querySelectorAll('#ls-ci .li-item')].map(li=>{const i=li.dataset.idx;return{icon:document.getElementById(`ci-ic-${i}`)?.value||'',label:document.getElementById(`ci-lb-${i}`)?.value||'',value:document.getElementById(`ci-vl-${i}`)?.value||'',href:document.getElementById(`ci-hr-${i}`)?.value||''};});
+  D.contact.textParagraphs=[...document.querySelectorAll('#ls-cp .li-item')].map(li=>document.getElementById(`cp-${li.dataset.idx}`)?.value||'');
+  D.contact.topics=[...document.querySelectorAll('#ls-tp .li-item')].map(li=>document.getElementById(`tp-${li.dataset.idx}`)?.value||'');
+  if(!D.contact.form) D.contact.form={};
+  D.contact.form.formspreeId = v('cn-fspree');
+}
+function addCI(){ colContact(); D.contact.items.push({icon:'🔗',label:'Новый',value:'@username',href:'#'}); CT=''; showTab('contact'); }
+function addCP(){ colContact(); D.contact.textParagraphs.push('Новый параграф'); CT=''; showTab('contact'); }
+function addTP(){ colContact(); D.contact.topics.push('🌟 Новая тема'); CT=''; showTab('contact'); }
+
+// ── GLOBAL ───────────────────────────────────
+function edGlobal(){
+  const g=D.global;
+  return `<div class="ed-header"><div class="ed-tag">Настройки</div><h2>Общие</h2><p>Навигация, футер и резервные копии</p></div>
+  <div class="fsec">Навигация (меню сайта)</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;line-height:1.6;">Текст пунктов верхнего меню и ссылок «назад». При переключении языка редактирования (RU / UK / NO) — вводи соответствующие переводы.</p>
+  <div class="frow">${fg('О себе',inp('gl-nav-about',(g.nav&&g.nav.about)||''),'Пункт меню → about.html')}${fg('Мой путь',inp('gl-nav-journey',(g.nav&&g.nav.journey)||''),'Пункт меню → journey.html')}</div>
+  <div class="frow">${fg('Интересы',inp('gl-nav-interests',(g.nav&&g.nav.interests)||''),'Пункт меню → interests.html')}${fg('Видео',inp('gl-nav-videos',(g.nav&&g.nav.videos)||''),'Пункт меню → videos.html')}</div>
+  <div class="frow">${fg('Контакт',inp('gl-nav-contact',(g.nav&&g.nav.contact)||''),'Пункт меню → contact.html')}${fg('← На главную',inp('gl-nav-back',(g.nav&&g.nav.backHome)||''),'Ссылка «назад» на внутренних страницах')}</div>
+  ${fg('← К интересам',inp('gl-nav-backi',(g.nav&&g.nav.backInterests)||''),'Ссылка «назад» на странице доски интереса')}
+  <div class="fsec">Футер</div>
+  ${fg('Футер — левый текст',inp('gl-l',g.footerLeft),'Текст внизу каждой страницы, слева (напр. копирайт)')}
+  ${fg('Футер — правый текст',inp('gl-r',g.footerRight),'Текст внизу каждой страницы, справа')}
+  <div class="fsec">Аналитика</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">
+    <b style="color:var(--text)">Plausible Analytics</b> — приватная статистика без cookie-баннера, не замедляет сайт (скрипт 1 KB).<br>
+    Зарегистрируй домен на <a href="https://plausible.io" target="_blank" style="color:var(--accent);">plausible.io</a> ($9/мес) или self-host через <a href="https://umami.is" target="_blank" style="color:var(--accent);">umami.is</a> (бесплатно) — и вставь домен ниже.
+  </p>
+  ${fg('Домен сайта (Plausible)',inp('gl-plausible',(g.analytics&&g.analytics.plausible)||''),'Именно тот домен, что зарегистрирован в Plausible. Напр.: chepelovskyi.no — без https:// и без /')}
+  <p style="color:var(--muted);font-size:.78rem;margin-top:-10px;margin-bottom:0;">
+    Пустое поле = скрипт не подключён. Поле заполнено = скрипт автоматически появляется на всех страницах.
+  </p>
+  <div class="fsec">Giscus (комментарии)</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">
+    <b style="color:var(--text)">Giscus</b> — комментарии на досках интересов через GitHub Discussions. Бесплатно, без бэкенда.<br>
+    Настрой на <a href="https://giscus.app" target="_blank" style="color:var(--accent);">giscus.app</a> → скопируй 4 значения ниже. Пустые поля = комментарии скрыты.
+  </p>
+  <div class="frow">${fg('Репо (user/repo)',inp('gl-gc-repo',(g.giscus&&g.giscus.repo)||''),'Напр.: andrii-ch/my-site')}${fg('Repo ID',inp('gl-gc-repoid',(g.giscus&&g.giscus.repoId)||''),'Напр.: R_kgDOxxxxxx')}</div>
+  <div class="frow">${fg('Категория',inp('gl-gc-cat',(g.giscus&&g.giscus.category)||''),'Напр.: General')}${fg('Category ID',inp('gl-gc-catid',(g.giscus&&g.giscus.categoryId)||''),'Напр.: DIC_kwDOxxxxxx')}</div>
+  <div class="fsec">Резервная копия</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">Скачайте все данные сайта в JSON или восстановите из файла.</p>
+  <div class="backup-row">
+    <button class="xbtn cyan" onclick="exportJSON()">⬇ Скачать backup.json</button>
+    <label class="xbtn cyan imp-label">⬆ Загрузить из файла<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label>
+  </div>
+  <div class="fsec">История версий (последние 5)</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">При каждом нажатии «Сохранить» автоматически создаётся снимок. Здесь хранятся 5 последних — можно откатиться к любому.</p>
+  <div id="bk-list">${renderBackups()}</div>
+  <div class="fsec">Сброс данных</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">Вернуть весь контент к оригинальному состоянию. Необратимо.</p>
+  <button class="xbtn red" style="padding:10px 20px;" onclick="resetAll()">⚠ Сбросить все данные</button>`;
+}
+function colGlobal(){
+  if(!document.getElementById('gl-l'))return;
+  D.global.footerLeft=v('gl-l'); D.global.footerRight=v('gl-r');
+  if(!D.global.analytics)D.global.analytics={};
+  D.global.analytics.plausible=v('gl-plausible');
+  if(!D.global.giscus)D.global.giscus={};
+  D.global.giscus.repo=v('gl-gc-repo'); D.global.giscus.repoId=v('gl-gc-repoid');
+  D.global.giscus.category=v('gl-gc-cat'); D.global.giscus.categoryId=v('gl-gc-catid');
+  if(!D.global.nav)D.global.nav={};
+  D.global.nav.about=v('gl-nav-about'); D.global.nav.journey=v('gl-nav-journey');
+  D.global.nav.interests=v('gl-nav-interests'); D.global.nav.videos=v('gl-nav-videos');
+  D.global.nav.contact=v('gl-nav-contact'); D.global.nav.backHome=v('gl-nav-back');
+  D.global.nav.backInterests=v('gl-nav-backi');
+}
+function resetAll(){
+  const hints={ru:'русского',uk:'украинского',no:'норвежского'};
+  if(!confirm('Сбросить изменения '+hints[adminLang]+' языка? Необратимо.'))return;
+  localStorage.removeItem(langKey(adminLang));
+  D=getDataForLang(adminLang);
+  showToast('// Данные сброшены ('+adminLang.toUpperCase()+')');
+  showTab(CT);
+}
+function exportJSON(){
+  collectCurrent();
+  const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ac-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('// Резервная копия скачана');
+}
+function importJSON(e){
+  const file=e.target.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.global&&!data.index) throw new Error('Неверный формат файла');
+      D=deepMerge(JSON.parse(JSON.stringify(window.AC_DEFAULTS)),data);
+      localStorage.setItem(langKey(adminLang),JSON.stringify(D));
+      showToast('// Данные восстановлены из файла ('+adminLang.toUpperCase()+')');
+      showTab(CT);
+    }catch(err){ alert('Ошибка: '+err.message); }
+  };
+  r.readAsText(file);
+}
+
+// ── VIDEOS ───────────────────────────────────
+function edVideos(){
+  const d=D.videos||{};
+  const items=d.items||[];
+  return `<div class="ed-header"><div class="ed-tag">Страница</div><h2>Видео</h2>
+    <p>YouTube, Vimeo или прямые ссылки на файлы (mp4, webm). Вставьте URL — тип определится автоматически.</p></div>
+  ${fg('Метка раздела',inp('vid-sl',d.sectionLabel||'Контент'),'Маленький текст-подпись, напр. «Контент»')}
+  ${fg('Заголовок страницы',inp('vid-t',d.pageTitle||''),'Крупный текст на странице видео')}
+  ${fg('Подзаголовок',ta('vid-d',d.pageDesc||'',2),'Описание под заголовком')}
+  <div class="fsec">Видео</div>
+  <div class="leditor" id="ls-vid">
+    ${items.map((v,i)=>liW(i,v.title||'Без названия',videoFields(v,i))).join('')}
+  </div>
+  <button class="add-btn" onclick="addVideo()">+ Добавить видео</button>`;
+}
+
+function videoFields(v,i){
+  const typeOpts=[['youtube','YouTube'],['vimeo','Vimeo'],['file','Файл (mp4/webm)']].map(
+    ([val,lbl])=>`<option value="${val}"${v.type===val?' selected':''}>${lbl}</option>`
+  ).join('');
+  return `
+    <input type="hidden" id="vid-id-${i}" value="${esc(v.id||('v'+i))}">
+    <div class="fg">
+      <label class="flbl">URL видео (YouTube / Vimeo / прямая ссылка)</label>
+      <div style="display:flex;gap:8px;">
+        <input class="fi" id="vid-url-${i}" placeholder="https://youtube.com/watch?v=..." style="flex:1"
+          value="" oninput="" onblur="autoFillVideo(${i})">
+        <button class="xbtn cyan" onclick="autoFillVideo(${i})" style="white-space:nowrap;padding:8px 14px;flex-shrink:0">↺ Определить</button>
+      </div>
+    </div>
+    <div class="frow">
+      ${fg('Тип',`<select class="fi" id="vid-tp-${i}">${typeOpts}</select>`)}
+      ${fg('Embed ID или URL файла',inp(`vid-ei-${i}`,v.embedId||''))}
+    </div>
+    ${fg('Заголовок',inp(`vid-ti-${i}`,v.title||''))}
+    ${fg('Описание',ta(`vid-de-${i}`,v.desc||'',2))}
+    <div class="frow">
+      ${fg('Длительность (напр. 3:24)',inp(`vid-du-${i}`,v.duration||''),'Формат: 3:24')}
+      ${fg('Дата публикации',dateinp(`vid-da-${i}`,v.date||''))}
+    </div>
+    ${fg('Теги (через запятую)',inp(`vid-tg-${i}`,(v.tags||[]).join(', ')))}
+    ${fg('Thumbnail (URL картинки, не обязательно для YouTube)',inp(`vid-th-${i}`,v.thumb||''),'Для YouTube заполняется автоматически')}
+    <div class="fg">
+      <label class="chk-row" style="margin-bottom:10px;">
+        <input type="checkbox" id="vid-pub-${i}"${v.published!==false?' checked':''}>
+        <span><b>Опубликовано</b> <span style="color:var(--muted);font-size:.88em;font-weight:400;">— снятая галочка = черновик, видео не показывается на сайте</span></span>
+      </label>
+      <label class="chk-row">
+        <input type="checkbox" id="vid-ft-${i}"${v.featured?' checked':''}>
+        <span>Избранное — показывать большим баннером вверху страницы</span>
+      </label>
+    </div>`;
+}
+
+function autoFillVideo(i){
+  const url=(document.getElementById(`vid-url-${i}`)?.value||'').trim();
+  if(!url) return;
+  // YouTube
+  let m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/);
+  if(m){
+    document.getElementById(`vid-tp-${i}`).value='youtube';
+    document.getElementById(`vid-ei-${i}`).value=m[1];
+    showToast('// YouTube ID: '+m[1]); return;
+  }
+  // Vimeo
+  m=url.match(/vimeo\.com\/(\d+)/);
+  if(m){
+    document.getElementById(`vid-tp-${i}`).value='vimeo';
+    document.getElementById(`vid-ei-${i}`).value=m[1];
+    showToast('// Vimeo ID: '+m[1]); return;
+  }
+  // Direct file
+  if(url.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i)){
+    document.getElementById(`vid-tp-${i}`).value='file';
+    document.getElementById(`vid-ei-${i}`).value=url;
+    showToast('// Файл определён'); return;
+  }
+  showToast('// Формат не распознан — заполните вручную');
+}
+
+function colVideos(){
+  if(!document.getElementById('vid-t'))return;
+  if(!D.videos)D.videos={};
+  D.videos.pageTitle=v('vid-t');
+  D.videos.pageDesc=v('vid-d');
+  D.videos.sectionLabel=v('vid-sl');
+  D.videos.items=[...document.querySelectorAll('#ls-vid .li-item')].map(li=>{
+    const i=li.dataset.idx;
+    return{
+      id:document.getElementById(`vid-id-${i}`)?.value||('v'+Date.now()+i),
+      type:document.getElementById(`vid-tp-${i}`)?.value||'youtube',
+      embedId:document.getElementById(`vid-ei-${i}`)?.value||'',
+      title:document.getElementById(`vid-ti-${i}`)?.value||'',
+      desc:document.getElementById(`vid-de-${i}`)?.value||'',
+      duration:document.getElementById(`vid-du-${i}`)?.value||'',
+      date:document.getElementById(`vid-da-${i}`)?.value||'',
+      tags:(document.getElementById(`vid-tg-${i}`)?.value||'').split(',').map(s=>s.trim()).filter(Boolean),
+      thumb:document.getElementById(`vid-th-${i}`)?.value||'',
+      published:!!document.getElementById(`vid-pub-${i}`)?.checked,
+      featured:!!document.getElementById(`vid-ft-${i}`)?.checked
+    };
+  });
+}
+
+function addVideo(){
+  colVideos();
+  if(!D.videos)D.videos={items:[]};
+  if(!D.videos.items)D.videos.items=[];
+  D.videos.items.push({
+    id:'v'+Date.now(), type:'youtube', embedId:'', title:'Новое видео', desc:'',
+    duration:'', date:new Date().toISOString().slice(0,10), tags:[], thumb:'', published:true, featured:false
+  });
+  CT=''; // prevent showTab→collectCurrent from re-reading stale DOM
+  showTab('videos');
+}
+
+// ── BOARDS ───────────────────────────────────
+const BOARD_LIST=[
+  {id:'psychology', icon:'🧠', label:'Психология мышления'},
+  {id:'philosophy', icon:'🌀', label:'Философия языка'},
+  {id:'tech',       icon:'⚡', label:'Технологии и ИИ'},
+  {id:'sociology',  icon:'🌍', label:'Люди в разных средах'},
+  {id:'acrobatics', icon:'🤸', label:'Акробатика'},
+  {id:'cars',       icon:'🚗', label:'Механика и системы'},
+];
+let currentBoard='psychology';
+
+function boardKey(id){ return 'ac_board_'+id; }
+function loadBoardPosts(id){
+  try{ return JSON.parse(localStorage.getItem(boardKey(id))||'[]'); }catch(e){ return []; }
+}
+function saveBoardPosts(id, posts){
+  localStorage.setItem(boardKey(id), JSON.stringify(posts));
+}
+
+function edBoards(){
+  const meta = BOARD_LIST.find(b=>b.id===currentBoard)||BOARD_LIST[0];
+  const posts = loadBoardPosts(currentBoard);
+  const tabs = BOARD_LIST.map(b=>
+    `<button class="xbtn ${b.id===currentBoard?'cyan':''}" style="font-size:.78rem" onclick="switchBoard('${b.id}')">${b.icon} ${b.label}</button>`
+  ).join('');
+  const typeOpts = t => ['note','video','quote','link'].map(tp=>
+    `<option value="${tp}"${tp===t?' selected':''}>${{note:'📝 Заметка',video:'🎬 Видео',quote:'💬 Цитата',link:'🔗 Ссылка'}[tp]}</option>`
+  ).join('');
+  const items = posts.map((p,i)=>liW(i, (p.title||p.content||'Запись').slice(0,48), `
+    <div class="frow">
+      ${fg('Тип',`<select class="fi" id="bp-type-${i}" onchange="boardTypeChange(${i})">${typeOpts(p.type||'note')}</select>`)}
+      ${fg('Дата',dateinp(`bp-date-${i}`, p.date||new Date().toISOString().slice(0,10)))}
+    </div>
+    <div id="bp-fields-${i}">${boardPostFields(p,i)}</div>
+    ${fg('Теги (через запятую)',inp(`bp-tags-${i}`,(p.tags||[]).join(', ')))}
+    <div class="fg" style="margin-bottom:0;"><label class="chk-row"><input type="checkbox" id="bp-pub-${i}"${p.published!==false?' checked':''}><span><b>Опубликовано</b> <span style="color:var(--muted);font-size:.88em;font-weight:400;">— черновик не виден на сайте</span></span></label></div>
+  `)).join('');
+
+  return `<div class="ed-header">
+    <div class="ed-tag">Доски интересов</div>
+    <h2>${meta.icon} ${meta.label}</h2>
+    <p>Записи хранятся отдельно для каждой доски. Переключайся между досками с помощью кнопок ниже.</p>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px">${tabs}</div>
+  <div class="fsec">Записи (${posts.length})</div>
+  <div class="leditor" id="ls-boards">${items}</div>
+  <button class="add-btn" onclick="addBoardPost()">+ Добавить запись</button>`;
+}
+
+function boardPostFields(p,i){
+  const t = p.type||'note';
+  const videoUrl = p.videoUrl||(p.videoType==='youtube'&&p.videoId?'https://youtu.be/'+p.videoId:p.videoType==='vimeo'&&p.videoId?'https://vimeo.com/'+p.videoId:p.videoId||'');
+  return `
+    <input type="hidden" id="bp-id-${i}" value="${esc(String(p.id||''))}">
+    ${t!=='quote'?fg('Заголовок',inp(`bp-title-${i}`,p.title||'')):''}
+    ${t==='link'?fg('URL',inp(`bp-url-${i}`,p.url||'')):''}
+    ${t==='video'?fg('Ссылка на видео (YouTube / Vimeo / файл)',inp(`bp-vurl-${i}`,videoUrl)):''}
+    ${fg(t==='quote'?'Текст цитаты':'Текст / описание',`<textarea class="fi" id="bp-content-${i}" rows="3">${escTA(p.content||'')}</textarea>`)}
+    ${t==='quote'?fg('Автор',inp(`bp-author-${i}`,p.author||'')):''}`;
+}
+
+function boardTypeChange(i){
+  const t  = document.getElementById(`bp-type-${i}`)?.value||'note';
+  const id = document.getElementById(`bp-id-${i}`)?.value||'';
+  const el = document.getElementById(`bp-fields-${i}`);
+  if(el) el.innerHTML = boardPostFields({type:t, id}, i);
+}
+
+function switchBoard(id){
+  colBoards();
+  currentBoard=id;
+  CT=''; // prevent double-collect
+  showTab('boards');
+}
+
+function colBoards(){
+  if(!document.getElementById('ls-boards')) return;
+  const posts=[...document.querySelectorAll('#ls-boards .li-item')].map(li=>{
+    const i=li.dataset.idx;
+    const type=document.getElementById(`bp-type-${i}`)?.value||'note';
+    const tags=(document.getElementById(`bp-tags-${i}`)?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const content=document.getElementById(`bp-content-${i}`)?.value||'';
+    const title=document.getElementById(`bp-title-${i}`)?.value||'';
+    const date=document.getElementById(`bp-date-${i}`)?.value||'';
+    const author=document.getElementById(`bp-author-${i}`)?.value||'';
+    const url=document.getElementById(`bp-url-${i}`)?.value||'';
+    const vurl=document.getElementById(`bp-vurl-${i}`)?.value||'';
+    const savedId = document.getElementById(`bp-id-${i}`)?.value;
+    const published=!!document.getElementById(`bp-pub-${i}`)?.checked;
+    const post={id: savedId ? Number(savedId) : Date.now()+parseInt(i), type,tags,content,title,date,published};
+    if(type==='quote') post.author=author;
+    if(type==='link')  post.url=url;
+    if(type==='video' && vurl){
+      post.videoUrl=vurl;
+      let m=vurl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+      if(m){ post.videoType='youtube'; post.videoId=m[1]; post.thumb='https://img.youtube.com/vi/'+m[1]+'/hqdefault.jpg'; }
+      else { m=vurl.match(/vimeo\.com\/(\d+)/); if(m){ post.videoType='vimeo'; post.videoId=m[1]; } else { post.videoType='file'; post.videoId=vurl; } }
+    }
+    return post;
+  });
+  saveBoardPosts(currentBoard, posts);
+}
+
+function addBoardPost(){
+  colBoards();
+  const posts=loadBoardPosts(currentBoard);
+  posts.unshift({id:Date.now(),type:'note',title:'',content:'',tags:[],date:new Date().toISOString().slice(0,10),published:true});
+  saveBoardPosts(currentBoard,posts);
+  CT='';
+  showTab('boards');
+}
+
+// ── SEO ──────────────────────────────────────
+function seoCount(id, type){
+  const el=document.getElementById(id);
+  const cnt=document.getElementById(id+'-cnt');
+  if(!el||!cnt) return;
+  const len=el.value.length;
+  if(type==='title'){
+    const ok=len>=50&&len<=60, warn=len>=40&&len<=70;
+    cnt.textContent=len+' / 60 симв.'+(len<50?' — слишком коротко':len>60?' — слишком длинно':' — отлично');
+    cnt.className='seo-cnt '+(ok?'ok':warn?'warn':'bad');
+  } else {
+    const ok=len>=120&&len<=160, warn=len>=100&&len<=180;
+    cnt.textContent=len+' / 160 симв.'+(len<120?' — слишком коротко':len>160?' — слишком длинно':' — отлично');
+    cnt.className='seo-cnt '+(ok?'ok':warn?'warn':'bad');
+  }
+}
+function initSeoCounters(){
+  ['index','about','journey','interests','videos','contact'].forEach(key=>{
+    seoCount('seo-t-'+key,'title');
+    seoCount('seo-d-'+key,'desc');
+  });
+}
+
+function edSEO(){
+  const s=D.seo||{};
+  const pages=[['index','🏠 Главная'],['about','👤 О себе'],['journey','🗺️ Мой путь'],['interests','🧠 Интересы'],['videos','🎬 Видео'],['contact','✉️ Контакт']];
+  let html=`<div class="ed-header"><div class="ed-tag">SEO</div><h2>Мета-теги</h2><p>Заголовок вкладки и описание для поисковиков и соцсетей</p></div>
+  <p style="color:var(--muted);font-size:.82rem;margin-bottom:24px;padding:10px 14px;background:rgba(0,212,255,0.03);border:1px solid var(--border);border-radius:6px;line-height:1.8;">
+    🎯 <b style="color:var(--text)">Title:</b> 50–60 символов &nbsp;·&nbsp; <b style="color:var(--text)">Description:</b> 120–160 символов &nbsp;&nbsp;
+    <span class="seo-cnt ok" style="display:inline;font-size:.75rem;">● зелёный = отлично</span> &nbsp;
+    <span class="seo-cnt warn" style="display:inline;font-size:.75rem;">● жёлтый = допустимо</span> &nbsp;
+    <span class="seo-cnt bad" style="display:inline;font-size:.75rem;">● красный = исправь</span>
+  </p>`;
+  pages.forEach(([key,label])=>{
+    const sd=s[key]||{};
+    html+=`<div class="fsec">${label}</div>
+    <div class="fg">
+      <label class="flbl">Title (вкладка браузера / Google)</label>
+      <input class="fi" id="seo-t-${key}" value="${esc(sd.title||'')}" oninput="seoCount('seo-t-${key}','title')">
+      <span class="seo-cnt" id="seo-t-${key}-cnt"></span>
+    </div>
+    <div class="fg">
+      <label class="flbl">Description (описание в поиске)</label>
+      <textarea class="fi" id="seo-d-${key}" rows="2" oninput="seoCount('seo-d-${key}','desc')">${escTA(sd.desc||'')}</textarea>
+      <span class="seo-cnt" id="seo-d-${key}-cnt"></span>
+    </div>`;
+  });
+  return html;
+}
+function colSEO(){
+  if(!document.getElementById('seo-t-index'))return;
+  if(!D.seo)D.seo={};
+  ['index','about','journey','interests','videos','contact'].forEach(key=>{
+    D.seo[key]={title:v(`seo-t-${key}`),desc:v(`seo-d-${key}`)};
+  });
+}
+
+// ── APPEARANCE ───────────────────────────────
+function edAppearance(){
+  const a=D.appearance||{};
+  const themes=[['cyan','Cyan — синий (по умолчанию)'],['purple','Purple — фиолетовый'],['green','Green — зелёный'],['orange','Orange — оранжевый']];
+  const opts=themes.map(([val,lbl])=>`<option value="${val}"${a.defaultTheme===val?' selected':''}>${lbl}</option>`).join('');
+  const checked=a.showHeroStats!==false;
+  const pg=a.pages||{};
+  const pgRow=(key,label,hint)=>{
+    const vis=pg[key]!==false;
+    return `<label class="chk-row" style="margin-bottom:10px;align-items:flex-start;">
+      <input type="checkbox" id="ap-pg-${key}"${vis?' checked':''} style="margin-top:3px;">
+      <div><span>${label}</span><p class="fhint" style="margin:3px 0 0;">${hint}</p></div>
+    </label>`;
+  };
+  return `<div class="ed-header"><div class="ed-tag">Внешний вид</div><h2>Настройки отображения</h2><p>Тема, видимость разделов и элементов страниц</p></div>
+  ${fg('Тема по умолчанию (для новых посетителей)',`<select class="fi" id="ap-theme">${opts}</select>`,'Посетители смогут менять тему самостоятельно — эта настройка только для первого открытия')}
+  <div class="fsec">Видимость разделов</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;line-height:1.6;">Снятая галочка — раздел исчезает из меню и с главной страницы. Используй для разделов, которые ещё не готовы. Прямая ссылка на страницу всё ещё работает.</p>
+  ${pgRow('about',   'О себе',   'about.html')}
+  ${pgRow('journey', 'Мой путь', 'journey.html')}
+  ${pgRow('interests','Интересы','interests.html')}
+  ${pgRow('videos',  'Видео',    'videos.html — скрой пока не добавишь контент')}
+  ${pgRow('contact', 'Контакт',  'contact.html')}
+  <div class="fsec">Элементы главной страницы</div>
+  <label class="chk-row">
+    <input type="checkbox" id="ap-stats"${checked?' checked':''}>
+    <span>Показывать блок со счётчиками (10+ лет, 5+ стран...)</span>
+  </label>`;
+}
+function colAppearance(){
+  if(!document.getElementById('ap-theme'))return;
+  if(!D.appearance)D.appearance={};
+  D.appearance.defaultTheme=v('ap-theme');
+  D.appearance.showHeroStats=!!document.getElementById('ap-stats')?.checked;
+  if(!D.appearance.pages)D.appearance.pages={};
+  ['about','journey','interests','videos','contact'].forEach(key=>{
+    D.appearance.pages[key]=!!document.getElementById('ap-pg-'+key)?.checked;
+  });
+}
+
+// ── SECURITY ─────────────────────────────────
+function edSecurity(){
+  return `<div class="ed-header"><div class="ed-tag">Безопасность</div><h2>Доступ к панели</h2><p>Смена email и пароля для входа в Admin</p></div>
+  <div class="fsec">Новые данные для входа</div>
+  <div class="fg"><label class="flbl">Email</label><input class="fi" type="email" id="sec-email" placeholder="user@domain.com" autocomplete="off"/></div>
+  <div class="fg"><label class="flbl">Новый пароль (мин. 8 символов)</label><input class="fi" type="password" id="sec-pass" placeholder="••••••••••" autocomplete="new-password"/></div>
+  <div class="fg"><label class="flbl">Повторите пароль</label><input class="fi" type="password" id="sec-pass2" placeholder="••••••••••" autocomplete="new-password"/></div>
+  <button class="xbtn cyan" style="margin-top:4px;" onclick="changePassword()">🔐 Обновить данные входа</button>
+  <div id="sec-msg" style="margin-top:14px;font-size:.85rem;min-height:20px;"></div>
+  <div class="fsec">Сессия</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">Завершить текущую сессию и вернуться на экран авторизации.</p>
+  <button class="xbtn red" onclick="doLogout()">→ Выйти из системы</button>`;
+}
+async function changePassword(){
+  const email=document.getElementById('sec-email')?.value.trim();
+  const pass=document.getElementById('sec-pass')?.value;
+  const pass2=document.getElementById('sec-pass2')?.value;
+  const msg=document.getElementById('sec-msg');
+  if(!email||!pass){ msg.innerHTML='<span class="sec-msg-err">Заполните все поля</span>'; return; }
+  if(pass!==pass2){ msg.innerHTML='<span class="sec-msg-err">Пароли не совпадают</span>'; return; }
+  if(pass.length<8){ msg.innerHTML='<span class="sec-msg-err">Пароль минимум 8 символов</span>'; return; }
+  const hash=await sha256(email+':'+pass);
+  localStorage.setItem('ac_admin_hash',hash);
+  msg.innerHTML='<span class="sec-msg-ok">✓ Данные обновлены. При следующем входе используйте новые данные.</span>';
+  document.getElementById('sec-email').value='';
+  document.getElementById('sec-pass').value='';
+  document.getElementById('sec-pass2').value='';
+}
+
+// ── TRANSLATIONS EDITOR ───────────────────────
+function edTranslations(){
+  const lang=adminLang;
+  let ov={};
+  try{ ov=JSON.parse(localStorage.getItem('ac_i18n_'+lang)||'{}'); }catch(e){}
+  const def=(window.AC_I18N&&window.AC_I18N[lang])||{};
+  const val=(k)=>ov[k]!==undefined?ov[k]:(def[k]||'');
+  const KEYS=[
+    {k:'open_board',     label:'Ссылка "Открыть доску"',       hint:'На карточках интересов, напр. «Открыть доску →»'},
+    {k:'watch_btn',      label:'Кнопка "Смотреть"',            hint:'На главном видео вверху страницы, напр. «▶ Смотреть»'},
+    {k:'featured_label', label:'Метка "Избранное"',            hint:'Бейдж поверх главного (featured) видео'},
+    {k:'values_title',   label:'Заголовок "Что мне важно"',    hint:'Подпись над блоком ценностей на странице О себе'},
+    {k:'topics_title',   label:'Заголовок "Темы"',             hint:'Подпись над тегами тем на странице Контакт'},
+    {k:'nav_section',    label:'Метка "Навигация"',            hint:'Подпись над карточками-меню на главной странице'},
+    {k:'menu_label',     label:'Aria-label бургер-кнопки',     hint:'Для скринридеров и доступности — не виден визуально, но важен'},
+  ];
+  return `<div class="ed-header">
+    <div class="ed-tag">Интерфейс</div>
+    <h2>Переводы UI <span class="lang-badge">${lang.toUpperCase()}</span></h2>
+    <p>Небольшие тексты интерфейса: кнопки, метки, подписи. Переключай язык редактора вверху (RU / UK / NO) чтобы настроить каждый язык.</p>
+  </div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:24px;padding:12px 16px;background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.1);border-radius:8px;line-height:1.7;">
+    💡 Здесь — <b style="color:var(--text);">служебные тексты</b>, которые не входят в контент страниц.<br>
+    Тексты пунктов меню → таб <b style="color:var(--accent);">Общие</b>.<br>
+    Метки разделов (Хронология, Интересы...) → в каждом табе страницы, поле <b style="color:var(--accent);">«Метка раздела»</b>.
+  </p>
+  ${KEYS.map(({k,label,hint})=>fg(label,inp('tr-'+k,val(k)),hint)).join('')}`;
+}
+
+function colTranslations(){
+  if(!document.getElementById('tr-open_board'))return;
+  const KEYS=['open_board','watch_btn','featured_label','values_title','topics_title','nav_section','menu_label'];
+  const ov={};
+  KEYS.forEach(k=>{ const v2=document.getElementById('tr-'+k)?.value||''; if(v2)ov[k]=v2; });
+  localStorage.setItem('ac_i18n_'+adminLang,JSON.stringify(ov));
+  // Обновить AC_I18N в памяти — чтобы изменения сразу применялись при открытии сайта
+  if(window.AC_I18N&&window.AC_I18N[adminLang]){
+    KEYS.forEach(k=>{ if(ov[k])window.AC_I18N[adminLang][k]=ov[k]; });
+  }
+}
+
+// ── KEYBOARD / AUTOSAVE / UNLOAD ─────────────
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){ e.preventDefault(); saveAll(); }
+});
+
+document.addEventListener('input',  markDirty);
+document.addEventListener('change', markDirty);
+
+window.addEventListener('beforeunload', e=>{
+  if(isDirty){ e.preventDefault(); e.returnValue=''; }
+});
+
+setInterval(()=>{
+  if(!sessionStorage.getItem('ac_s')||!isDirty) return;
+  autoSec--;
+  const el=document.getElementById('save-auto');
+  if(autoSec<=0){
+    saveAll();
+    if(el) el.textContent='';
+  } else {
+    if(el) el.textContent=`Автосохранение через ${autoSec} с`;
+  }
+},1000);
+
+// ── INIT ─────────────────────────────────────
+if(sessionStorage.getItem('ac_s')){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('admin-panel').style.display='flex';
+  updateAdminLangBtns();
+  showTab('index');
+}
+</script>
+</body>
+</html>

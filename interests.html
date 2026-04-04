@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Интересы · Andrii Chepelovskyi</title>
+  <meta name="description" content="Чем увлекается Андрий — психология, философия, технологии, социология, акробатика, автомобили." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Интересы · Andrii Chepelovskyi" />
+  <meta property="og:description" content="Психология, философия, технологии, социология, акробатика, автомобили." />
+  <meta property="og:image" content="og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00d4ff" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    #interests-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; margin-bottom:80px; }
+    .interest-card { display:block; border-radius:var(--radius); padding:32px 28px; transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition); text-decoration:none; color:inherit; border:1px solid transparent; }
+    a.interest-card { cursor:pointer; }
+    a.interest-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.3); border-color:rgba(0,212,255,0.2); }
+    .interest-icon { font-size:2.2rem; margin-bottom:16px; filter:drop-shadow(0 0 10px rgba(0,212,255,0.4)); }
+    .interest-title { font-size:1rem; font-weight:700; margin-bottom:10px; letter-spacing:.04em; text-transform:uppercase; }
+    .interest-desc { font-size:.9rem; color:var(--muted); line-height:1.65; }
+    .interest-questions { margin-top:16px; display:flex; flex-direction:column; gap:7px; }
+    .interest-questions span { font-size:.8rem; color:var(--accent); font-style:italic; }
+    .interest-questions span::before { content:'→ '; }
+    .interest-open-link { margin-top:20px; font-size:.82rem; font-weight:700; color:var(--accent); letter-spacing:.06em; opacity:0; transform:translateX(-6px); transition:opacity var(--transition),transform var(--transition); }
+    a.interest-card:hover .interest-open-link { opacity:1; transform:translateX(0); }
+    @media(max-width:768px){ #interests-grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body data-page="interests">
+  <noscript><style>.fade-in{opacity:1!important;transform:none!important}#page-overlay{display:none!important}</style></noscript>
+  <div id="page-overlay"></div>
+  <nav>
+    <a href="index.html" class="nav-logo">A<span>.</span>C</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="about.html"     onclick="closeMenu()" data-i18n="nav_about">О себе</a></li>
+      <li><a href="journey.html"   onclick="closeMenu()" data-i18n="nav_journey">Мой путь</a></li>
+      <li><a href="interests.html" onclick="closeMenu()" data-i18n="nav_interests">Интересы</a></li>
+      <li><a href="videos.html"    onclick="closeMenu()" data-i18n="nav_videos">Видео</a></li>
+      <li><a href="contact.html"   onclick="closeMenu()" data-i18n="nav_contact">Контакт</a></li>
+    </ul>
+    <div class="nav-controls">
+      <div class="lang-btns">
+        <button class="lang-btn" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="uk" onclick="switchLang('uk')">UK</button>
+        <button class="lang-btn" data-lang="no" onclick="switchLang('no')">NO</button>
+      </div>
+      <div class="nav-sep"></div>
+      <div class="theme-dots">
+        <button class="theme-dot t-cyan"   data-theme="cyan"   onclick="switchTheme('cyan')"   title="Cyan"></button>
+        <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')" title="Purple"></button>
+        <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')"  title="Green"></button>
+        <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')" title="Orange"></button>
+      </div>
+    </div>
+    <button class="burger" id="burger" onclick="toggleMenu()" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="container">
+      <div class="page-hero fade-in">
+        <a href="index.html" class="back-link" data-i18n="back_home">← На главную</a>
+        <p class="section-label" id="interests-section-label" data-i18n="lbl_interests">Интересы</p>
+        <h1 class="section-title" id="interests-page-title"></h1>
+        <p class="section-desc" id="interests-page-desc"></p>
+      </div>
+      <div id="interests-grid"></div>
+    </div>
+  </div>
+
+  <footer></footer>
+
+  <script src="site-data.js"></script>
+  <script src="translations.js"></script>
+  <script src="loader.js"></script>
+  <script src="nav.js"></script>
+  <script src="effects.js"></script>
+</body>
+</html>

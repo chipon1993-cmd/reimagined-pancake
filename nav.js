@@ -1,0 +1,134 @@
+// nav.js — навигация, язык, темы
+
+// ── SERVICE WORKER (PWA offline/caching) ────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
+// ── ACCESSIBILITY: skip-to-content link ─────────────
+(function initA11y() {
+  const pw = document.querySelector('.page-wrapper') || document.querySelector('.hero');
+  if (pw && !pw.id) pw.id = 'main-content';
+  if (pw && !document.querySelector('.skip-link')) {
+    const a = document.createElement('a');
+    a.className = 'skip-link';
+    a.href = '#main-content';
+    a.textContent = 'Skip to content';
+    document.body.prepend(a);
+  }
+})();
+
+function toggleMenu() {
+  const nl = document.getElementById('navLinks');
+  const open = nl.classList.toggle('open');
+  _moveControls(open, nl);
+}
+function closeMenu() {
+  const nl = document.getElementById('navLinks');
+  nl.classList.remove('open');
+  _moveControls(false, nl);
+}
+function _moveControls(intoMenu, nl) {
+  const c = document.querySelector('.nav-controls');
+  if (!c) return;
+  if (intoMenu && window.innerWidth <= 768) {
+    nl.appendChild(c);
+    c.classList.add('in-menu');
+  } else if (c.classList.contains('in-menu')) {
+    document.querySelector('nav').insertBefore(c, document.getElementById('burger'));
+    c.classList.remove('in-menu');
+  }
+}
+
+// Подсветка активной ссылки
+(function () {
+  let cur = (window.location.pathname.split('/').pop() || 'index.html').split('?')[0];
+  // interest.html board pages → highlight Интересы
+  if (cur === 'interest.html') cur = 'interests.html';
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    if (a.getAttribute('href') === cur) a.classList.add('active');
+  });
+})();
+
+// Intersection Observer для fade-in
+window.acObs = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) setTimeout(() => entry.target.classList.add('visible'), i * 80);
+  });
+}, { threshold: 0.1 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.fade-in').forEach(el => window.acObs.observe(el));
+  initLangTheme();
+});
+
+// ── ЯЗЫК ─────────────────────────────────────────────
+function switchLang(lang) {
+  localStorage.setItem('ac_lang', lang);
+  if (window.AC_RERENDER) window.AC_RERENDER();
+  translateNav();
+  updateLangButtons();
+}
+
+function translateNav() {
+  const lang = localStorage.getItem('ac_lang') || 'ru';
+  const t = window.AC_I18N && window.AC_I18N[lang];
+  if (!t) return;
+  const navD = window.AC_NAV_DATA;
+  const navMap = {
+    nav_about:'about', nav_journey:'journey', nav_interests:'interests',
+    nav_videos:'videos', nav_contact:'contact',
+    back_home:'backHome', back_interests:'backInterests'
+  };
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    // Section labels handled by loader.js — skip to preserve admin edits
+    if (key.startsWith('lbl_')) return;
+    // Nav links — use admin-edited data if available
+    const nk = navMap[key];
+    if (nk && navD && navD[nk]) { el.textContent = navD[nk]; return; }
+    // Other UI text — use translations
+    if (t[key]) el.textContent = t[key];
+  });
+  const burger = document.getElementById('burger');
+  if (burger && t.menu_label) burger.setAttribute('aria-label', t.menu_label);
+}
+
+function updateLangButtons() {
+  const lang = localStorage.getItem('ac_lang') || 'ru';
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+}
+
+// ── ТЕМА ─────────────────────────────────────────────
+function switchTheme(theme) {
+  localStorage.setItem('ac_theme', theme);
+  applyTheme(theme);
+  updateThemeDots(theme);
+}
+
+function applyTheme(theme) {
+  if (theme === 'cyan' || !theme) {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+}
+
+function updateThemeDots(theme) {
+  theme = theme || 'cyan';
+  document.querySelectorAll('.theme-dot').forEach(dot => {
+    dot.classList.toggle('active', dot.dataset.theme === theme);
+  });
+}
+
+// ── INIT ─────────────────────────────────────────────
+function initLangTheme() {
+  const lang  = localStorage.getItem('ac_lang')  || 'ru';
+  const theme = localStorage.getItem('ac_theme') || 'cyan';
+  applyTheme(theme);
+  updateThemeDots(theme);
+  updateLangButtons();
+  translateNav();
+}

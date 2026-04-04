@@ -1,0 +1,22 @@
+{
+  "name": "Andrii Chepelovskyi",
+  "short_name": "A.C",
+  "description": "Personal site — Ukraine, World, Norway",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#050810",
+  "theme_color": "#00d4ff",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "favicon.ico",
+      "sizes": "16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

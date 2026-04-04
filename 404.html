@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 · Andrii Chepelovskyi</title>
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #050810;
+      --accent: #00d4ff;
+      --accent2: #a855f7;
+      --text: #f1f5f9;
+      --muted: #64748b;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
+    body::before {
+      content:'';
+      position:fixed; inset:0; z-index:-1;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .wrap { padding: 40px; max-width: 520px; }
+    .code {
+      font-size: clamp(6rem, 20vw, 10rem);
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 30px rgba(0,212,255,0.3));
+      margin-bottom: 16px;
+    }
+    .msg {
+      font-size: 1.15rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+    }
+    .sub {
+      font-size: 0.85rem;
+      color: rgba(100,116,139,0.6);
+      margin-bottom: 40px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 14px 32px;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: all 0.3s;
+    }
+    .btn:hover {
+      background: var(--accent);
+      color: #000;
+      box-shadow: 0 0 30px rgba(0,212,255,0.4);
+    }
+    .btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    .glitch { position: relative; }
+    .glitch::after {
+      content: '404';
+      position: absolute;
+      top: 0; left: 0;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+      animation: g 4s infinite steps(1);
+    }
+    @keyframes g {
+      0%,92%,100% { transform: none; opacity:0; }
+      93% { transform: translateX(-4px) skewX(-2deg); opacity:.7; }
+      95% { transform: translateX(4px); opacity:.7; }
+      97% { transform: none; opacity:0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="code glitch">404</div>
+    <p class="msg">Страница не найдена</p>
+    <p class="sub">Возможно, она была перемещена или никогда не существовала</p>
+    <a href="index.html" class="btn">На главную</a>
+  </div>
+</body>
+</html>

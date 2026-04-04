@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>О себе · Andrii Chepelovskyi</title>
+  <meta name="description" content="Кто такой Андрий Чепеловский — история, ценности, цифры." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="О себе · Andrii Chepelovskyi" />
+  <meta property="og:description" content="Кто такой Андрий Чепеловский — история, ценности, цифры." />
+  <meta property="og:image" content="og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00d4ff" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:start; margin-bottom:72px; }
+    #about-paragraphs p { color:var(--muted); margin-bottom:18px; font-size:1.02rem; }
+    #about-paragraphs p b { color:var(--text); }
+    #about-stats { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .stat-card { border-radius:var(--radius); padding:24px; transition:var(--transition); }
+    .stat-card .num { font-size:2.4rem; font-weight:900; line-height:1; }
+    .stat-card .lbl { font-size:.78rem; color:var(--muted); margin-top:6px; letter-spacing:.06em; text-transform:uppercase; }
+    .values-title { font-size:1rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:20px; text-shadow:0 0 10px rgba(0,212,255,0.4); }
+    #about-values { display:flex; flex-direction:column; gap:12px; margin-bottom:72px; }
+    .value-item { display:flex; align-items:flex-start; gap:16px; border-radius:var(--radius); padding:20px 24px; transition:var(--transition); }
+    .value-icon { font-size:1.5rem; flex-shrink:0; filter:drop-shadow(0 0 6px rgba(0,212,255,0.4)); }
+    .value-text h4 { font-size:.95rem; font-weight:700; margin-bottom:4px; letter-spacing:.04em; }
+    .value-text p { font-size:.88rem; color:var(--muted); }
+    @media(max-width:768px){ .about-grid{grid-template-columns:1fr;gap:40px;} }
+  </style>
+</head>
+<body data-page="about">
+  <noscript><style>.fade-in{opacity:1!important;transform:none!important}#page-overlay{display:none!important}</style></noscript>
+  <div id="page-overlay"></div>
+  <nav>
+    <a href="index.html" class="nav-logo">A<span>.</span>C</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="about.html"     onclick="closeMenu()" data-i18n="nav_about">О себе</a></li>
+      <li><a href="journey.html"   onclick="closeMenu()" data-i18n="nav_journey">Мой путь</a></li>
+      <li><a href="interests.html" onclick="closeMenu()" data-i18n="nav_interests">Интересы</a></li>
+      <li><a href="videos.html"    onclick="closeMenu()" data-i18n="nav_videos">Видео</a></li>
+      <li><a href="contact.html"   onclick="closeMenu()" data-i18n="nav_contact">Контакт</a></li>
+    </ul>
+    <div class="nav-controls">
+      <div class="lang-btns">
+        <button class="lang-btn" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="uk" onclick="switchLang('uk')">UK</button>
+        <button class="lang-btn" data-lang="no" onclick="switchLang('no')">NO</button>
+      </div>
+      <div class="nav-sep"></div>
+      <div class="theme-dots">
+        <button class="theme-dot t-cyan"   data-theme="cyan"   onclick="switchTheme('cyan')"   title="Cyan"></button>
+        <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')" title="Purple"></button>
+        <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')"  title="Green"></button>
+        <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')" title="Orange"></button>
+      </div>
+    </div>
+    <button class="burger" id="burger" onclick="toggleMenu()" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="container">
+      <div class="page-hero fade-in">
+        <a href="index.html" class="back-link" data-i18n="back_home">← На главную</a>
+        <p class="section-label" id="about-section-label" data-i18n="lbl_about">Обо мне</p>
+        <h1 class="section-title" id="about-page-title"></h1>
+        <p class="section-desc" id="about-page-desc"></p>
+      </div>
+      <div class="about-grid">
+        <div id="about-paragraphs" class="fade-in"></div>
+        <div id="about-stats" class="fade-in"></div>
+      </div>
+      <h3 class="values-title fade-in" data-i18n="values_title">// Что мне важно</h3>
+      <div id="about-values"></div>
+    </div>
+  </div>
+
+  <footer></footer>
+
+  <script src="site-data.js"></script>
+  <script src="translations.js"></script>
+  <script src="loader.js"></script>
+  <script src="nav.js"></script>
+  <script src="effects.js"></script>
+</body>
+</html>

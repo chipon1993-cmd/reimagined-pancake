@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Видео · Andrii Chepelovskyi</title>
+  <meta name="description" content="Видео-контент Андрия Чепеловского — смотреть, а не читать." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Видео · Andrii Chepelovskyi" />
+  <meta property="og:description" content="Видео-контент — смотреть, а не читать." />
+  <meta property="og:image" content="og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00d4ff" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── VIDEO GRID ── */
+    .vgrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      margin-bottom: 80px;
+    }
+    @media(max-width:1024px){ .vgrid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:600px) { .vgrid { grid-template-columns: 1fr; } }
+
+    /* ── VIDEO CARD ── */
+    .vcard {
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+      position: relative;
+    }
+    .vcard:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0,212,255,0.12);
+      border-color: rgba(0,212,255,0.4);
+    }
+
+    .vthumb {
+      position: relative;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      background: #000;
+    }
+    .vthumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.55s ease;
+      display: block;
+    }
+    .vcard:hover .vthumb img { transform: scale(1.05); }
+
+    .vplay-btn {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0);
+      transition: background 0.3s;
+    }
+    .vcard:hover .vplay-btn { background: rgba(0,0,0,0.35); }
+
+    .vplay-icon {
+      width: 54px; height: 54px;
+      background: rgba(0,212,255,0.12);
+      border: 2px solid rgba(0,212,255,0.65);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem; color: var(--accent);
+      opacity: 0; transform: scale(0.75);
+      transition: opacity 0.3s, transform 0.3s;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 24px rgba(0,212,255,0.3);
+    }
+    .vcard:hover .vplay-icon { opacity: 1; transform: scale(1); }
+
+    .vduration {
+      position: absolute; bottom: 8px; right: 8px;
+      background: rgba(0,0,0,0.82);
+      color: #fff; font-size: .7rem; font-weight: 700;
+      padding: 2px 7px; border-radius: 4px; letter-spacing: .04em;
+    }
+    .vtype-badge {
+      position: absolute; top: 8px; left: 8px;
+      font-size: .62rem; font-weight: 700; padding: 3px 9px;
+      border-radius: 999px; letter-spacing: .1em; text-transform: uppercase;
+    }
+    .vtype-youtube { background:rgba(255,50,50,.15); border:1px solid rgba(255,50,50,.35); color:#ff5555; }
+    .vtype-vimeo   { background:rgba(26,183,234,.15); border:1px solid rgba(26,183,234,.35); color:#1ab7ea; }
+    .vtype-file    { background:rgba(0,212,255,.1); border:1px solid rgba(0,212,255,.25); color:var(--accent); }
+
+    .vinfo { padding: 14px 16px 18px; }
+    .vtags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+    .vtag  {
+      font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+      padding:2px 8px; border-radius:999px;
+      background:rgba(0,212,255,.06); border:1px solid rgba(0,212,255,.15); color:rgba(0,212,255,.75);
+    }
+    .vtitle {
+      font-size:.95rem; font-weight:700; line-height:1.4; margin-bottom:6px; letter-spacing:.01em;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    .vmeta { font-size:.75rem; color:var(--muted); display:flex; gap:12px; }
+    .vmeta-views { color:rgba(0,212,255,.65); }
+
+    /* ── FEATURED ── */
+    .vfeatured {
+      margin-bottom: 52px; border-radius: var(--radius);
+      overflow: hidden; cursor: pointer; position: relative;
+      border: 1px solid rgba(0,212,255,.2);
+      box-shadow: 0 0 48px rgba(0,212,255,.07);
+      transition: box-shadow var(--transition);
+    }
+    .vfeatured:hover { box-shadow: 0 0 70px rgba(0,212,255,.14); }
+    .vfeatured .vthumb { aspect-ratio: 16/6; }
+    @media(max-width:768px){ .vfeatured .vthumb { aspect-ratio:16/9; } }
+
+    .vfeatured-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, rgba(5,8,16,.92) 0%, rgba(5,8,16,.5) 55%, transparent 100%);
+      padding: 40px 48px;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    @media(max-width:600px){ .vfeatured-overlay { padding:24px; background:rgba(5,8,16,.75); } }
+
+    .vfeatured-label {
+      font-size:.65rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+      color:var(--accent); margin-bottom:10px;
+      text-shadow: 0 0 12px rgba(0,212,255,.5);
+    }
+    .vfeatured-label::before { content:'// '; opacity:.6; }
+    .vfeatured-title {
+      font-size:clamp(1.2rem,3vw,2.1rem); font-weight:800; margin-bottom:8px; line-height:1.2;
+    }
+    .vfeatured-desc {
+      font-size:.9rem; color:rgba(255,255,255,.6); max-width:460px; margin-bottom:18px;
+    }
+    .vfeatured-play {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:.8rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--accent); border:1px solid rgba(0,212,255,.4);
+      padding:9px 22px; border-radius:4px; width:fit-content;
+      transition: background var(--transition), box-shadow var(--transition);
+    }
+    .vfeatured:hover .vfeatured-play {
+      background:rgba(0,212,255,.1); box-shadow:0 0 18px rgba(0,212,255,.2);
+    }
+
+    /* ── FILTER BAR ── */
+    .vfb { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:40px; }
+    .vfbtn {
+      padding:7px 18px; border-radius:999px;
+      font-size:.76rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+      cursor:pointer; border:1px solid var(--border); background:transparent;
+      color:var(--muted); transition:var(--transition); font-family:inherit;
+    }
+    .vfbtn:hover { color:var(--text); border-color:var(--border-h); }
+    .vfbtn.active {
+      color:var(--accent); border-color:rgba(0,212,255,.5);
+      background:rgba(0,212,255,.06); box-shadow:0 0 12px rgba(0,212,255,.15);
+    }
+
+    /* ── EMPTY STATE ── */
+    .vempty {
+      text-align:center; padding:100px 0 80px; color:var(--muted);
+    }
+    .vempty-icon { font-size:3.5rem; margin-bottom:20px; opacity:.5; }
+    .vempty-title { font-size:1.1rem; font-weight:700; margin-bottom:8px; color:var(--text); }
+    .vempty-sub { font-size:.9rem; }
+
+    /* ── MODAL ── */
+    .vmodal {
+      position:fixed; inset:0;
+      background:rgba(5,8,16,.9);
+      z-index:1000; display:none;
+      align-items:center; justify-content:center;
+      padding:20px;
+      backdrop-filter:blur(16px);
+      animation:vm-in .25s ease;
+    }
+    @keyframes vm-in { from { opacity:0; } to { opacity:1; } }
+    .vmodal.open { display:flex; }
+
+    .vmodal-box {
+      width:100%; max-width:920px;
+      background:var(--surface2);
+      border:1px solid var(--border-h);
+      border-radius:var(--radius);
+      overflow:hidden; position:relative;
+      box-shadow:0 0 80px rgba(0,212,255,.15), 0 40px 80px rgba(0,0,0,.6);
+      max-height:92vh; overflow-y:auto;
+      animation:vm-box-in .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes vm-box-in { from { transform:scale(.94) translateY(20px); opacity:0; } to { transform:none; opacity:1; } }
+
+    .vmodal-close {
+      position:absolute; top:14px; right:14px; z-index:10;
+      background:rgba(0,0,0,.65); border:1px solid var(--border);
+      color:var(--text); width:36px; height:36px; border-radius:50%;
+      font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:var(--transition); backdrop-filter:blur(8px);
+    }
+    .vmodal-close:hover { background:rgba(239,68,68,.25); border-color:rgba(239,68,68,.5); color:#f87171; }
+
+    .vmodal-player {
+      aspect-ratio:16/9; background:#000; position:relative;
+    }
+    .vmodal-player iframe,
+    .vmodal-player video { width:100%; height:100%; border:none; display:block; }
+
+    .vmodal-info { padding:24px 28px 32px; }
+    .vmodal-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+    .vmodal-title { font-size:1.4rem; font-weight:800; margin-bottom:8px; line-height:1.3; }
+    .vmodal-meta {
+      font-size:.8rem; color:var(--muted); margin-bottom:14px;
+      display:flex; gap:16px; align-items:center; flex-wrap:wrap;
+    }
+    .vmodal-meta span { display:flex; align-items:center; gap:5px; }
+    .vmodal-desc { color:var(--muted); font-size:.93rem; line-height:1.75; }
+
+    /* ── SECTION COUNT ── */
+    .vsection-head {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:28px;
+    }
+    .vsection-count {
+      font-size:.72rem; color:var(--muted); letter-spacing:.08em;
+    }
+    .vsection-count span { color:var(--accent); font-weight:700; }
+  </style>
+</head>
+<body data-page="videos">
+  <noscript><style>.fade-in{opacity:1!important;transform:none!important}#page-overlay{display:none!important}</style></noscript>
+  <div id="page-overlay"></div>
+
+  <nav>
+    <a href="index.html" class="nav-logo">A<span>.</span>C</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="about.html"     onclick="closeMenu()" data-i18n="nav_about">О себе</a></li>
+      <li><a href="journey.html"   onclick="closeMenu()" data-i18n="nav_journey">Мой путь</a></li>
+      <li><a href="interests.html" onclick="closeMenu()" data-i18n="nav_interests">Интересы</a></li>
+      <li><a href="videos.html"    onclick="closeMenu()" data-i18n="nav_videos">Видео</a></li>
+      <li><a href="contact.html"   onclick="closeMenu()" data-i18n="nav_contact">Контакт</a></li>
+    </ul>
+    <div class="nav-controls">
+      <div class="lang-btns">
+        <button class="lang-btn" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="uk" onclick="switchLang('uk')">UK</button>
+        <button class="lang-btn" data-lang="no" onclick="switchLang('no')">NO</button>
+      </div>
+      <div class="nav-sep"></div>
+      <div class="theme-dots">
+        <button class="theme-dot t-cyan"   data-theme="cyan"   onclick="switchTheme('cyan')"></button>
+        <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')"></button>
+        <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')"></button>
+        <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')"></button>
+      </div>
+    </div>
+    <button class="burger" id="burger" onclick="toggleMenu()" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="container">
+
+      <!-- Page hero -->
+      <div class="page-hero fade-in">
+        <a href="index.html" class="back-link" data-i18n="back_home">← На главную</a>
+        <p class="section-label" id="videos-section-label">Контент</p>
+        <h1 class="section-title" id="videos-page-title"></h1>
+        <p class="section-desc"  id="videos-page-desc"></p>
+      </div>
+
+      <!-- Featured video -->
+      <div id="videos-featured"></div>
+
+      <!-- Filter bar -->
+      <div class="vfb fade-in" id="videos-filter-bar"></div>
+
+      <!-- Section head -->
+      <div class="vsection-head" id="videos-section-head" style="display:none">
+        <p class="section-label" style="margin:0">Все видео</p>
+        <span class="vsection-count" id="videos-count"></span>
+      </div>
+
+      <!-- Video grid -->
+      <div class="vgrid" id="videos-grid"></div>
+
+      <!-- Empty state -->
+      <div class="vempty" id="videos-empty" style="display:none">
+        <div class="vempty-icon">🎬</div>
+        <div class="vempty-title">Видео пока нет</div>
+        <div class="vempty-sub">Добавьте видео через панель администратора</div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer></footer>
+
+  <!-- ═══════════════════ VIDEO MODAL ═══════════════════ -->
+  <div class="vmodal" id="video-modal" onclick="modalBgClick(event)">
+    <div class="vmodal-box">
+      <button class="vmodal-close" onclick="closeModal()">✕</button>
+      <div class="vmodal-player" id="vmodal-player"></div>
+      <div class="vmodal-info">
+        <div class="vmodal-tags" id="vmodal-tags"></div>
+        <div class="vmodal-title" id="vmodal-title"></div>
+        <div class="vmodal-meta"  id="vmodal-meta"></div>
+        <div class="vmodal-desc"  id="vmodal-desc"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="site-data.js"></script>
+  <script src="translations.js"></script>
+  <script src="loader.js"></script>
+  <script src="nav.js"></script>
+  <script src="effects.js"></script>
+  <script>
+  // ── FILTER BAR ──────────────────────────────
+  window.renderVideoFilter = function(items) {
+    const el = document.getElementById('videos-filter-bar');
+    const sh = document.getElementById('videos-section-head');
+    const ct = document.getElementById('videos-count');
+    if (!el) return;
+
+    const nonFeatured = items.filter(v => !v.featured);
+
+    // Count display
+    if (sh) sh.style.display = nonFeatured.length ? '' : 'none';
+    if (ct) ct.innerHTML = `Всего: <span>${nonFeatured.length}</span>`;
+
+    // Tags filter
+    const allTags = [...new Set(items.flatMap(v => v.tags || []))];
+    if (!allTags.length || items.length < 3) { el.style.display = 'none'; return; }
+
+    let html = `<button class="vfbtn active" data-vtag="all" onclick="filterVids(this)">Все (${nonFeatured.length})</button>`;
+    allTags.forEach(tag => {
+      const n = nonFeatured.filter(v => (v.tags||[]).includes(tag)).length;
+      const safe = tag.replace(/"/g,'&quot;').replace(/</g,'&lt;');
+      if (n > 0) html += `<button class="vfbtn" data-vtag="${safe}" onclick="filterVids(this)">${safe} (${n})</button>`;
+    });
+    el.innerHTML = html;
+  };
+
+  function filterVids(btn) {
+    const tag = btn.dataset.vtag || 'all';
+    document.querySelectorAll('.vfbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#videos-grid .vcard').forEach(card => {
+      if (tag === 'all') { card.style.display = ''; return; }
+      const tags = (card.dataset.tags || '').split(',').filter(Boolean);
+      card.style.display = tags.includes(tag) ? '' : 'none';
+    });
+  }
+
+  // ── MODAL ────────────────────────────────────
+  function openVideo(id) {
+    const videos = window.AC_VIDEOS || [];
+    const v = videos.find(x => x.id === id);
+    if (!v) return;
+
+    // Increment view count
+    const key   = 'ac_views_' + id;
+    const views = parseInt(localStorage.getItem(key) || '0') + 1;
+    localStorage.setItem(key, views);
+    const vmEl = document.querySelector(`[data-vid="${id}"] .vmeta-views`);
+    if (vmEl) vmEl.textContent = '👁 ' + views;
+
+    // Build player
+    let player = '';
+    if (v.type === 'youtube') {
+      player = `<iframe src="https://www.youtube.com/embed/${v.embedId}?autoplay=1&rel=0&modestbranding=1"
+        allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+    } else if (v.type === 'vimeo') {
+      player = `<iframe src="https://player.vimeo.com/video/${v.embedId}?autoplay=1&color=00d4ff"
+        allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+    } else if (v.type === 'file') {
+      player = `<video controls autoplay src="${v.embedId}" style="width:100%;height:100%;background:#000"></video>`;
+    }
+
+    document.getElementById('vmodal-player').innerHTML = player;
+    document.getElementById('vmodal-title').textContent = v.title || '';
+    document.getElementById('vmodal-desc').textContent  = v.desc  || '';
+
+    const meta = [];
+    if (v.date)     meta.push(`<span>📅 ${v.date}</span>`);
+    if (v.duration) meta.push(`<span>⏱ ${v.duration}</span>`);
+    meta.push(`<span>👁 ${views} просмотров</span>`);
+    document.getElementById('vmodal-meta').innerHTML = meta.join('');
+
+    document.getElementById('vmodal-tags').innerHTML =
+      (v.tags || []).map(t => `<span class="vtag">${t}</span>`).join('');
+
+    document.getElementById('video-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('video-modal').classList.remove('open');
+    document.getElementById('vmodal-player').innerHTML = ''; // stop playback
+    document.body.style.overflow = '';
+  }
+
+  function modalBgClick(e) {
+    if (e.target === document.getElementById('video-modal')) closeModal();
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  </script>
+</body>
+</html>

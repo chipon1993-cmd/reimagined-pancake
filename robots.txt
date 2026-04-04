@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chepelovskyi.no/sitemap.xml
+
+# Admin panel — no indexing
+Disallow: /admin.html
+Disallow: /og-template.html
