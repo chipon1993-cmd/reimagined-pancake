@@ -1108,9 +1108,12 @@ function edGlobal(){
     <b style="color:var(--text)">Plausible Analytics</b> — приватная статистика без cookie-баннера, не замедляет сайт (скрипт 1 KB).<br>
     Зарегистрируй домен на <a href="https://plausible.io" target="_blank" style="color:var(--accent);">plausible.io</a> ($9/мес) или self-host через <a href="https://umami.is" target="_blank" style="color:var(--accent);">umami.is</a> (бесплатно) — и вставь домен ниже.
   </p>
-  ${fg('Домен сайта (Plausible)',inp('gl-plausible',(g.analytics&&g.analytics.plausible)||''),'Именно тот домен, что зарегистрирован в Plausible. Напр.: chepelovskyi.no — без https:// и без /')}
+  <div class="frow">
+    ${fg('Plausible (домен)',inp('gl-plausible',(g.analytics&&g.analytics.plausible)||''),'Напр.: chepelovskyi.no — без https://')}
+    ${fg('Google Analytics (Measurement ID)',inp('gl-ga',(g.analytics&&g.analytics.ga)||''),'Формат: G-XXXXXXXXXX — из analytics.google.com')}
+  </div>
   <p style="color:var(--muted);font-size:.78rem;margin-top:-10px;margin-bottom:0;">
-    Пустое поле = скрипт не подключён. Поле заполнено = скрипт автоматически появляется на всех страницах.
+    Пустые поля = скрипты не подключены. Можно использовать оба одновременно.
   </p>
   <div class="fsec">Giscus (комментарии)</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">
@@ -1137,6 +1140,7 @@ function colGlobal(){
   D.global.footerLeft=v('gl-l'); D.global.footerRight=v('gl-r');
   if(!D.global.analytics)D.global.analytics={};
   D.global.analytics.plausible=v('gl-plausible');
+  D.global.analytics.ga=v('gl-ga');
   if(!D.global.giscus)D.global.giscus={};
   D.global.giscus.repo=v('gl-gc-repo'); D.global.giscus.repoId=v('gl-gc-repoid');
   D.global.giscus.category=v('gl-gc-cat'); D.global.giscus.categoryId=v('gl-gc-catid');

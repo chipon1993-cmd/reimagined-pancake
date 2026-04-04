@@ -6,7 +6,7 @@ window.AC_DEFAULTS = {
   global: {
     footerLeft:  "© 2026 Andrii Chepelovskyi",
     footerRight: "Норвегия · Всё ещё в процессе",
-    analytics: { plausible: "" },   // ← заполни домен в admin → Общие → Аналитика
+    analytics: { plausible: "", ga: "" },   // ← заполни в admin → Общие → Аналитика
     giscus: { repo: "", repoId: "", category: "", categoryId: "" },  // ← настрой на giscus.app
     nav: {
       about: "О себе",

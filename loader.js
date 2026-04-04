@@ -425,16 +425,32 @@
   // is guaranteed to be available. Domain is set in admin → Общие → Аналитика.
   function injectAnalytics() {
     if (new URLSearchParams(location.search).has('preview')) return; // skip in preview mode
-    if (document.querySelector('script[data-domain]')) return;       // avoid double inject
     try {
       const d = getData();
-      const domain = d.global && d.global.analytics && d.global.analytics.plausible;
-      if (!domain || domain.trim() === '') return;
-      const s = document.createElement('script');
-      s.defer = true;
-      s.setAttribute('data-domain', domain.trim());
-      s.src = 'https://plausible.io/js/script.js';
-      document.head.appendChild(s);
+      const analytics = d.global && d.global.analytics;
+      if (!analytics) return;
+
+      // Plausible
+      const domain = analytics.plausible && analytics.plausible.trim();
+      if (domain && !document.querySelector('script[data-domain]')) {
+        const s = document.createElement('script');
+        s.defer = true;
+        s.setAttribute('data-domain', domain);
+        s.src = 'https://plausible.io/js/script.js';
+        document.head.appendChild(s);
+      }
+
+      // Google Analytics 4
+      const gaId = analytics.ga && analytics.ga.trim();
+      if (gaId && !document.querySelector('script[src*="googletagmanager"]')) {
+        const g = document.createElement('script');
+        g.async = true;
+        g.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
+        document.head.appendChild(g);
+        const gi = document.createElement('script');
+        gi.textContent = "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','" + gaId + "');";
+        document.head.appendChild(gi);
+      }
     } catch(e) {}
   }
 
