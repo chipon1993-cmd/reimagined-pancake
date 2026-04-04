@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <title>Закладки · Andrii Chepelovskyi</title>
   <meta name="description" content="Все сайты и ресурсы, связанные с проектом — в одном месте." />
   <meta property="og:type" content="website" />
@@ -14,6 +17,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0ad0ff" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
   <style>
     .bm-search {
@@ -143,12 +147,17 @@
 
   <footer></footer>
 
-  <script src="https://unpkg.com/lucide@0.469.0"></script>
-  <script src="site-data.js"></script>
-  <script src="translations.js"></script>
-  <script src="loader.js"></script>
-  <script src="nav.js"></script>
-  <script src="effects.js"></script>
+  <script defer src="site-data.js"></script>
+  <script defer src="translations.js"></script>
+  <script defer src="loader.js"></script>
+  <script defer src="nav.js"></script>
+  <script>
+  (function(){
+    function lazyLoad(srcs){srcs.forEach(function(s){var el=document.createElement('script');el.src=s;document.body.appendChild(el);});}
+    var idle=window.requestIdleCallback||function(cb){setTimeout(cb,200)};
+    idle(function(){lazyLoad(['https://unpkg.com/lucide@0.469.0','effects.js']);});
+  })();
+  </script>
   <script>
   (function () {
     const container = document.getElementById('bm-container');
