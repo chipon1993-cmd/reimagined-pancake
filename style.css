@@ -151,9 +151,11 @@ body.cursor-hover .cursor-ring { border-color: rgba(168,85,247,0.7); width: 44px
   pointer-events: none;
   opacity: 1;
   transition: opacity 0.5s ease;
+  animation: overlay-fade 0.6s ease 0.8s forwards;  /* CSS-only fallback: fades out after 0.8s even if JS fails */
 }
-#page-overlay.hidden { opacity: 0; }
-#page-overlay.leaving { opacity: 1; }
+@keyframes overlay-fade { to { opacity: 0; } }
+#page-overlay.hidden { opacity: 0; animation: none; }
+#page-overlay.leaving { opacity: 1; animation: none; }
 
 /* =====================
    НАВИГАЦИЯ

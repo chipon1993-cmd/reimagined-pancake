@@ -13,9 +13,10 @@
     const overlay = document.getElementById('page-overlay');
     if (!overlay) return;
 
-    // Fade in on page load (double-trigger for reliability)
+    // Fade in on page load (triple-trigger for reliability)
     requestAnimationFrame(() => { overlay.classList.add('hidden'); });
     setTimeout(() => { overlay.classList.add('hidden'); }, 120);
+    setTimeout(() => { overlay.classList.add('hidden'); }, 1500);
 
     // Intercept internal link clicks
     document.addEventListener('click', (e) => {
