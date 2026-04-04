@@ -80,45 +80,40 @@
     return null;
   }
 
+  // Helper: read from cache only if Firestore failed
+  function readCache(key) {
+    try { var s = localStorage.getItem(key); return s ? JSON.parse(s) : null; } catch(e) { return null; }
+  }
+  function writeCache(key, data) {
+    try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) {}
+  }
+
   async function getData() {
     // Preview mode: admin passed a full snapshot via ac_preview
     if (new URLSearchParams(location.search).has('preview')) {
       try {
-        const prev = localStorage.getItem('ac_preview');
+        var prev = localStorage.getItem('ac_preview');
         if (prev) return JSON.parse(prev);
       } catch(e) {}
     }
 
-    // Check if admin saved new data — if so, clear stale caches
-    var cacheBust = localStorage.getItem('ac_cache_bust');
-    if (cacheBust) {
-      try {
-        localStorage.removeItem('ac_content');
-        localStorage.removeItem('ac_content_uk');
-        localStorage.removeItem('ac_content_no');
-        localStorage.removeItem('ac_cache_bust');
-      } catch(e) {}
-    }
-
-    const lang = localStorage.getItem('ac_lang') || 'ru';
+    var lang;
+    try { lang = localStorage.getItem('ac_lang') || 'ru'; } catch(e) { lang = 'ru'; }
 
     // 1. Base defaults — always works, no Firebase needed
-    let base = JSON.parse(JSON.stringify(window.AC_DEFAULTS));
+    var base = JSON.parse(JSON.stringify(window.AC_DEFAULTS));
 
     // 2. Merge language-specific translations (UK / NO)
     if (lang !== 'ru' && window.AC_TRANSLATIONS && window.AC_TRANSLATIONS[lang]) {
       base = deepMerge(base, window.AC_TRANSLATIONS[lang]);
     }
 
-    // 3. Russian admin edits (Firestore → cache in localStorage → fallback)
-    let ruData = await safeGet('content', 'ac_content');
+    // 3. Russian admin edits — ALWAYS try Firestore first, cache is offline-only fallback
+    var ruData = await safeGet('content', 'ac_content');
     if (ruData) {
-      // Cache in localStorage for offline access
-      try { localStorage.setItem('ac_content', JSON.stringify(ruData)); } catch(e) {}
+      writeCache('ac_content', ruData);
     } else {
-      // Firestore unavailable — use cached version
-      const ruSaved = localStorage.getItem('ac_content');
-      if (ruSaved) { try { ruData = JSON.parse(ruSaved); } catch(e) {} }
+      ruData = readCache('ac_content');
     }
     if (ruData) {
       base = deepMerge(base, ruData);
@@ -126,13 +121,12 @@
 
     // 4. Language-specific admin fine-tuning
     if (lang !== 'ru') {
-      const langKey = 'ac_content_' + lang;
-      let langData = await safeGet('content', langKey);
+      var lk = 'ac_content_' + lang;
+      var langData = await safeGet('content', lk);
       if (langData) {
-        try { localStorage.setItem(langKey, JSON.stringify(langData)); } catch(e) {}
+        writeCache(lk, langData);
       } else {
-        const langSaved = localStorage.getItem(langKey);
-        if (langSaved) { try { langData = JSON.parse(langSaved); } catch(e) {} }
+        langData = readCache(lk);
       }
       if (langData) {
         base = deepMerge(base, langData);
@@ -140,19 +134,12 @@
     }
 
     // 5. Restore nav translations lost during RU master merge
+    //    (reuse langData from step 4 instead of duplicate Firestore call)
     if (lang !== 'ru' && window.AC_TRANSLATIONS && window.AC_TRANSLATIONS[lang]) {
-      const transNav = window.AC_TRANSLATIONS[lang].global && window.AC_TRANSLATIONS[lang].global.nav;
+      var transNav = window.AC_TRANSLATIONS[lang].global && window.AC_TRANSLATIONS[lang].global.nav;
       if (transNav && base.global) {
-        let adminNav = {};
-        try {
-          const langKey = 'ac_content_' + lang;
-          let ld = await safeGet('content', langKey);
-          if (!ld) {
-            ld = JSON.parse(localStorage.getItem(langKey) || '{}');
-          }
-          adminNav = (ld.global && ld.global.nav) || {};
-        } catch(e) {}
-        Object.keys(transNav).forEach(k => { if (!adminNav[k]) base.global.nav[k] = transNav[k]; });
+        var adminNav = (langData && langData.global && langData.global.nav) || {};
+        Object.keys(transNav).forEach(function(k) { if (!adminNav[k]) base.global.nav[k] = transNav[k]; });
       }
     }
 
@@ -173,7 +160,7 @@
   function set(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
   function attr(id, a, v) { const el = document.getElementById(id); if (el) el.setAttribute(a, v); }
   function i18n(key, fallback) {
-    const lang = localStorage.getItem('ac_lang') || 'ru';
+    var lang; try { lang = localStorage.getItem('ac_lang') || 'ru'; } catch(e) { lang = 'ru'; }
     const t = window.AC_I18N && window.AC_I18N[lang];
     return (t && t[key]) || fallback;
   }

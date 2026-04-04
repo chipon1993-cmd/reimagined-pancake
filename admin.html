@@ -71,7 +71,7 @@
       color: var(--text);
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
       min-height: 100vh;
-      cursor: none;
+      cursor: auto;
       transition: background .5s var(--ease), color .5s var(--ease);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -1349,10 +1349,11 @@ async function switchAdminLang(lang){
 }
 
 async function persistCurrentLang(){
-  await fsSet('content', langKey(adminLang), JSON.parse(JSON.stringify(D)));
-  // Signal site to invalidate cache on next load
-  try { localStorage.setItem('ac_cache_bust', Date.now().toString()); } catch(e) {}
-  // Also clear cached content so next site visit reads fresh from Firestore
+  var saveData = JSON.parse(JSON.stringify(D));
+  // Add timestamp so site can detect stale cache across devices
+  saveData._ts = Date.now();
+  await fsSet('content', langKey(adminLang), saveData);
+  // Signal site to invalidate cache on next load (same browser)
   try { localStorage.removeItem('ac_content'); localStorage.removeItem('ac_content_uk'); localStorage.removeItem('ac_content_no'); } catch(e) {}
 }
 
@@ -1483,8 +1484,9 @@ async function saveAll(){
   collectCurrent();
   const st=document.getElementById('save-st');
   try {
-    await pushBackup();
+    // Save to Firestore FIRST — this is critical
     await persistCurrentLang();
+    // Only mark clean AFTER successful Firestore write
     isDirty=false; autoSec=30;
     document.getElementById('save-auto').textContent='';
     const pulseBtn=document.querySelector('.xbtn.save'); if(pulseBtn) pulseBtn.classList.remove('pulse');
@@ -1500,7 +1502,10 @@ async function saveAll(){
       if(old)old.remove();
       showToast('// Сохранено · '+adminLang.toUpperCase());
     }
+    // Backup is non-critical — don't block save on failure
+    pushBackup().catch(function(e){ console.warn('Backup failed:', e.message); });
   } catch(e) {
+    isDirty=true; // Ensure auto-save retries
     st.textContent='✕ Ошибка сохранения'; st.className='save-status';
     showToast('// Ошибка: '+e.message);
   }
@@ -1820,7 +1825,7 @@ function colInterests(){
   D.interests.sectionLabel=v('in-sl'); D.interests.pageTitle=v('in-t'); D.interests.pageDesc=v('in-d');
   const iconToId={'🧠':'psychology','🌀':'philosophy','⚡':'tech','🌍':'sociology','🤸':'acrobatics','🚗':'cars'};
   const oldCards=D.interests.cards||[];
-  D.interests.cards=[...document.querySelectorAll('#ls-in .li-item')].map((li,idx)=>{const i=li.dataset.idx;const icon=document.getElementById(`in-ic-${i}`)?.value||'';const oldCard=oldCards[idx]||{};return{id:oldCard.id||iconToId[icon]||'interest_'+idx,icon,title:document.getElementById(`in-ti-${i}`)?.value||'',desc:document.getElementById(`in-de-${i}`)?.value||'',questions:(document.getElementById(`in-q-${i}`)?.value||'').split('\n').map(s=>s.trim()).filter(Boolean)};});
+  D.interests.cards=[...document.querySelectorAll('#ls-in .li-item')].map(function(li){var i=li.dataset.idx;var icon=document.getElementById('in-ic-'+i)?.value||'';var oldCard=oldCards[parseInt(i)]||{};return{id:oldCard.id||iconToId[icon]||'interest_'+i,icon:icon,title:document.getElementById('in-ti-'+i)?.value||'',desc:document.getElementById('in-de-'+i)?.value||'',questions:(document.getElementById('in-q-'+i)?.value||'').split('\n').map(function(s){return s.trim()}).filter(Boolean)};});
 }
 function addIn(){ colInterests(); D.interests.cards.push({icon:'🌟',title:'Новый интерес',desc:'Описание',questions:[]}); CT=''; showTab('interests'); scrollToLast('ls-in'); }
 
