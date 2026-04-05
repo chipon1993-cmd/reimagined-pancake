@@ -109,31 +109,8 @@ function updateLangButtons() {
 function switchTheme(theme) {
   localStorage.setItem('ac_theme', theme);
   applyTheme(theme);
-  updateThemeUI(theme);
+  updateThemeDots(theme);
 }
-
-function pickTheme(theme) {
-  switchTheme(theme);
-  closeThemePicker();
-}
-
-function toggleThemePicker() {
-  var picker = document.getElementById('themePicker');
-  if (picker) picker.classList.toggle('open');
-}
-
-function closeThemePicker() {
-  var picker = document.getElementById('themePicker');
-  if (picker) picker.classList.remove('open');
-}
-
-// Close dropdown on outside click
-document.addEventListener('click', function(e) {
-  var picker = document.getElementById('themePicker');
-  if (picker && !picker.contains(e.target)) {
-    picker.classList.remove('open');
-  }
-});
 
 function applyTheme(theme) {
   // Reset custom inline styles first
@@ -153,20 +130,12 @@ function applyTheme(theme) {
   }
 }
 
-function updateThemeUI(theme) {
+function updateThemeDots(theme) {
   theme = theme || 'cyan';
-  // Update legacy dots (mobile menu)
   document.querySelectorAll('.theme-dot').forEach(dot => {
     dot.classList.toggle('active', dot.dataset.theme === theme);
   });
-  // Update dropdown options
-  document.querySelectorAll('.theme-option').forEach(opt => {
-    opt.classList.toggle('active', opt.dataset.theme === theme);
-  });
 }
-
-// Backward compat
-function updateThemeDots(theme) { updateThemeUI(theme); }
 
 // ── INIT ─────────────────────────────────────────────
 function initLangTheme() {
@@ -177,7 +146,7 @@ function initLangTheme() {
     theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'cyan';
   }
   applyTheme(theme);
-  updateThemeUI(theme);
+  updateThemeDots(theme);
   updateLangButtons();
   translateNav();
 }
