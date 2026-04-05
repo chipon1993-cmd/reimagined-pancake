@@ -1,9 +1,9 @@
 // Service Worker — offline caching for Andrii Chepelovskyi site
-const CACHE = 'ac-v20';
+const CACHE = 'ac-v22';
 const SHELL = [
   '/', '/index.html', '/about.html', '/journey.html',
   '/interests.html', '/videos.html', '/contact.html',
-  '/interest.html', '/post.html', '/404.html',
+  '/interest.html', '/post.html', '/world.html', '/404.html',
   '/style.css', '/site-data.js', '/translations.js',
   '/firebase-config.js', '/loader.js', '/nav.js', '/effects.js',
   '/favicon.svg', '/og-image.png', '/manifest.json'
