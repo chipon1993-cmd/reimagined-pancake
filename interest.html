@@ -654,8 +654,8 @@
         if (p.author) body += `<div class="post-quote-author">— ${esc(p.author)}</div>`;
 
       } else if (p.type === 'link') {
-        if (p.title) body += `<div class="post-header"><span class="post-type-icon">${typeIcon('link')}</span><a class="post-title" href="${link}" target="_blank" rel="noopener">${esc(p.title)}</a></div>`;
-        if (p.url)   body += `<a class="post-link-url" href="${esc(p.url)}" target="_blank" rel="noopener">🔗 ${esc(p.url)}</a>`;
+        const linkHref = p.url ? esc(p.url) : link;
+        if (p.title) body += `<div class="post-header"><span class="post-type-icon">${typeIcon('link')}</span><a class="post-title" href="${linkHref}" target="_blank" rel="noopener">${esc(p.title)}</a></div>`;
         if (p.content) body += `<div class="post-content">${renderMd(p.content)}</div>`;
       }
 
