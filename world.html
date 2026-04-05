@@ -200,49 +200,105 @@
   pointLight2.position.set(-5, -3, -5);
   scene.add(pointLight2);
 
-  // ── STAR TEXTURE (round soft glow) ──
-  function createStarTexture(size, color) {
+  // ── STAR TEXTURES (different types) ──
+  // Spectral star colors: O(blue) B(blue-white) A(white) F(yellow-white) G(yellow) K(orange) M(red)
+  const STAR_COLORS = [
+    [0.7,0.8,1.0],   // blue-white
+    [0.9,0.9,1.0],   // white
+    [1.0,1.0,0.9],   // yellow-white
+    [1.0,0.95,0.8],  // warm yellow
+    [1.0,0.85,0.7],  // orange tint
+    [0.6,0.75,1.0],  // blue
+  ];
+
+  function createStarTexture(size) {
     const c = document.createElement('canvas');
     c.width = c.height = size;
     const ctx = c.getContext('2d');
-    const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-    g.addColorStop(0, color || 'rgba(255,255,255,1)');
-    g.addColorStop(0.15, color || 'rgba(255,255,255,0.8)');
-    g.addColorStop(0.4, 'rgba(200,220,255,0.15)');
+    const h = size / 2;
+    // Core glow
+    const g = ctx.createRadialGradient(h, h, 0, h, h, h);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.05, 'rgba(255,255,255,0.9)');
+    g.addColorStop(0.15, 'rgba(220,235,255,0.5)');
+    g.addColorStop(0.35, 'rgba(180,210,255,0.1)');
+    g.addColorStop(0.6, 'rgba(100,150,255,0.02)');
     g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, size, size);
     return new THREE.CanvasTexture(c);
   }
 
-  const starTex = createStarTexture(64);
+  function createBrightStarTexture(size) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d');
+    const h = size / 2;
+    // Core
+    const g = ctx.createRadialGradient(h, h, 0, h, h, h);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.03, 'rgba(255,255,255,0.95)');
+    g.addColorStop(0.1, 'rgba(200,225,255,0.5)');
+    g.addColorStop(0.3, 'rgba(150,200,255,0.1)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+    // Cross flare spikes
+    ctx.globalCompositeOperation = 'lighter';
+    for (let angle = 0; angle < 4; angle++) {
+      ctx.save();
+      ctx.translate(h, h);
+      ctx.rotate(angle * Math.PI / 2 + Math.PI / 4);
+      const sg = ctx.createLinearGradient(0, 0, h * 0.9, 0);
+      sg.addColorStop(0, 'rgba(200,225,255,0.6)');
+      sg.addColorStop(0.3, 'rgba(180,210,255,0.15)');
+      sg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = sg;
+      ctx.fillRect(0, -0.8, h * 0.9, 1.6);
+      ctx.restore();
+    }
+    return new THREE.CanvasTexture(c);
+  }
 
-  // ── STARS (3 layers — depth) ──
-  function makeStarLayer(count, spread, size, opacity) {
+  const starTex = createStarTexture(64);
+  const brightStarTex = createBrightStarTexture(128);
+
+  // ── STARS (3 layers with colors + twinkle data) ──
+  const twinkleStars = [];
+
+  function makeStarLayer(count, spread, size, opacity, bright) {
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
+    const colors = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       pos[i*3]   = (Math.random()-0.5) * spread;
       pos[i*3+1] = (Math.random()-0.5) * spread;
       pos[i*3+2] = (Math.random()-0.5) * spread;
-      sizes[i] = size * (0.4 + Math.random() * 0.8);
+      // Random spectral color
+      const sc = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)];
+      colors[i*3] = sc[0]; colors[i*3+1] = sc[1]; colors[i*3+2] = sc[2];
     }
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     const mat = new THREE.PointsMaterial({
-      map: starTex, size: size, transparent: true, opacity: opacity,
+      map: bright ? brightStarTex : starTex,
+      size: size, transparent: true, opacity: opacity,
+      vertexColors: true,
       sizeAttenuation: true, depthWrite: false, blending: THREE.AdditiveBlending
     });
-    return new THREE.Points(geo, mat);
+    const points = new THREE.Points(geo, mat);
+    points.userData.baseOpacity = opacity;
+    points.userData.twinkleSpeed = 0.5 + Math.random() * 1.5;
+    twinkleStars.push(points);
+    return points;
   }
 
-  // Far dim stars
-  scene.add(makeStarLayer(isMobile ? 600 : 1500, 250, 0.18, 0.5));
+  // Far dim stars (many, small)
+  scene.add(makeStarLayer(isMobile ? 600 : 1500, 250, 0.15, 0.45, false));
   // Medium stars
-  scene.add(makeStarLayer(isMobile ? 200 : 500, 150, 0.35, 0.6));
-  // Close bright stars (few)
-  scene.add(makeStarLayer(isMobile ? 30 : 80, 80, 0.7, 0.8));
+  scene.add(makeStarLayer(isMobile ? 200 : 500, 150, 0.3, 0.6, false));
+  // Close bright stars with flares (few)
+  scene.add(makeStarLayer(isMobile ? 20 : 60, 80, 0.9, 0.85, true));
 
   // ── NEBULA (soft colored clouds) ──
   function createNebulaTexture(color1, color2) {
@@ -412,6 +468,11 @@
     if (!isVisible) return;
     requestAnimationFrame(animate);
     time += 0.01;
+
+    // Twinkle stars
+    twinkleStars.forEach((s, i) => {
+      s.material.opacity = s.userData.baseOpacity + Math.sin(time * s.userData.twinkleSpeed + i * 2.7) * 0.12;
+    });
 
     // Float spheres
     spheres.forEach((s, i) => {
