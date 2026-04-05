@@ -1,10 +1,45 @@
 /* =============================================
    EFFECTS.JS — Futuristic Interactive Effects
+   (Optimized: merged observers, cached theme,
+    reduced save/restore, visibility-pause, no shadows)
    ============================================= */
 (function () {
   'use strict';
 
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+  // ─────────────────────────────────────────────
+  // CACHED THEME STATE
+  // Updated via MutationObserver on <html> attributes.
+  // ─────────────────────────────────────────────
+  let cachedTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  let isLightTheme = cachedTheme === 'light';
+
+  const themeObs = new MutationObserver(() => {
+    const t = document.documentElement.getAttribute('data-theme') || 'dark';
+    if (t !== cachedTheme) {
+      cachedTheme = t;
+      isLightTheme = t === 'light';
+    }
+  });
+  themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ─────────────────────────────────────────────
+  // VISIBILITY STATE (pause rAF when tab hidden)
+  // ─────────────────────────────────────────────
+  let tabVisible = !document.hidden;
+  document.addEventListener('visibilitychange', () => {
+    tabVisible = !document.hidden;
+    if (tabVisible) {
+      // Restart loops when tab becomes visible again
+      if (_particleLoopRunning) _particleLoop();
+      if (_heroParallaxRunning) _heroParallaxLoop();
+    }
+  });
+
+  // Flags so we don't double-start loops
+  let _particleLoopRunning = false;
+  let _heroParallaxRunning = false;
 
   // ─────────────────────────────────────────────
   // 1. PAGE TRANSITION
@@ -13,12 +48,10 @@
     const overlay = document.getElementById('page-overlay');
     if (!overlay) return;
 
-    // Fade in on page load (triple-trigger for reliability)
     requestAnimationFrame(() => { overlay.classList.add('hidden'); });
     setTimeout(() => { overlay.classList.add('hidden'); }, 120);
     setTimeout(() => { overlay.classList.add('hidden'); }, 1500);
 
-    // Intercept internal link clicks
     document.addEventListener('click', (e) => {
       const link = e.target.closest('a[href]');
       if (!link) return;
@@ -76,7 +109,6 @@
     }
     animRing();
 
-    // Hover state on interactive elements
     document.addEventListener('mouseover', (e) => {
       if (e.target.closest('a, button, .nav-card, .interest-card, .contact-card, .value-item, .stat-card, .timeline-item')) {
         document.body.classList.add('cursor-hover');
@@ -88,7 +120,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // 4. PARTICLE FIELD
+  // 4. PARTICLE FIELD (optimized)
   // ─────────────────────────────────────────────
   function initParticles() {
     const canvas = document.createElement('canvas');
@@ -113,72 +145,77 @@
         this.vx = (Math.random() - 0.5) * 0.25;
         this.vy = (Math.random() - 0.5) * 0.25;
         this.r  = Math.random() * 1.4 + 0.4;
-        var isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        this.a  = isLight ? Math.random() * 0.2 + 0.05 : Math.random() * 0.4 + 0.1;
-        this.c  = Math.random() > 0.65 ? (isLight ? '#0077ed' : '#00d4ff') : (isLight ? '#7c3aed' : '#a855f7');
+        // Use cached theme instead of querying DOM
+        this.a  = isLightTheme ? Math.random() * 0.2 + 0.05 : Math.random() * 0.4 + 0.1;
+        this.c  = Math.random() > 0.65 ? (isLightTheme ? '#0077ed' : '#00d4ff') : (isLightTheme ? '#7c3aed' : '#a855f7');
       }
       update() {
-        // Subtle mouse repulsion
         const dx = this.x - mouse.x, dy = this.y - mouse.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
+        const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < 120) {
           const force = (120 - dist) / 120 * 0.5;
           this.vx += (dx / dist) * force;
           this.vy += (dy / dist) * force;
         }
-        // Dampen
         this.vx *= 0.99; this.vy *= 0.99;
         this.x += this.vx; this.y += this.vy;
         if (this.x < 0) this.x = W; if (this.x > W) this.x = 0;
         if (this.y < 0) this.y = H; if (this.y > H) this.y = 0;
       }
       draw() {
-        ctx.save();
+        // No ctx.save/restore, no shadowBlur — just simple fill
         ctx.globalAlpha = this.a;
-        ctx.shadowColor = this.c;
-        ctx.shadowBlur  = 8;
         ctx.fillStyle   = this.c;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
       }
     }
 
     function drawLines() {
+      // Cache theme check ONCE per frame, set stroke style ONCE
+      const lt = isLightTheme;
+      const alphaScale = lt ? 0.06 : 0.12;
+      ctx.strokeStyle = lt ? '#0077ed' : '#00d4ff';
+      ctx.lineWidth   = 0.6;
+
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
-          const d  = Math.sqrt(dx*dx + dy*dy);
+          const d  = Math.sqrt(dx * dx + dy * dy);
           if (d < CONNECT_DIST) {
-            ctx.save();
-            var isLt = document.documentElement.getAttribute('data-theme') === 'light';
-            ctx.globalAlpha = (1 - d / CONNECT_DIST) * (isLt ? 0.06 : 0.12);
-            ctx.strokeStyle = isLt ? '#0077ed' : '#00d4ff';
-            ctx.lineWidth   = 0.6;
+            ctx.globalAlpha = (1 - d / CONNECT_DIST) * alphaScale;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
-            ctx.restore();
           }
         }
       }
     }
 
-    function loop() {
+    function _particleLoop() {
+      if (!tabVisible) { _particleLoopRunning = true; return; }
+      _particleLoopRunning = false;
       ctx.clearRect(0, 0, W, H);
-      particles.forEach(p => { p.update(); p.draw(); });
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
       drawLines();
-      requestAnimationFrame(loop);
+      // Reset globalAlpha after draw
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(_particleLoop);
     }
+    // Expose to outer scope for visibility handler
+    window._particleLoop = _particleLoop;
 
     resize();
     window.addEventListener('resize', resize, { passive: true });
     document.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
     for (let i = 0; i < COUNT; i++) particles.push(new P());
-    loop();
+    _particleLoop();
   }
 
   // ─────────────────────────────────────────────
@@ -206,14 +243,17 @@
       });
     }
 
-    // Apply to existing elements and observe new ones
-    document.querySelectorAll(selectors).forEach(applyTilt);
-    const obs = new MutationObserver(() => {
+    document.querySelectorAll(selectors).forEach(el => {
+      el.dataset.tilt = '1';
+      applyTilt(el);
+    });
+
+    // Handler for shared MutationObserver
+    _sharedMutHandlers.push(() => {
       document.querySelectorAll(selectors).forEach(el => {
         if (!el.dataset.tilt) { el.dataset.tilt = '1'; applyTilt(el); }
       });
     });
-    obs.observe(document.body, { childList: true, subtree: true });
   }
 
   // ─────────────────────────────────────────────
@@ -312,8 +352,6 @@
   // 9. INTERSECTION OBSERVER (fade-in + counters)
   // ─────────────────────────────────────────────
   function initObserver() {
-    // Upgrade the observer created by nav.js to also handle counter animations.
-    // Re-use the same instance so all existing subscriptions stay intact.
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((entry, i) => {
         if (!entry.isIntersecting) return;
@@ -330,101 +368,19 @@
 
     document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 
-    // Re-observe dynamically added content (loader.js, boards, etc.)
-    const mutObs = new MutationObserver(() => {
+    // Handler for shared MutationObserver
+    _sharedMutHandlers.push(() => {
       document.querySelectorAll('.fade-in:not(.visible)').forEach(el => obs.observe(el));
     });
-    mutObs.observe(document.body, { childList: true, subtree: true });
   }
 
   // ─────────────────────────────────────────────
   // 10. NEON HOVER ON NAV CARDS (rainbow border scan)
+  // Styles injected in initAll() via shared style block.
   // ─────────────────────────────────────────────
   function initNeonCards() {
-    const style = document.createElement('style');
-    style.textContent = `
-      .nav-card, .interest-card {
-        background: rgba(10,16,30,0.75) !important;
-        border: 1px solid rgba(0,212,255,0.12) !important;
-        backdrop-filter: blur(12px);
-        position: relative;
-        overflow: hidden;
-      }
-      .nav-card::after, .interest-card::after {
-        content: '';
-        position: absolute;
-        inset: -1px;
-        background: linear-gradient(135deg,
-          rgba(0,212,255,0) 0%,
-          rgba(0,212,255,0.2) 40%,
-          rgba(168,85,247,0.2) 60%,
-          rgba(0,212,255,0) 100%);
-        opacity: 0;
-        transition: opacity 0.4s;
-        border-radius: inherit;
-        pointer-events: none;
-      }
-      .nav-card:hover::after, .interest-card:hover::after { opacity: 1; }
-      .nav-card:hover, .interest-card:hover {
-        border-color: rgba(0,212,255,0.5) !important;
-        box-shadow: 0 0 30px rgba(0,212,255,0.15), inset 0 0 20px rgba(0,212,255,0.04) !important;
-      }
-      /* Timeline dots */
-      .timeline::before {
-        background: linear-gradient(to bottom, #00d4ff, #a855f7, transparent) !important;
-        box-shadow: 0 0 8px rgba(0,212,255,0.4);
-      }
-      .timeline-item::before {
-        border-color: #00d4ff !important;
-        box-shadow: 0 0 10px rgba(0,212,255,0.5);
-      }
-      .timeline-item:hover::before { background: #00d4ff !important; box-shadow: 0 0 16px rgba(0,212,255,0.8); }
-      /* Stat cards */
-      .stat-card { background: rgba(10,16,30,0.8) !important; border: 1px solid rgba(0,212,255,0.1) !important; backdrop-filter:blur(12px); }
-      .stat-card:hover { border-color: rgba(0,212,255,0.4) !important; box-shadow: 0 0 20px rgba(0,212,255,0.12) !important; }
-      .stat-card .num { color: #00d4ff !important; text-shadow: 0 0 20px rgba(0,212,255,0.6); }
-      /* Value items */
-      .value-item { background: rgba(10,16,30,0.75) !important; border: 1px solid rgba(0,212,255,0.1) !important; backdrop-filter:blur(12px); }
-      .value-item:hover { border-color: rgba(168,85,247,0.5) !important; box-shadow: 0 0 20px rgba(168,85,247,0.1) !important; }
-      /* Contact cards */
-      .contact-card { background: rgba(10,16,30,0.75) !important; border: 1px solid rgba(0,212,255,0.1) !important; backdrop-filter:blur(12px); }
-      .contact-card:hover { border-color: rgba(0,212,255,0.5) !important; box-shadow: 0 0 20px rgba(0,212,255,0.12) !important; }
-      /* Now block */
-      .now-block { background: rgba(10,16,30,0.8) !important; border: 1px solid rgba(168,85,247,0.25) !important; backdrop-filter:blur(12px); box-shadow: 0 0 20px rgba(168,85,247,0.08); }
-      /* Quote */
-      .home-quote { background: rgba(10,16,30,0.7) !important; border: 1px solid rgba(168,85,247,0.2) !important; border-left: 3px solid #a855f7 !important; backdrop-filter:blur(16px); }
-      /* Tags */
-      .tag { background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.15) !important; color: rgba(0,212,255,0.7) !important; }
-      .topic-tag { background: rgba(168,85,247,0.08) !important; border: 1px solid rgba(168,85,247,0.2) !important; }
-      /* Timeline year badge */
-      .timeline-year { color: #00d4ff !important; background: rgba(0,212,255,0.08) !important; border: 1px solid rgba(0,212,255,0.2) !important; text-shadow: 0 0 8px rgba(0,212,255,0.4); }
-      /* Interest questions */
-      .interest-questions span { color: #00d4ff !important; }
-      /* Nav card arrow */
-      .nav-card-arrow { color: #00d4ff !important; }
-
-      /* ── LIGHT THEME OVERRIDES ── */
-      [data-theme="light"] .nav-card,
-      [data-theme="light"] .interest-card { background: rgba(255,255,255,0.8) !important; border-color: rgba(0,0,0,0.08) !important; }
-      [data-theme="light"] .nav-card:hover,
-      [data-theme="light"] .interest-card:hover { border-color: rgba(0,119,237,0.4) !important; box-shadow: 0 4px 24px rgba(0,119,237,0.1) !important; }
-      [data-theme="light"] .stat-card { background: rgba(255,255,255,0.85) !important; border-color: rgba(0,0,0,0.08) !important; }
-      [data-theme="light"] .stat-card:hover { border-color: rgba(0,119,237,0.3) !important; box-shadow: 0 4px 20px rgba(0,119,237,0.08) !important; }
-      [data-theme="light"] .stat-card .num { color: #0077ed !important; text-shadow: none; }
-      [data-theme="light"] .value-item { background: rgba(255,255,255,0.8) !important; border-color: rgba(0,0,0,0.08) !important; }
-      [data-theme="light"] .value-item:hover { border-color: rgba(124,58,237,0.35) !important; box-shadow: 0 4px 20px rgba(124,58,237,0.08) !important; }
-      [data-theme="light"] .contact-card { background: rgba(255,255,255,0.8) !important; border-color: rgba(0,0,0,0.08) !important; }
-      [data-theme="light"] .contact-card:hover { border-color: rgba(0,119,237,0.35) !important; box-shadow: 0 4px 20px rgba(0,119,237,0.08) !important; }
-      [data-theme="light"] .now-block { background: rgba(255,255,255,0.85) !important; border-color: rgba(124,58,237,0.2) !important; box-shadow: 0 4px 20px rgba(124,58,237,0.06); }
-      [data-theme="light"] .home-quote { background: rgba(255,255,255,0.8) !important; border-color: rgba(124,58,237,0.15) !important; border-left-color: #7c3aed !important; }
-      [data-theme="light"] .tag { background: rgba(0,119,237,0.06) !important; border-color: rgba(0,119,237,0.15) !important; color: #0077ed !important; }
-      [data-theme="light"] .topic-tag { background: rgba(124,58,237,0.06) !important; border-color: rgba(124,58,237,0.15) !important; }
-      [data-theme="light"] .timeline-year { color: #0077ed !important; background: rgba(0,119,237,0.08) !important; border-color: rgba(0,119,237,0.2) !important; text-shadow: none; }
-      [data-theme="light"] .timeline-item::before { border-color: #0077ed !important; box-shadow: 0 0 6px rgba(0,119,237,0.25); }
-      [data-theme="light"] .interest-questions span { color: #0077ed !important; }
-      [data-theme="light"] .nav-card-arrow { color: #0077ed !important; }
-    `;
-    document.head.appendChild(style);
+    // All CSS is now in the shared style block injected in initAll().
+    // This function is kept for structural clarity; nothing to do at runtime.
   }
 
   // ─────────────────────────────────────────────
@@ -435,7 +391,6 @@
     const hero = document.querySelector('.hero');
     if (!hero) return;
 
-    // Each element moves at a different depth factor
     const depths = [
       { sel: '.hero-badge',   d: 0.022 },
       { sel: '.hero-name',    d: 0.016 },
@@ -456,14 +411,19 @@
       ty = e.clientY - window.innerHeight / 2;
     });
 
-    (function tick() {
+    function _heroParallaxLoop() {
+      if (!tabVisible) { _heroParallaxRunning = true; return; }
+      _heroParallaxRunning = false;
       cx += (tx - cx) * 0.055;
       cy += (ty - cy) * 0.055;
       layers.forEach(({ el, d }) => {
         el.style.transform = `translate(${cx * d}px, ${cy * d}px)`;
       });
-      requestAnimationFrame(tick);
-    })();
+      requestAnimationFrame(_heroParallaxLoop);
+    }
+    // Expose to outer scope for visibility handler
+    window._heroParallaxLoop = _heroParallaxLoop;
+    _heroParallaxLoop();
   }
 
   // ─────────────────────────────────────────────
@@ -489,10 +449,11 @@
       });
     }
 
-    // Apply to current + future buttons
     const applyAll = () => document.querySelectorAll('.btn, .back-link').forEach(applyMag);
     applyAll();
-    new MutationObserver(applyAll).observe(document.body, { childList: true, subtree: true });
+
+    // Handler for shared MutationObserver
+    _sharedMutHandlers.push(applyAll);
   }
 
   // ─────────────────────────────────────────────
@@ -565,7 +526,9 @@
 
     const attachAll = () => document.querySelectorAll(SEL).forEach(attach);
     attachAll();
-    new MutationObserver(attachAll).observe(document.body, { childList: true, subtree: true });
+
+    // Handler for shared MutationObserver
+    _sharedMutHandlers.push(attachAll);
   }
 
   // ─────────────────────────────────────────────
@@ -622,9 +585,134 @@
   }
 
   // ─────────────────────────────────────────────
+  // SHARED MUTATION OBSERVER
+  // All handlers registered by initTilt, initObserver,
+  // initMagneticButtons, and initCardSpotlight are called
+  // from a single MutationObserver.
+  // ─────────────────────────────────────────────
+  const _sharedMutHandlers = [];
+
+  function initSharedMutationObserver() {
+    const obs = new MutationObserver(() => {
+      for (let i = 0; i < _sharedMutHandlers.length; i++) {
+        _sharedMutHandlers[i]();
+      }
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+  }
+
+  // ─────────────────────────────────────────────
   // INIT
   // ─────────────────────────────────────────────
   function initAll() {
+    // ── Inject shared neon-card styles (no !important) ──
+    // Uses `body` prefix for higher specificity to avoid !important.
+    const neonStyle = document.createElement('style');
+    neonStyle.textContent = `
+      body .nav-card, body .interest-card {
+        background: rgba(10,16,30,0.75);
+        border: 1px solid rgba(0,212,255,0.12);
+        backdrop-filter: blur(12px);
+        position: relative;
+        overflow: hidden;
+      }
+      body .nav-card::after, body .interest-card::after {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(135deg,
+          rgba(0,212,255,0) 0%,
+          rgba(0,212,255,0.2) 40%,
+          rgba(168,85,247,0.2) 60%,
+          rgba(0,212,255,0) 100%);
+        opacity: 0;
+        transition: opacity 0.4s;
+        border-radius: inherit;
+        pointer-events: none;
+      }
+      body .nav-card:hover::after, body .interest-card:hover::after { opacity: 1; }
+      body .nav-card:hover, body .interest-card:hover {
+        border-color: rgba(0,212,255,0.5);
+        box-shadow: 0 0 30px rgba(0,212,255,0.15), inset 0 0 20px rgba(0,212,255,0.04);
+      }
+      /* Timeline dots */
+      body .timeline::before {
+        background: linear-gradient(to bottom, #00d4ff, #a855f7, transparent);
+        box-shadow: 0 0 8px rgba(0,212,255,0.4);
+      }
+      body .timeline-item::before {
+        border-color: #00d4ff;
+        box-shadow: 0 0 10px rgba(0,212,255,0.5);
+      }
+      body .timeline-item:hover::before { background: #00d4ff; box-shadow: 0 0 16px rgba(0,212,255,0.8); }
+      /* Stat cards */
+      body .stat-card { background: rgba(10,16,30,0.8); border: 1px solid rgba(0,212,255,0.1); backdrop-filter:blur(12px); }
+      body .stat-card:hover { border-color: rgba(0,212,255,0.4); box-shadow: 0 0 20px rgba(0,212,255,0.12); }
+      body .stat-card .num { color: #00d4ff; text-shadow: 0 0 20px rgba(0,212,255,0.6); }
+      /* Value items */
+      body .value-item { background: rgba(10,16,30,0.75); border: 1px solid rgba(0,212,255,0.1); backdrop-filter:blur(12px); }
+      body .value-item:hover { border-color: rgba(168,85,247,0.5); box-shadow: 0 0 20px rgba(168,85,247,0.1); }
+      /* Contact cards */
+      body .contact-card { background: rgba(10,16,30,0.75); border: 1px solid rgba(0,212,255,0.1); backdrop-filter:blur(12px); }
+      body .contact-card:hover { border-color: rgba(0,212,255,0.5); box-shadow: 0 0 20px rgba(0,212,255,0.12); }
+      /* Now block */
+      body .now-block { background: rgba(10,16,30,0.8); border: 1px solid rgba(168,85,247,0.25); backdrop-filter:blur(12px); box-shadow: 0 0 20px rgba(168,85,247,0.08); }
+      /* Quote */
+      body .home-quote { background: rgba(10,16,30,0.7); border: 1px solid rgba(168,85,247,0.2); border-left: 3px solid #a855f7; backdrop-filter:blur(16px); }
+      /* Tags */
+      body .tag { background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.15); color: rgba(0,212,255,0.7); }
+      body .topic-tag { background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.2); }
+      /* Timeline year badge */
+      body .timeline-year { color: #00d4ff; background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2); text-shadow: 0 0 8px rgba(0,212,255,0.4); }
+      /* Interest questions */
+      body .interest-questions span { color: #00d4ff; }
+      /* Nav card arrow */
+      body .nav-card-arrow { color: #00d4ff; }
+
+      /* ── LIGHT THEME OVERRIDES ── */
+      [data-theme="light"] body .nav-card,
+      body[data-theme="light"] .nav-card,
+      [data-theme="light"] .nav-card,
+      [data-theme="light"] body .interest-card,
+      body[data-theme="light"] .interest-card,
+      [data-theme="light"] .interest-card { background: rgba(255,255,255,0.8); border-color: rgba(0,0,0,0.08); }
+      [data-theme="light"] body .nav-card:hover,
+      [data-theme="light"] .nav-card:hover,
+      [data-theme="light"] body .interest-card:hover,
+      [data-theme="light"] .interest-card:hover { border-color: rgba(0,119,237,0.4); box-shadow: 0 4px 24px rgba(0,119,237,0.1); }
+      [data-theme="light"] body .stat-card,
+      [data-theme="light"] .stat-card { background: rgba(255,255,255,0.85); border-color: rgba(0,0,0,0.08); }
+      [data-theme="light"] body .stat-card:hover,
+      [data-theme="light"] .stat-card:hover { border-color: rgba(0,119,237,0.3); box-shadow: 0 4px 20px rgba(0,119,237,0.08); }
+      [data-theme="light"] body .stat-card .num,
+      [data-theme="light"] .stat-card .num { color: #0077ed; text-shadow: none; }
+      [data-theme="light"] body .value-item,
+      [data-theme="light"] .value-item { background: rgba(255,255,255,0.8); border-color: rgba(0,0,0,0.08); }
+      [data-theme="light"] body .value-item:hover,
+      [data-theme="light"] .value-item:hover { border-color: rgba(124,58,237,0.35); box-shadow: 0 4px 20px rgba(124,58,237,0.08); }
+      [data-theme="light"] body .contact-card,
+      [data-theme="light"] .contact-card { background: rgba(255,255,255,0.8); border-color: rgba(0,0,0,0.08); }
+      [data-theme="light"] body .contact-card:hover,
+      [data-theme="light"] .contact-card:hover { border-color: rgba(0,119,237,0.35); box-shadow: 0 4px 20px rgba(0,119,237,0.08); }
+      [data-theme="light"] body .now-block,
+      [data-theme="light"] .now-block { background: rgba(255,255,255,0.85); border-color: rgba(124,58,237,0.2); box-shadow: 0 4px 20px rgba(124,58,237,0.06); }
+      [data-theme="light"] body .home-quote,
+      [data-theme="light"] .home-quote { background: rgba(255,255,255,0.8); border-color: rgba(124,58,237,0.15); border-left-color: #7c3aed; }
+      [data-theme="light"] body .tag,
+      [data-theme="light"] .tag { background: rgba(0,119,237,0.06); border-color: rgba(0,119,237,0.15); color: #0077ed; }
+      [data-theme="light"] body .topic-tag,
+      [data-theme="light"] .topic-tag { background: rgba(124,58,237,0.06); border-color: rgba(124,58,237,0.15); }
+      [data-theme="light"] body .timeline-year,
+      [data-theme="light"] .timeline-year { color: #0077ed; background: rgba(0,119,237,0.08); border-color: rgba(0,119,237,0.2); text-shadow: none; }
+      [data-theme="light"] body .timeline-item::before,
+      [data-theme="light"] .timeline-item::before { border-color: #0077ed; box-shadow: 0 0 6px rgba(0,119,237,0.25); }
+      [data-theme="light"] body .interest-questions span,
+      [data-theme="light"] .interest-questions span { color: #0077ed; }
+      [data-theme="light"] body .nav-card-arrow,
+      [data-theme="light"] .nav-card-arrow { color: #0077ed; }
+    `;
+    document.head.appendChild(neonStyle);
+
     initTransitions();
     initScrollProgress();
     initCursor();
@@ -640,7 +728,10 @@
     initScrollParallax();
     initBackToTop();
 
-    // Typewriter на героях
+    // Start the single shared MutationObserver after all handlers registered
+    initSharedMutationObserver();
+
+    // Typewriter on heroes
     const tw = document.querySelector('[data-typewriter]');
     if (tw) typeWriter(tw);
   }
