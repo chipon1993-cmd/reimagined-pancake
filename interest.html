@@ -98,7 +98,8 @@
 
     .post-header { display:flex; align-items:flex-start; gap:9px; margin-bottom:10px; }
     .post-type-icon { font-size:1rem; flex-shrink:0; margin-top:2px; }
-    .post-title { font-size:.95rem; font-weight:700; line-height:1.3; color:var(--text); flex:1; }
+    .post-title { font-size:.95rem; font-weight:700; line-height:1.3; color:var(--text); flex:1; text-decoration:none; }
+    a.post-title:hover { color:var(--accent); }
 
     .post-content {
       font-size:.87rem; color:var(--muted); line-height:1.65;
@@ -586,20 +587,24 @@
         if (window.acObs) grid.querySelectorAll('.fade-in:not(.visible)').forEach(el => window.acObs.observe(el));
       }, 60);
 
-      // Collapse long content
+      // Collapse long content + link to full page
       grid.querySelectorAll('.post-content').forEach(el => {
         if (el.scrollHeight > 160) {
           el.classList.add('collapsed');
-          const btn = document.createElement('button');
-          btn.className = 'post-readmore';
-          btn.textContent = 'Читать далее →';
-          btn.onclick = function() {
-            el.classList.toggle('collapsed');
-            btn.textContent = el.classList.contains('collapsed') ? 'Читать далее →' : '← Свернуть';
-          };
-          el.parentElement.insertBefore(btn, el.nextSibling);
+          const postId = el.closest('.post-card')?.dataset.id;
+          const link = document.createElement('a');
+          link.className = 'post-readmore';
+          link.textContent = 'Читать далее →';
+          link.href = 'post.html?board=' + encodeURIComponent(interestId) + '&post=' + postId;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          el.parentElement.insertBefore(link, el.nextSibling);
         }
       });
+    }
+
+    function postUrl(p) {
+      return 'post.html?board=' + encodeURIComponent(interestId) + '&post=' + p.id;
     }
 
     function renderCard(p) {
@@ -608,13 +613,14 @@
         : '';
 
       let body = '';
+      const link = postUrl(p);
 
       if (p.type === 'note') {
-        if (p.title)   body += `<div class="post-header"><span class="post-type-icon">${typeIcon('note')}</span><div class="post-title">${esc(p.title)}</div></div>`;
+        if (p.title)   body += `<div class="post-header"><span class="post-type-icon">${typeIcon('note')}</span><a class="post-title" href="${link}" target="_blank" rel="noopener">${esc(p.title)}</a></div>`;
         if (p.content) body += `<div class="post-content">${renderMd(p.content)}</div>`;
 
       } else if (p.type === 'video') {
-        if (p.title) body += `<div class="post-header"><span class="post-type-icon">${typeIcon('video')}</span><div class="post-title">${esc(p.title)}</div></div>`;
+        if (p.title) body += `<div class="post-header"><span class="post-type-icon">${typeIcon('video')}</span><a class="post-title" href="${link}" target="_blank" rel="noopener">${esc(p.title)}</a></div>`;
         const th = getThumb(p);
         if (th) body += `<div class="post-video-thumb" onclick="playVideo(${p.id})">
           <img src="${esc(th)}" alt="${esc(p.title||'')}" loading="lazy"
@@ -628,7 +634,7 @@
         if (p.author) body += `<div class="post-quote-author">— ${esc(p.author)}</div>`;
 
       } else if (p.type === 'link') {
-        if (p.title) body += `<div class="post-header"><span class="post-type-icon">${typeIcon('link')}</span><div class="post-title">${esc(p.title)}</div></div>`;
+        if (p.title) body += `<div class="post-header"><span class="post-type-icon">${typeIcon('link')}</span><a class="post-title" href="${link}" target="_blank" rel="noopener">${esc(p.title)}</a></div>`;
         if (p.url)   body += `<a class="post-link-url" href="${esc(p.url)}" target="_blank" rel="noopener">🔗 ${esc(p.url)}</a>`;
         if (p.content) body += `<div class="post-content">${renderMd(p.content)}</div>`;
       }
