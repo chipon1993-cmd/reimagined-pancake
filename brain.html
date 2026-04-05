@@ -43,6 +43,16 @@
       width: 100%;
       height: auto;
       max-height: 500px;
+      position: relative;
+      z-index: 1;
+    }
+    #neural-canvas {
+      position: absolute;
+      top: 30px; left: 30px;
+      width: calc(100% - 60px);
+      height: calc(100% - 60px);
+      z-index: 2;
+      pointer-events: none;
     }
 
     /* Brain regions */
@@ -327,6 +337,7 @@
             <line class="brain-arrow" id="a-brainstem" x1="310" y1="505" x2="230" y2="500" stroke-dasharray="4,3"/>
             <text class="brain-label" id="l-brainstem" x="227" y="503" text-anchor="end">СТВОЛ МОЗГА</text>
           </svg>
+          <canvas id="neural-canvas"></canvas>
         </div>
 
         <!-- Info Panel -->
@@ -562,6 +573,151 @@
         document.getElementById('brain-info').style.borderColor = '';
       }
     });
+
+    // ═══ NEURAL IMPULSES ═══
+    (function initNeuralImpulses() {
+      const canvas = document.getElementById('neural-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const svg = document.querySelector('.brain-svg-wrap svg');
+
+      // Neural paths — points along brain folds for impulses to travel
+      // Coordinates match SVG viewBox (700x520), scaled to canvas
+      const PATHS = [
+        // Frontal
+        { points: [[150,110],[185,98],[220,102],[255,95],[280,88]], color: [0,212,255], region: 'frontal' },
+        { points: [[135,145],[172,132],[212,138],[248,130],[275,125]], color: [0,212,255], region: 'frontal' },
+        { points: [[125,180],[165,168],[208,174],[245,166],[285,162]], color: [0,212,255], region: 'frontal' },
+        { points: [[120,215],[162,205],[205,210],[245,202],[295,198]], color: [0,212,255], region: 'frontal' },
+        // Parietal
+        { points: [[355,78],[392,68],[430,75],[465,82],[500,92]], color: [168,85,247], region: 'parietal' },
+        { points: [[348,115],[388,105],[428,112],[465,118],[510,128]], color: [168,85,247], region: 'parietal' },
+        { points: [[345,155],[385,142],[428,150],[468,155],[520,168]], color: [168,85,247], region: 'parietal' },
+        // Temporal
+        { points: [[155,318],[205,308],[255,315],[290,310],[325,305]], color: [52,211,153], region: 'temporal' },
+        { points: [[142,352],[195,342],[248,348],[288,342],[325,338]], color: [52,211,153], region: 'temporal' },
+        { points: [[135,385],[188,375],[242,382],[285,376],[325,370]], color: [52,211,153], region: 'temporal' },
+        // Occipital
+        { points: [[395,255],[435,245],[478,252],[510,258],[538,268]], color: [249,115,22], region: 'occipital' },
+        { points: [[385,292],[425,282],[468,290],[505,296],[535,305]], color: [249,115,22], region: 'occipital' },
+        { points: [[375,328],[418,318],[460,325],[498,332],[528,340]], color: [249,115,22], region: 'occipital' },
+        // Cerebellum
+        { points: [[458,395],[488,388],[518,392],[545,398],[568,405]], color: [236,72,153], region: 'cerebellum' },
+        { points: [[452,412],[482,405],[515,410],[542,415],[562,422]], color: [236,72,153], region: 'cerebellum' },
+        // Cross-brain connections
+        { points: [[200,160],[260,180],[330,195],[400,175],[470,155]], color: [255,255,255], region: 'cross' },
+        { points: [[180,250],[250,270],[330,290],[400,310],[470,330]], color: [255,255,255], region: 'cross' },
+      ];
+
+      const impulses = [];
+      const MAX_IMPULSES = 25;
+
+      function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const padX = 30, padY = 30;
+        canvas.width = rect.width - padX * 2;
+        canvas.height = rect.height - padY * 2;
+      }
+      resize();
+      window.addEventListener('resize', resize, { passive: true });
+
+      function svgToCanvas(x, y) {
+        // SVG viewBox is 700x520
+        return [x / 700 * canvas.width, y / 520 * canvas.height];
+      }
+
+      function lerp(a, b, t) { return a + (b - a) * t; }
+
+      function spawnImpulse() {
+        if (impulses.length >= MAX_IMPULSES) return;
+        const pathIdx = Math.floor(Math.random() * PATHS.length);
+        const path = PATHS[pathIdx];
+        const reverse = Math.random() > 0.5;
+        // Boost impulses in active region
+        const boost = (activeRegion && path.region === activeRegion) ? 2.0 : 1.0;
+        impulses.push({
+          path: path,
+          t: 0,
+          speed: (0.003 + Math.random() * 0.006) * boost,
+          size: 1.5 + Math.random() * 2,
+          alpha: 0.4 + Math.random() * 0.5,
+          reverse: reverse,
+          trail: [],
+        });
+      }
+
+      function getPositionOnPath(path, t) {
+        const pts = path.points;
+        const totalSegs = pts.length - 1;
+        const seg = Math.min(Math.floor(t * totalSegs), totalSegs - 1);
+        const localT = (t * totalSegs) - seg;
+        const x = lerp(pts[seg][0], pts[seg + 1][0], localT);
+        const y = lerp(pts[seg][1], pts[seg + 1][1], localT);
+        return svgToCanvas(x, y);
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Spawn new impulses randomly
+        if (Math.random() < 0.15) spawnImpulse();
+
+        for (let i = impulses.length - 1; i >= 0; i--) {
+          const imp = impulses[i];
+          const tt = imp.reverse ? 1 - imp.t : imp.t;
+          const [x, y] = getPositionOnPath(imp.path, tt);
+          const c = imp.path.color;
+
+          // Check if dimmed
+          const isDimmed = activeRegion && imp.path.region !== activeRegion && imp.path.region !== 'cross';
+
+          // Trail
+          imp.trail.push([x, y]);
+          if (imp.trail.length > 8) imp.trail.shift();
+
+          // Draw trail
+          if (!isDimmed) {
+            for (let j = 0; j < imp.trail.length - 1; j++) {
+              const trailAlpha = (j / imp.trail.length) * imp.alpha * 0.3;
+              ctx.beginPath();
+              ctx.moveTo(imp.trail[j][0], imp.trail[j][1]);
+              ctx.lineTo(imp.trail[j + 1][0], imp.trail[j + 1][1]);
+              ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${trailAlpha})`;
+              ctx.lineWidth = imp.size * 0.5;
+              ctx.stroke();
+            }
+
+            // Draw impulse head (bright dot)
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, imp.size * 3);
+            gradient.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${imp.alpha})`);
+            gradient.addColorStop(0.3, `rgba(${c[0]},${c[1]},${c[2]},${imp.alpha * 0.4})`);
+            gradient.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+            ctx.beginPath();
+            ctx.arc(x, y, imp.size * 3, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // Core dot
+            ctx.beginPath();
+            ctx.arc(x, y, imp.size * 0.6, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,255,255,${imp.alpha * 0.9})`;
+            ctx.fill();
+          }
+
+          imp.t += imp.speed;
+          if (imp.t >= 1) {
+            impulses.splice(i, 1);
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      // Spawn initial batch
+      for (let i = 0; i < 10; i++) spawnImpulse();
+      animate();
+    })();
+
   })();
   </script>
 </body>
