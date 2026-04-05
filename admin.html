@@ -1617,7 +1617,8 @@ async function grantAccess(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('admin-panel').style.display='flex';
   updateAdminLangBtns();
-  await showTab('index');
+  const lastTab = localStorage.getItem('ac_admin_tab') || 'index';
+  await showTab(lastTab);
 }
 
 async function doLogout(){
@@ -2321,6 +2322,7 @@ async function showTab(tab) {
 
 async function _showTabDirect(tab){
   collectCurrent(); CT=tab;
+  localStorage.setItem('ac_admin_tab', tab);
   document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
   const m=document.getElementById('adm-main');
   m.style.animation='none'; m.offsetHeight; m.style.animation='';
