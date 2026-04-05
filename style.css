@@ -220,6 +220,7 @@ nav::after { display: none; }
   color: var(--text);
   text-decoration: none;
   text-transform: uppercase;
+  cursor: default;
 }
 .nav-logo span { color: var(--accent); }
 
