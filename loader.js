@@ -458,6 +458,10 @@
       case 'interest-board': break;
     }
 
+    if (data.appearance && data.appearance.dateFormat) {
+      window._acDateFmt = data.appearance.dateFormat;
+    }
+
     if (data.appearance && data.appearance.pages) {
       applyPageVisibility(data.appearance.pages);
     }
