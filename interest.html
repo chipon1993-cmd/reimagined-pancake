@@ -181,6 +181,80 @@
     }
     .post-date { font-size:.7rem; color:var(--muted); opacity:.65; }
 
+    /* ── SHARE BUTTON ── */
+    .post-share {
+      background:transparent; border:1px solid rgba(255,255,255,0.08);
+      color:var(--muted); border-radius:6px; padding:4px 8px;
+      font-size:.7rem; cursor:pointer; transition:all var(--transition); font-family:inherit;
+      display:flex; align-items:center; gap:4px;
+    }
+    .post-share:hover { border-color:var(--accent); color:var(--accent); }
+    .post-share.copied { border-color:#27ae60; color:#27ae60; }
+
+    /* ── PIN BADGE ── */
+    .post-pin {
+      position:absolute; top:10px; right:10px; font-size:.75rem;
+      background:rgba(0,212,255,0.12); color:var(--accent);
+      border-radius:999px; padding:3px 8px; z-index:2;
+      display:flex; align-items:center; gap:3px;
+      font-weight:600; letter-spacing:.02em;
+    }
+
+    /* ── READ MORE ── */
+    .post-content.collapsed { max-height:120px; overflow:hidden; position:relative; }
+    .post-content.collapsed::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:40px;
+      background:linear-gradient(transparent, rgba(15,22,40,0.95));
+      pointer-events:none;
+    }
+    .post-readmore {
+      background:transparent; border:none; color:var(--accent);
+      font-size:.78rem; cursor:pointer; padding:4px 0; margin-top:4px;
+      font-family:inherit; transition:opacity var(--transition);
+    }
+    .post-readmore:hover { opacity:.7; }
+
+    /* ── SEARCH BAR ── */
+    .board-search {
+      width:100%; margin-bottom:12px;
+      display:flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+      border-radius:var(--radius); padding:10px 16px;
+      transition:border-color var(--transition);
+    }
+    .board-search:focus-within { border-color:var(--accent); }
+    .board-search-icon { color:var(--muted); font-size:.9rem; flex-shrink:0; }
+    .board-search input {
+      flex:1; background:transparent; border:none; outline:none;
+      color:var(--text); font-size:.88rem; font-family:inherit;
+    }
+    .board-search input::placeholder { color:var(--muted); opacity:.5; }
+    .board-search-clear {
+      background:transparent; border:none; color:var(--muted);
+      font-size:1rem; cursor:pointer; display:none; padding:0 2px;
+      transition:color var(--transition);
+    }
+    .board-search-clear:hover { color:var(--accent); }
+    .board-search-clear.vis { display:block; }
+
+    /* ── POST COUNTER ── */
+    .board-counter {
+      font-size:.78rem; color:var(--muted); margin-bottom:16px;
+      display:flex; align-items:center; gap:6px;
+    }
+    .board-counter-num { color:var(--accent); font-weight:700; }
+
+    /* ── LOAD MORE BUTTON ── */
+    .load-more-wrap { text-align:center; margin:8px 0 60px; }
+    .load-more-btn {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+      color:var(--text); border-radius:var(--radius); padding:12px 32px;
+      font-size:.85rem; font-weight:600; cursor:pointer; font-family:inherit;
+      transition:all var(--transition);
+    }
+    .load-more-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(0,212,255,0.05); }
+
     /* ── EMPTY STATE ── */
     .board-empty { text-align:center; padding:80px 20px; color:var(--muted); }
     .board-empty-icon { font-size:3rem; margin-bottom:20px; opacity:.3; display:block; }
@@ -260,6 +334,13 @@
         <p class="section-desc" id="int-desc"></p>
       </div>
 
+      <!-- Search -->
+      <div class="board-search" id="board-search">
+        <span class="board-search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Поиск по записям..." oninput="onSearch(this.value)" />
+        <button class="board-search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+      </div>
+
       <!-- Toolbar -->
       <div class="board-toolbar">
         <div class="tag-filters" id="tag-filters">
@@ -278,8 +359,16 @@
         </div>
       </div>
 
+      <!-- Counter -->
+      <div class="board-counter" id="board-counter"></div>
+
       <!-- Posts -->
       <div class="posts-grid" id="posts-grid"></div>
+
+      <!-- Load more -->
+      <div class="load-more-wrap" id="load-more-wrap" style="display:none">
+        <button class="load-more-btn" onclick="loadMore()">Показать ещё ↓</button>
+      </div>
 
       <!-- Empty state -->
       <div class="board-empty" id="board-empty" style="display:none">
@@ -342,6 +431,9 @@
     let currentFilter = 'all';
     let currentSort   = 'newest';
     let currentView   = 'grid';
+    let searchQuery   = '';
+    const PAGE_SIZE   = 12;
+    let visibleCount  = PAGE_SIZE;
 
     /* ── INTEREST META ───────────────────────────── */
     async function getInterestCard() {
@@ -415,22 +507,52 @@
       container.innerHTML = allBtn + tagBtns;
     }
 
-    /* ── SORT + FILTER ───────────────────────────── */
+    /* ── SORT + FILTER + SEARCH ──────────────────── */
     function getSortedFiltered() {
       let list = posts.filter(p => p.published !== false);
       if (currentFilter !== 'all') list = list.filter(p => (p.tags||[]).includes(currentFilter));
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        list = list.filter(p =>
+          (p.title||'').toLowerCase().includes(q) ||
+          (p.content||'').toLowerCase().includes(q) ||
+          (p.author||'').toLowerCase().includes(q) ||
+          (p.tags||[]).some(t => t.toLowerCase().includes(q))
+        );
+      }
+      // Pinned posts always first
+      list.sort((a,b) => (b.pinned?1:0) - (a.pinned?1:0));
+      // Then by selected sort
       const ord = {note:0, video:1, quote:2, link:3};
-      if      (currentSort === 'newest') list.sort((a,b) => b.id - a.id);
-      else if (currentSort === 'oldest') list.sort((a,b) => a.id - b.id);
-      else if (currentSort === 'type')   list.sort((a,b) => (ord[a.type]||0) - (ord[b.type]||0));
+      const unpinSort = (a,b) => {
+        if (a.pinned && b.pinned) return b.id - a.id;
+        if (a.pinned || b.pinned) return 0;
+        if      (currentSort === 'newest') return b.id - a.id;
+        else if (currentSort === 'oldest') return a.id - b.id;
+        else if (currentSort === 'type')   return (ord[a.type]||0) - (ord[b.type]||0);
+        return 0;
+      };
+      list.sort(unpinSort);
       return list;
     }
 
     /* ── RENDER POSTS ────────────────────────────── */
+    function updateCounter(shown, total) {
+      const el = document.getElementById('board-counter');
+      if (!total) { el.innerHTML = ''; return; }
+      const word = declOfNum(total, ['запись','записи','записей']);
+      el.innerHTML = `<span class="board-counter-num">${shown}</span> из <span class="board-counter-num">${total}</span> ${word}`;
+    }
+    function declOfNum(n, titles) {
+      const c = [2,0,1,1,1,2];
+      return titles[(n%100>4 && n%100<20) ? 2 : c[(n%10<5)?n%10:5]];
+    }
+
     function renderPosts() {
       buildTagFilters();
       const grid  = document.getElementById('posts-grid');
       const empty = document.getElementById('board-empty');
+      const lm    = document.getElementById('load-more-wrap');
       const list  = getSortedFiltered();
 
       grid.className = 'posts-grid' + (currentView === 'list' ? ' view-list' : '');
@@ -438,20 +560,46 @@
       if (!posts.filter(p => p.published !== false).length) {
         grid.innerHTML = '';
         empty.style.display = '';
+        lm.style.display = 'none';
+        updateCounter(0, 0);
         return;
       }
       empty.style.display = 'none';
 
       if (!list.length) {
-        grid.innerHTML = `<p style="color:var(--muted);padding:40px 0;text-align:center">Ничего по этому тегу.</p>`;
+        grid.innerHTML = `<p style="color:var(--muted);padding:40px 0;text-align:center">${searchQuery ? 'Ничего не найдено.' : 'Ничего по этому тегу.'}</p>`;
+        lm.style.display = 'none';
+        updateCounter(0, 0);
         return;
       }
 
-      grid.innerHTML = list.map(renderCard).join('');
+      const visible = list.slice(0, visibleCount);
+      grid.innerHTML = visible.map(renderCard).join('');
 
+      // Show/hide load more
+      lm.style.display = list.length > visibleCount ? '' : 'none';
+
+      updateCounter(visible.length, list.length);
+
+      // Observe for scroll animations
       setTimeout(() => {
         if (window.acObs) grid.querySelectorAll('.fade-in:not(.visible)').forEach(el => window.acObs.observe(el));
       }, 60);
+
+      // Collapse long content
+      grid.querySelectorAll('.post-content').forEach(el => {
+        if (el.scrollHeight > 160) {
+          el.classList.add('collapsed');
+          const btn = document.createElement('button');
+          btn.className = 'post-readmore';
+          btn.textContent = 'Читать далее →';
+          btn.onclick = function() {
+            el.classList.toggle('collapsed');
+            btn.textContent = el.classList.contains('collapsed') ? 'Читать далее →' : '← Свернуть';
+          };
+          el.parentElement.insertBefore(btn, el.nextSibling);
+        }
+      });
     }
 
     function renderCard(p) {
@@ -485,21 +633,66 @@
         if (p.content) body += `<div class="post-content">${renderMd(p.content)}</div>`;
       }
 
+      const pinHtml = p.pinned ? `<div class="post-pin">📌 Закреплено</div>` : '';
+
       return `<div class="post-card type-${p.type} fade-in" data-id="${p.id}">
+        ${pinHtml}
         <div class="post-type-bar"></div>
         <div class="post-body">
           ${body}
           ${tagsHtml}
           <div class="post-footer">
             <div class="post-date">${fmtDate(p.id)}</div>
+            <button class="post-share" onclick="sharePost(${p.id},this)" title="Поделиться">📋 Ссылка</button>
           </div>
         </div>
       </div>`;
     }
 
+    /* ── SEARCH ──────────────────────────────────── */
+    function onSearch(val) {
+      searchQuery = (val||'').trim();
+      visibleCount = PAGE_SIZE;
+      document.getElementById('search-clear').classList.toggle('vis', !!searchQuery);
+      renderPosts();
+    }
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      onSearch('');
+    }
+
+    /* ── LOAD MORE ───────────────────────────────── */
+    function loadMore() {
+      visibleCount += PAGE_SIZE;
+      renderPosts();
+    }
+
+    /* ── SHARE POST ──────────────────────────────── */
+    function sharePost(id, btn) {
+      const url = location.origin + location.pathname + '?id=' + interestId + '#post-' + id;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => showCopied(btn)).catch(() => fallbackCopy(url, btn));
+      } else {
+        fallbackCopy(url, btn);
+      }
+    }
+    function fallbackCopy(text, btn) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); showCopied(btn); } catch(e) {}
+      document.body.removeChild(ta);
+    }
+    function showCopied(btn) {
+      btn.classList.add('copied');
+      btn.innerHTML = '✓ Скопировано';
+      setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '📋 Ссылка'; }, 2000);
+    }
+
     /* ── FILTER / SORT / VIEW ────────────────────── */
     function filterByTag(tag, btn) {
       currentFilter = tag;
+      visibleCount = PAGE_SIZE;
       document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
       renderPosts();
@@ -507,6 +700,7 @@
 
     function filterByTagName(tag) {
       currentFilter = tag;
+      visibleCount = PAGE_SIZE;
       buildTagFilters();
       renderPosts();
     }
@@ -559,6 +753,10 @@
     window.playVideo       = playVideo;
     window.closeVidModal   = closeVidModal;
     window.vmoClick        = vmoClick;
+    window.onSearch        = onSearch;
+    window.clearSearch     = clearSearch;
+    window.loadMore        = loadMore;
+    window.sharePost       = sharePost;
 
     /* ── GISCUS INJECTION ────────────────────────── */
     async function injectGiscus() {
