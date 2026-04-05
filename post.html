@@ -203,7 +203,19 @@
       return esc(text);
     }
     function fmtDate(ts){
-      return new Date(ts).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+      const d = new Date(ts);
+      const fmt = window._acDateFmt || 'long';
+      if (fmt === 'short') return d.toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric'});
+      if (fmt === 'medium') return d.toLocaleDateString('ru-RU', {day:'numeric', month:'short', year:'numeric'});
+      if (fmt === 'relative') {
+        const diff = Math.floor((Date.now() - d.getTime()) / 86400000);
+        if (diff === 0) return 'Сегодня';
+        if (diff === 1) return 'Вчера';
+        if (diff < 7) return diff + ' дн. назад';
+        if (diff < 30) return Math.floor(diff/7) + ' нед. назад';
+        return d.toLocaleDateString('ru-RU', {day:'numeric', month:'short', year:'numeric'});
+      }
+      return d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
     }
     function typeLabel(t){
       return {note:'📝 Заметка',video:'🎬 Видео',quote:'💬 Цитата',link:'🔗 Ссылка'}[t]||'📝 Заметка';

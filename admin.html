@@ -3033,6 +3033,13 @@ function edAppearance(){
       </div>
     </div>
   </div>
+  <div class="fsec">Формат даты</div>
+  ${fg('Как отображать даты на сайте',`<select class="fi" id="ap-datefmt">
+    <option value="long"${(a.dateFormat||'long')==='long'?' selected':''}>5 апреля 2026 г.</option>
+    <option value="short"${a.dateFormat==='short'?' selected':''}>05.04.2026</option>
+    <option value="medium"${a.dateFormat==='medium'?' selected':''}>5 апр. 2026</option>
+    <option value="relative"${a.dateFormat==='relative'?' selected':''}>2 дня назад</option>
+  </select>`,'Применяется к датам записей на досках и видео')}
   <div class="fsec">Видимость разделов</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;line-height:1.6;">Снятая галочка — раздел исчезает из меню и с главной страницы. Прямая ссылка всё ещё работает.</p>
   ${pgRow('about',   'О себе',   'about.html')}
@@ -3085,6 +3092,7 @@ function colAppearance(){
   if(!document.getElementById('ap-theme'))return;
   if(!D.appearance)D.appearance={};
   D.appearance.defaultTheme=v('ap-theme');
+  D.appearance.dateFormat=v('ap-datefmt')||'long';
   D.appearance.showHeroStats=!!document.getElementById('ap-stats')?.checked;
   if(!D.appearance.pages)D.appearance.pages={};
   ['about','journey','interests','videos','contact'].forEach(key=>{
