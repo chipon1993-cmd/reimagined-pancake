@@ -19,7 +19,7 @@
       firebase.initializeApp(firebaseConfig);
     }
     window.db = firebase.firestore();
-    window.storage = firebase.storage();
+    window.storage = (typeof firebase.storage === 'function') ? firebase.storage() : null;
     if (typeof firebase.analytics === 'function') { firebase.analytics(); }
     console.log('[AC] ✓ Firebase initialized, project:', firebaseConfig.projectId);
     _resolve(true);
