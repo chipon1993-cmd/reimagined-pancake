@@ -362,7 +362,7 @@
   }
 
   // ── PAGE VISIBILITY ────────────────────────────
-  function applyPageVisibility(pages) {
+  function applyPageVisibility(pages, save) {
     const map = {
       about:     'about.html',
       journey:   'journey.html',
@@ -381,7 +381,14 @@
         c.style.display = visible ? '' : 'none';
       });
     });
+    if (save) { try { localStorage.setItem('ac_page_vis', JSON.stringify(pages)); } catch(e){} }
   }
+
+  // Apply cached visibility immediately (before Firestore loads)
+  try {
+    var cachedVis = JSON.parse(localStorage.getItem('ac_page_vis') || '{}');
+    if (Object.keys(cachedVis).length) applyPageVisibility(cachedVis);
+  } catch(e) {}
 
   // ── PREVIEW BANNER ─────────────────────────────
   function injectPreviewBanner() {
@@ -488,7 +495,7 @@
     }
 
     if (data.appearance && data.appearance.pages) {
-      applyPageVisibility(data.appearance.pages);
+      applyPageVisibility(data.appearance.pages, true);
     }
 
     if (!localStorage.getItem('ac_theme') && data.appearance && data.appearance.defaultTheme) {
