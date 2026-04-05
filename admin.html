@@ -419,6 +419,61 @@
       padding-right:36px; cursor:pointer;
     }
     textarea.fi { resize:vertical; min-height:80px; line-height:1.6; }
+
+    /* ── MARKDOWN TOOLBAR ── */
+    .md-wrap { position:relative; }
+    .md-toolbar {
+      display:flex; flex-wrap:wrap; gap:2px; padding:6px 8px;
+      background:var(--s2); border:1px solid var(--border);
+      border-bottom:none; border-radius:12px 12px 0 0;
+    }
+    .md-wrap textarea.fi { border-radius:0 0 12px 12px; }
+    .md-btn {
+      background:transparent; border:1px solid transparent;
+      color:var(--muted); border-radius:6px; width:32px; height:30px;
+      cursor:pointer; font-size:.82rem; display:flex; align-items:center; justify-content:center;
+      transition:all .2s var(--ease); font-family:inherit; font-weight:600;
+      position:relative;
+    }
+    .md-btn:hover { background:var(--accent-glow); color:var(--accent); border-color:rgba(0,212,255,0.15); }
+    .md-btn:active { transform:scale(0.92); }
+    .md-btn[title]::after {
+      content:attr(title); position:absolute; bottom:calc(100% + 6px); left:50%;
+      transform:translateX(-50%); background:var(--bg-solid); color:var(--text);
+      font-size:.68rem; font-weight:500; white-space:nowrap; padding:4px 8px;
+      border-radius:6px; border:1px solid var(--border); box-shadow:var(--shadow-sm);
+      opacity:0; pointer-events:none; transition:opacity .15s;
+    }
+    .md-btn:hover[title]::after { opacity:1; }
+    .md-sep { width:1px; background:var(--border); margin:4px 4px; align-self:stretch; }
+    .md-preview-toggle {
+      margin-left:auto; background:transparent; border:1px solid var(--border);
+      color:var(--muted); border-radius:6px; padding:3px 10px;
+      font-size:.72rem; cursor:pointer; font-family:inherit; font-weight:600;
+      transition:all .2s var(--ease);
+    }
+    .md-preview-toggle:hover { border-color:var(--accent); color:var(--accent); }
+    .md-preview-toggle.active { background:var(--accent); color:#000; border-color:var(--accent); }
+    .md-preview {
+      display:none; padding:14px 16px; min-height:80px;
+      background:var(--input-bg); border:1px solid var(--border);
+      border-top:none; border-radius:0 0 12px 12px;
+      font-size:.9rem; line-height:1.6; color:var(--text);
+    }
+    .md-preview.active { display:block; }
+    .md-preview h1,.md-preview h2,.md-preview h3 { margin:10px 0 6px; }
+    .md-preview h1 { font-size:1.2rem; } .md-preview h2 { font-size:1.1rem; } .md-preview h3 { font-size:1rem; }
+    .md-preview p { margin:0 0 8px; }
+    .md-preview ul,.md-preview ol { padding-left:20px; margin:6px 0; }
+    .md-preview a { color:var(--accent); }
+    .md-preview strong { color:var(--text); font-weight:700; }
+    .md-preview em { font-style:italic; }
+    .md-preview code { background:rgba(0,212,255,.08); color:var(--accent); padding:1px 5px; border-radius:4px; font-size:.85em; }
+    .md-preview pre { background:rgba(0,0,0,.3); border:1px solid var(--border); border-radius:8px; padding:10px 12px; overflow-x:auto; margin:8px 0; }
+    .md-preview pre code { background:transparent; padding:0; color:var(--text); }
+    .md-preview blockquote { border-left:3px solid var(--accent); padding-left:12px; font-style:italic; margin:8px 0; }
+    .md-preview img { max-width:100%; border-radius:6px; }
+    .md-preview hr { border:none; border-top:1px solid var(--border); margin:12px 0; }
     .frow { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
     .fsec {
       font-size:.65rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
@@ -1615,6 +1670,30 @@ function inp(id,val){ return `<input class="fi" id="${id}" value="${esc(val)}"/>
 function iconInp(id,val){ return `<div class="icon-input-wrap"><input class="fi" id="${id}" value="${esc(val)}"/><button type="button" class="icon-pick-btn" onclick="openIconPicker('${id}')"><span class="btn-preview">${renderIconHTML(val)||'🎯'}</span> Выбрать</button></div>`; }
 function dateinp(id,val){ return `<input class="fi" type="date" id="${id}" value="${esc(val)}"/>`; }
 function ta(id,val,rows=3){ return `<textarea class="fi" id="${id}" rows="${rows}">${escTA(val)}</textarea>`; }
+function mdTa(id,val,rows=4){
+  return `<div class="md-wrap">
+    <div class="md-toolbar">
+      <button type="button" class="md-btn" onclick="mdIns('${id}','bold')" title="Жирный"><b>B</b></button>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','italic')" title="Курсив"><i>I</i></button>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','strike')" title="Зачёркнутый"><s>S</s></button>
+      <div class="md-sep"></div>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','h2')" title="Заголовок">H</button>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','h3')" title="Подзаголовок">H₃</button>
+      <div class="md-sep"></div>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','ul')" title="Список">• —</button>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','ol')" title="Нумерация">1.</button>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','quote')" title="Цитата">❝</button>
+      <div class="md-sep"></div>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','link')" title="Ссылка">🔗</button>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','img')" title="Картинка">🖼️</button>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','code')" title="Код">&lt;/&gt;</button>
+      <button type="button" class="md-btn" onclick="mdIns('${id}','hr')" title="Разделитель">―</button>
+      <button type="button" class="md-preview-toggle" onclick="mdPreview('${id}',this)">Превью</button>
+    </div>
+    <textarea class="fi" id="${id}" rows="${rows}" oninput="markDirty()">${escTA(val)}</textarea>
+    <div class="md-preview" id="${id}-preview"></div>
+  </div>`;
+}
 function fg(label,content,hint){ return `<div class="fg"><label class="flbl">${label}</label>${content}${hint?'<p class="fhint">'+hint+'</p>':''}</div>`; }
 
 // ── WYSIWYG Rich Text Area ──────────────────
@@ -1653,6 +1732,121 @@ function rtaInsertImage(id) {
   if (url) { document.getElementById(id).focus(); document.execCommand('insertImage', false, url); }
 }
 function rv(id) { const el=document.getElementById(id); return el?el.innerHTML.trim():''; }
+
+// ── MARKDOWN TOOLBAR ACTIONS ────────────────
+function mdIns(id, action) {
+  const ta = document.getElementById(id);
+  if (!ta) return;
+  ta.focus();
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  const sel = ta.value.substring(start, end);
+  const before = ta.value.substring(0, start);
+  const after = ta.value.substring(end);
+  let insert = '', cursorOffset = 0;
+
+  switch(action) {
+    case 'bold':
+      insert = sel ? `**${sel}**` : '**текст**';
+      cursorOffset = sel ? sel.length + 4 : 2;
+      break;
+    case 'italic':
+      insert = sel ? `*${sel}*` : '*текст*';
+      cursorOffset = sel ? sel.length + 2 : 1;
+      break;
+    case 'strike':
+      insert = sel ? `~~${sel}~~` : '~~текст~~';
+      cursorOffset = sel ? sel.length + 4 : 2;
+      break;
+    case 'h2':
+      insert = `## ${sel || 'Заголовок'}`;
+      cursorOffset = sel ? sel.length + 3 : 3;
+      break;
+    case 'h3':
+      insert = `### ${sel || 'Подзаголовок'}`;
+      cursorOffset = sel ? sel.length + 4 : 4;
+      break;
+    case 'ul':
+      if (sel) {
+        insert = sel.split('\n').map(l => '- ' + l).join('\n');
+      } else {
+        insert = '- элемент';
+      }
+      cursorOffset = insert.length;
+      break;
+    case 'ol':
+      if (sel) {
+        insert = sel.split('\n').map((l,i) => (i+1) + '. ' + l).join('\n');
+      } else {
+        insert = '1. элемент';
+      }
+      cursorOffset = insert.length;
+      break;
+    case 'quote':
+      if (sel) {
+        insert = sel.split('\n').map(l => '> ' + l).join('\n');
+      } else {
+        insert = '> цитата';
+      }
+      cursorOffset = insert.length;
+      break;
+    case 'link':
+      if (sel) {
+        insert = `[${sel}](url)`;
+        cursorOffset = sel.length + 3;
+      } else {
+        const url = prompt('URL ссылки:', 'https://');
+        if (!url) return;
+        const text = prompt('Текст ссылки:', '') || url;
+        insert = `[${text}](${url})`;
+        cursorOffset = insert.length;
+      }
+      break;
+    case 'img':
+      const imgUrl = prompt('URL картинки:', 'https://');
+      if (!imgUrl) return;
+      insert = `![описание](${imgUrl})`;
+      cursorOffset = 2;
+      break;
+    case 'code':
+      if (sel && sel.includes('\n')) {
+        insert = '```\n' + sel + '\n```';
+      } else {
+        insert = sel ? '`' + sel + '`' : '`код`';
+      }
+      cursorOffset = sel ? (sel.includes('\n') ? sel.length + 8 : sel.length + 2) : 1;
+      break;
+    case 'hr':
+      insert = '\n---\n';
+      cursorOffset = insert.length;
+      break;
+    default: return;
+  }
+
+  ta.value = before + insert + after;
+  ta.selectionStart = ta.selectionEnd = start + cursorOffset;
+  ta.dispatchEvent(new Event('input', {bubbles:true}));
+  markDirty();
+}
+
+function mdPreview(id, btn) {
+  const ta = document.getElementById(id);
+  const preview = document.getElementById(id + '-preview');
+  if (!ta || !preview) return;
+  const isActive = btn.classList.toggle('active');
+  preview.classList.toggle('active', isActive);
+  if (isActive) {
+    ta.style.display = 'none';
+    if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+      preview.innerHTML = DOMPurify.sanitize(marked.parse(ta.value || '*Пусто*'));
+    } else {
+      preview.innerHTML = '<p style="color:var(--muted)">Markdown-библиотеки не загружены. Превью недоступно.</p>';
+    }
+  } else {
+    ta.style.display = '';
+    preview.innerHTML = '';
+  }
+}
 
 function liW(idx,title,fields){
   const n=String(idx+1).padStart(2,'0');
@@ -2232,7 +2426,7 @@ function boardPostFields(p,i){
     ${t!=='quote'?fg('Заголовок',inp(`bp-title-${i}`,p.title||'')):''}
     ${t==='link'?fg('URL',inp(`bp-url-${i}`,p.url||'')):''}
     ${t==='video'?fg('Ссылка на видео (YouTube / Vimeo / файл)',inp(`bp-vurl-${i}`,videoUrl)):''}
-    ${fg(t==='quote'?'Текст цитаты':'Текст / описание',`<textarea class="fi" id="bp-content-${i}" rows="3">${escTA(p.content||'')}</textarea>`)}
+    ${fg(t==='quote'?'Текст цитаты':'Текст / описание (Markdown)', mdTa(`bp-content-${i}`, p.content||'', 5))}
     ${t==='quote'?fg('Автор',inp(`bp-author-${i}`,p.author||'')):''}`;
 }
 
@@ -2781,5 +2975,7 @@ auth.onAuthStateChanged(async function(user){
   }
 });
 </script>
+<script defer src="https://cdn.jsdelivr.net/npm/marked@15/marked.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 </body>
 </html>
