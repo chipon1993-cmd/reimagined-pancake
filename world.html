@@ -200,31 +200,85 @@
   pointLight2.position.set(-5, -3, -5);
   scene.add(pointLight2);
 
-  // ── STARS ──
-  const starCount = isMobile ? 800 : 2000;
-  const starGeo = new THREE.BufferGeometry();
-  const starPos = new Float32Array(starCount * 3);
-  for (let i = 0; i < starCount * 3; i++) starPos[i] = (Math.random() - 0.5) * 200;
-  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.12, transparent: true, opacity: 0.7, sizeAttenuation: true });
-  scene.add(new THREE.Points(starGeo, starMat));
-
-  // ── NEBULA (subtle fog particles) ──
-  const nebulaGeo = new THREE.BufferGeometry();
-  const nebulaCount = isMobile ? 100 : 300;
-  const nebPos = new Float32Array(nebulaCount * 3);
-  const nebCol = new Float32Array(nebulaCount * 3);
-  for (let i = 0; i < nebulaCount; i++) {
-    nebPos[i*3]   = (Math.random()-0.5) * 60;
-    nebPos[i*3+1] = (Math.random()-0.5) * 40;
-    nebPos[i*3+2] = (Math.random()-0.5) * 60;
-    const c = Math.random() > 0.5 ? new THREE.Color(0x00d4ff) : new THREE.Color(0xa855f7);
-    nebCol[i*3] = c.r; nebCol[i*3+1] = c.g; nebCol[i*3+2] = c.b;
+  // ── STAR TEXTURE (round soft glow) ──
+  function createStarTexture(size, color) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    g.addColorStop(0, color || 'rgba(255,255,255,1)');
+    g.addColorStop(0.15, color || 'rgba(255,255,255,0.8)');
+    g.addColorStop(0.4, 'rgba(200,220,255,0.15)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+    return new THREE.CanvasTexture(c);
   }
-  nebulaGeo.setAttribute('position', new THREE.BufferAttribute(nebPos, 3));
-  nebulaGeo.setAttribute('color', new THREE.BufferAttribute(nebCol, 3));
-  const nebMat = new THREE.PointsMaterial({ size: 1.5, transparent: true, opacity: 0.08, vertexColors: true });
-  scene.add(new THREE.Points(nebulaGeo, nebMat));
+
+  const starTex = createStarTexture(64);
+
+  // ── STARS (3 layers — depth) ──
+  function makeStarLayer(count, spread, size, opacity) {
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      pos[i*3]   = (Math.random()-0.5) * spread;
+      pos[i*3+1] = (Math.random()-0.5) * spread;
+      pos[i*3+2] = (Math.random()-0.5) * spread;
+      sizes[i] = size * (0.4 + Math.random() * 0.8);
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    const mat = new THREE.PointsMaterial({
+      map: starTex, size: size, transparent: true, opacity: opacity,
+      sizeAttenuation: true, depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    return new THREE.Points(geo, mat);
+  }
+
+  // Far dim stars
+  scene.add(makeStarLayer(isMobile ? 600 : 1500, 250, 0.18, 0.5));
+  // Medium stars
+  scene.add(makeStarLayer(isMobile ? 200 : 500, 150, 0.35, 0.6));
+  // Close bright stars (few)
+  scene.add(makeStarLayer(isMobile ? 30 : 80, 80, 0.7, 0.8));
+
+  // ── NEBULA (soft colored clouds) ──
+  function createNebulaTexture(color1, color2) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, color1);
+    g.addColorStop(0.3, color2);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(c);
+  }
+
+  const nebTex1 = createNebulaTexture('rgba(0,212,255,0.12)', 'rgba(0,212,255,0.03)');
+  const nebTex2 = createNebulaTexture('rgba(168,85,247,0.10)', 'rgba(168,85,247,0.02)');
+
+  function makeNebula(count, tex, spread, size) {
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      pos[i*3]   = (Math.random()-0.5) * spread;
+      pos[i*3+1] = (Math.random()-0.5) * spread * 0.6;
+      pos[i*3+2] = (Math.random()-0.5) * spread;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({
+      map: tex, size: size, transparent: true, opacity: 1,
+      sizeAttenuation: true, depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    return new THREE.Points(geo, mat);
+  }
+
+  scene.add(makeNebula(isMobile ? 15 : 40, nebTex1, 50, 12));
+  scene.add(makeNebula(isMobile ? 15 : 40, nebTex2, 55, 14));
 
   // ── SPHERES ──
   const spheres = [];
