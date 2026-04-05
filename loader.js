@@ -111,16 +111,13 @@
     // 3. Russian admin edits — ALWAYS try Firestore first, cache is offline-only fallback
     var ruData = await safeGet('content', 'ac_content');
     if (ruData) {
-      console.log('[AC] ✓ Using FIRESTORE data, badge:', JSON.stringify(ruData.index && ruData.index.badge));
       writeCache('ac_content', ruData);
     } else {
       ruData = readCache('ac_content');
-      console.log('[AC] ⚠ Firestore empty, using CACHE, badge:', ruData && ruData.index ? JSON.stringify(ruData.index.badge) : 'NO CACHE');
     }
     if (ruData) {
       base = deepMerge(base, ruData);
     }
-    console.log('[AC] → Final badge after merge:', JSON.stringify(base.index && base.index.badge));
 
     // 4. Language-specific admin fine-tuning
     if (lang !== 'ru') {
