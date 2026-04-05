@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>Карта мозга · Andrii Chepelovskyi</title>
+  <meta name="description" content="Интерактивная модель мозга — доли, функции, интерпретация" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0ad0ff" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .brain-page { max-width: 1100px; margin: 0 auto; padding: 0 20px 80px; }
+
+    .brain-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 32px;
+      align-items: start;
+      margin-top: 20px;
+    }
+    @media(max-width:900px) {
+      .brain-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── SVG Brain ── */
+    .brain-svg-wrap {
+      position: relative;
+      background: rgba(10,16,30,0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      padding: 30px;
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+    }
+    .brain-svg-wrap svg {
+      width: 100%;
+      height: auto;
+      max-height: 500px;
+    }
+
+    /* Brain regions */
+    .brain-region {
+      cursor: pointer;
+      transition: all 0.3s;
+      stroke: rgba(255,255,255,0.15);
+      stroke-width: 1.5;
+    }
+    .brain-region:hover, .brain-region.active {
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 12px currentColor);
+    }
+    .brain-region.active {
+      stroke-width: 3;
+      filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px currentColor);
+    }
+
+    /* Labels on SVG */
+    .brain-label {
+      font-family: Inter, system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      fill: var(--muted, rgba(148,163,184,0.8));
+      pointer-events: none;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: fill 0.3s;
+    }
+    .brain-label.active { fill: var(--text, #f1f5f9); }
+
+    /* Arrow lines */
+    .brain-arrow {
+      stroke: rgba(255,255,255,0.1);
+      stroke-width: 1;
+      fill: none;
+      pointer-events: none;
+      transition: stroke 0.3s;
+    }
+    .brain-arrow.active {
+      stroke: var(--accent, #00d4ff);
+      stroke-width: 1.5;
+    }
+
+    /* ── Info Panel ── */
+    .brain-info {
+      background: rgba(10,16,30,0.7);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      padding: 28px;
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 90px;
+      min-height: 300px;
+      transition: border-color 0.3s;
+    }
+    .brain-info.has-data { border-color: rgba(0,212,255,0.15); }
+
+    .bi-icon { font-size: 2rem; margin-bottom: 12px; display: block; }
+    .bi-title {
+      font-size: 1.1rem; font-weight: 800; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .bi-subtitle {
+      font-size: 0.75rem; color: var(--accent); font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .bi-desc {
+      font-size: 0.88rem; color: var(--muted); line-height: 1.7;
+      margin-bottom: 16px;
+    }
+    .bi-functions {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .bi-func {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 0.82rem; color: var(--muted); line-height: 1.4;
+    }
+    .bi-func-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0;
+      margin-top: 6px;
+    }
+    .bi-interpretation {
+      margin-top: 16px; padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .bi-interp-label {
+      font-size: 0.68rem; font-weight: 700; color: var(--accent);
+      letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .bi-interp-text {
+      font-size: 0.85rem; color: var(--text); line-height: 1.7;
+      font-style: italic;
+    }
+
+    .bi-placeholder {
+      text-align: center; padding: 60px 20px;
+      color: var(--muted);
+    }
+    .bi-placeholder-icon { font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 16px; }
+    .bi-placeholder h3 { font-size: 0.95rem; color: var(--text); opacity: 0.5; margin-bottom: 8px; }
+    .bi-placeholder p { font-size: 0.82rem; line-height: 1.5; }
+
+    [data-theme="light"] .brain-svg-wrap,
+    [data-theme="light"] .brain-info {
+      background: rgba(255,255,255,0.7);
+      border-color: rgba(0,0,0,0.08);
+    }
+  </style>
+</head>
+<body data-page="brain">
+  <noscript><style>.fade-in{opacity:1!important;transform:none!important}#page-overlay{display:none!important}</style></noscript>
+  <div id="page-overlay"></div>
+  <nav role="navigation" aria-label="Основная навигация">
+    <span class="nav-logo">A<span>.</span>C</span>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" onclick="closeMenu()">Главная</a></li>
+      <li class="nav-has-sub"><a href="about.html" onclick="closeMenu()" data-i18n="nav_about">О себе <span class="nav-sub-arrow">▼</span></a>
+        <ul class="nav-sub">
+          <li><a href="journey.html" onclick="closeMenu()"><span class="nav-sub-icon">🗺️</span> Мой путь</a></li>
+        </ul>
+      </li>
+      <li class="nav-has-sub"><a href="interests.html" onclick="closeMenu()" data-i18n="nav_interests">Интересы <span class="nav-sub-arrow">▼</span></a>
+        <ul class="nav-sub">
+          <li><a href="videos.html" onclick="closeMenu()"><span class="nav-sub-icon">🎬</span> Видео</a></li>
+        </ul>
+      </li>
+      <li><a href="world.html"     onclick="closeMenu()">Мир</a></li>
+      <li><a href="contact.html"   onclick="closeMenu()" data-i18n="nav_contact">Контакт</a></li>
+    </ul>
+    <div class="nav-controls">
+      <div class="theme-dots">
+        <button class="theme-dot t-cyan"   data-theme="cyan"   onclick="switchTheme('cyan')"   title="Cyan"   aria-label="Голубая тема"></button>
+        <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')" title="Purple" aria-label="Фиолетовая тема"></button>
+        <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')"  title="Green"  aria-label="Зелёная тема"></button>
+        <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')" title="Orange" aria-label="Оранжевая тема"></button>
+        <button class="theme-dot t-light"  data-theme="light"  onclick="switchTheme('light')"  title="Light"  aria-label="Светлая тема"></button>
+      </div>
+    </div>
+    <button class="burger" id="burger" onclick="toggleMenu()" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <main class="page-wrapper">
+    <div class="brain-page">
+      <div class="page-hero fade-in">
+        <a href="interest.html?id=psychology" class="back-link">← Психология мышления</a>
+        <p class="section-label">Нейронаука</p>
+        <h1 class="section-title">Карта мозга</h1>
+        <p class="section-desc">Нажми на область мозга чтобы узнать за что она отвечает и как мы это интерпретируем</p>
+      </div>
+
+      <div class="brain-layout">
+        <!-- SVG Brain (side view) -->
+        <div class="brain-svg-wrap fade-in">
+          <svg viewBox="0 0 600 450" xmlns="http://www.w3.org/2000/svg">
+            <!-- Brain outline (side view) -->
+            <defs>
+              <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+
+            <!-- Frontal Lobe -->
+            <path class="brain-region" id="r-frontal" data-region="frontal"
+              d="M100,200 C100,120 140,70 200,55 C240,47 270,50 300,65 L300,200 C300,210 280,240 260,250 L140,250 C120,245 100,230 100,200Z"
+              fill="rgba(0,212,255,0.12)" stroke="rgba(0,212,255,0.4)" />
+
+            <!-- Parietal Lobe -->
+            <path class="brain-region" id="r-parietal" data-region="parietal"
+              d="M300,65 C340,50 380,48 420,60 C450,70 470,100 475,140 L475,190 L300,200 L300,65Z"
+              fill="rgba(168,85,247,0.12)" stroke="rgba(168,85,247,0.4)" />
+
+            <!-- Temporal Lobe -->
+            <path class="brain-region" id="r-temporal" data-region="temporal"
+              d="M140,250 C130,260 120,280 115,310 C110,340 120,365 145,375 C180,388 240,390 300,380 L300,280 L260,250Z"
+              fill="rgba(52,211,153,0.12)" stroke="rgba(52,211,153,0.4)" />
+
+            <!-- Occipital Lobe -->
+            <path class="brain-region" id="r-occipital" data-region="occipital"
+              d="M475,190 C480,220 478,260 470,290 C460,320 440,345 410,360 C380,372 340,378 300,380 L300,280 L300,200 L475,190Z"
+              fill="rgba(249,115,22,0.12)" stroke="rgba(249,115,22,0.4)" />
+
+            <!-- Cerebellum -->
+            <path class="brain-region" id="r-cerebellum" data-region="cerebellum"
+              d="M410,360 C430,355 455,340 470,310 C490,320 510,340 515,370 C518,395 505,415 480,420 C450,425 415,415 400,400 C390,388 400,370 410,360Z"
+              fill="rgba(236,72,153,0.12)" stroke="rgba(236,72,153,0.4)" />
+
+            <!-- Brain Stem -->
+            <path class="brain-region" id="r-brainstem" data-region="brainstem"
+              d="M300,380 C310,390 320,400 325,420 C328,435 325,445 315,448 C305,450 295,448 288,440 C282,430 280,415 285,400 C288,390 295,383 300,380Z"
+              fill="rgba(251,191,36,0.12)" stroke="rgba(251,191,36,0.4)" />
+
+            <!-- Labels -->
+            <text class="brain-label" id="l-frontal" x="180" y="155" text-anchor="middle">Лобная</text>
+            <text class="brain-label" id="l-parietal" x="385" y="130" text-anchor="middle">Теменная</text>
+            <text class="brain-label" id="l-temporal" x="200" y="330" text-anchor="middle">Височная</text>
+            <text class="brain-label" id="l-occipital" x="400" y="280" text-anchor="middle">Затылочная</text>
+            <text class="brain-label" id="l-cerebellum" x="470" y="395" text-anchor="middle">Мозжечок</text>
+            <text class="brain-label" id="l-brainstem" x="260" y="438" text-anchor="middle">Ствол</text>
+
+            <!-- Arrow lines from labels to outside -->
+            <line class="brain-arrow" id="a-frontal"    x1="100" y1="155" x2="60"  y2="155" />
+            <line class="brain-arrow" id="a-parietal"    x1="475" y1="130" x2="540" y2="130" />
+            <line class="brain-arrow" id="a-temporal"    x1="115" y1="330" x2="60"  y2="330" />
+            <line class="brain-arrow" id="a-occipital"   x1="478" y1="280" x2="540" y2="280" />
+            <line class="brain-arrow" id="a-cerebellum"  x1="515" y1="395" x2="555" y2="395" />
+            <line class="brain-arrow" id="a-brainstem"   x1="260" y1="445" x2="220" y2="445" />
+          </svg>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="brain-info fade-in" id="brain-info">
+          <div class="bi-placeholder" id="bi-placeholder">
+            <span class="bi-placeholder-icon">🧠</span>
+            <h3>Выбери область</h3>
+            <p>Нажми на любую долю мозга слева, чтобы узнать за что она отвечает</p>
+          </div>
+          <div id="bi-content" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer></footer>
+
+  <script defer src="site-data.js"></script>
+  <script defer src="translations.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script defer src="firebase-config.js"></script>
+  <script defer src="loader.js"></script>
+  <script defer src="nav.js"></script>
+  <script>
+  (function(){
+    var idle=window.requestIdleCallback||function(cb){setTimeout(cb,200)};
+    idle(function(){
+      var s=document.createElement('script');s.src='effects.js';document.body.appendChild(s);
+    });
+  })();
+  </script>
+  <script>
+  (function(){
+    const REGIONS = {
+      frontal: {
+        icon: '🎯',
+        title: 'Лобная доля',
+        subtitle: 'Frontal Lobe',
+        color: '#00d4ff',
+        desc: 'Самая большая доля мозга. Отвечает за то, что делает нас «нами» — личность, планирование, принятие решений.',
+        functions: [
+          'Планирование и целеполагание',
+          'Принятие решений и оценка рисков',
+          'Контроль импульсов и эмоций',
+          'Речь (зона Брока)',
+          'Рабочая память',
+          'Личность и социальное поведение'
+        ],
+        interpretation: 'Когда мы говорим «подумай головой» — мы буквально имеем в виду лобную долю. Повреждение этой зоны меняет личность: человек остаётся тем же физически, но принимает решения как другой человек. Это ставит вопрос — кто мы, если не наши решения?'
+      },
+      parietal: {
+        icon: '✋',
+        title: 'Теменная доля',
+        subtitle: 'Parietal Lobe',
+        color: '#a855f7',
+        desc: 'Интеграционный центр мозга. Собирает информацию от органов чувств и создаёт «карту тела» в пространстве.',
+        functions: [
+          'Обработка тактильных ощущений',
+          'Пространственная ориентация',
+          'Математическое мышление',
+          'Чтение и письмо',
+          'Восприятие собственного тела',
+          'Интеграция сенсорной информации'
+        ],
+        interpretation: 'Теменная доля строит нашу «внутреннюю карту мира». Без неё мы не понимаем где заканчивается наше тело и начинается мир. Медитирующие монахи показывают сниженную активность этой зоны — возможно, ощущение «единства со вселенной» это буквальное размытие границ тела.'
+      },
+      temporal: {
+        icon: '👂',
+        title: 'Височная доля',
+        subtitle: 'Temporal Lobe',
+        color: '#34d399',
+        desc: 'Центр слуха, памяти и распознавания. Здесь живут ваши воспоминания и способность понимать речь.',
+        functions: [
+          'Слуховая обработка',
+          'Понимание речи (зона Вернике)',
+          'Долговременная память',
+          'Распознавание лиц',
+          'Эмоциональная окраска воспоминаний',
+          'Музыкальное восприятие'
+        ],
+        interpretation: 'Височная доля — хранилище того, кем мы были. Каждое воспоминание не «записано» как файл, а пересобирается каждый раз заново. Мы не помним прошлое — мы его реконструируем. Это значит, что наша история — это не факты, а интерпретация.'
+      },
+      occipital: {
+        icon: '👁️',
+        title: 'Затылочная доля',
+        subtitle: 'Occipital Lobe',
+        color: '#f97316',
+        desc: 'Визуальный процессор мозга. Всё что вы видите — обрабатывается здесь, включая цвет, движение и форму.',
+        functions: [
+          'Первичная обработка зрения',
+          'Распознавание цвета и формы',
+          'Обнаружение движения',
+          'Глубина и расстояние',
+          'Визуальная память',
+          'Обработка письменного текста'
+        ],
+        interpretation: 'Мы думаем, что видим мир «как он есть». На самом деле мозг получает перевёрнутое, двумерное, с слепым пятном изображение — и достраивает 3D-мир в реальном времени. Мы видим не реальность, а модель реальности, построенную мозгом.'
+      },
+      cerebellum: {
+        icon: '🎭',
+        title: 'Мозжечок',
+        subtitle: 'Cerebellum',
+        color: '#ec4899',
+        desc: 'Маленький мозг в большом. Содержит больше нейронов, чем весь остальной мозг вместе взятый.',
+        functions: [
+          'Координация движений',
+          'Равновесие и баланс',
+          'Моторное обучение',
+          'Точность движений',
+          'Автоматизация навыков',
+          'Речевая моторика'
+        ],
+        interpretation: 'Когда акробат делает сальто — его лобная доля отдыхает. Всё делает мозжечок. Тысячи повторений записывают движение так глубоко, что оно становится «рефлексом». Мастерство — это не когда ты думаешь как сделать, а когда тело знает само.'
+      },
+      brainstem: {
+        icon: '💓',
+        title: 'Ствол мозга',
+        subtitle: 'Brain Stem',
+        color: '#fbbf24',
+        desc: 'Древнейшая часть мозга. Управляет тем, о чём вы никогда не думаете — но без чего не проживёте и минуты.',
+        functions: [
+          'Дыхание',
+          'Сердцебиение',
+          'Артериальное давление',
+          'Циклы сна и бодрствования',
+          'Глотание и пищеварение',
+          'Базовые рефлексы'
+        ],
+        interpretation: 'Ствол мозга — напоминание о том, что мы всё ещё животные. Он работал миллионы лет до того, как появилась лобная доля с её «я думаю». Когда мы в стрессе, панике или опасности — именно ствол берёт контроль. Всё «высшее» отключается. Мы возвращаемся к базе.'
+      }
+    };
+
+    let activeRegion = null;
+
+    document.querySelectorAll('.brain-region').forEach(el => {
+      el.addEventListener('click', () => {
+        const region = el.dataset.region;
+        if (activeRegion === region) return;
+
+        // Deactivate previous
+        document.querySelectorAll('.brain-region').forEach(r => r.classList.remove('active'));
+        document.querySelectorAll('.brain-label').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.brain-arrow').forEach(a => a.classList.remove('active'));
+
+        // Activate current
+        el.classList.add('active');
+        document.getElementById('l-' + region)?.classList.add('active');
+        document.getElementById('a-' + region)?.classList.add('active');
+        activeRegion = region;
+
+        // Show info
+        const data = REGIONS[region];
+        if (!data) return;
+
+        const content = document.getElementById('bi-content');
+        const placeholder = document.getElementById('bi-placeholder');
+        const panel = document.getElementById('brain-info');
+
+        placeholder.style.display = 'none';
+        content.style.display = '';
+        panel.classList.add('has-data');
+        panel.style.borderColor = data.color + '30';
+
+        content.innerHTML = `
+          <span class="bi-icon">${data.icon}</span>
+          <div class="bi-title" style="color:${data.color}">${data.title}</div>
+          <div class="bi-subtitle">${data.subtitle}</div>
+          <p class="bi-desc">${data.desc}</p>
+          <div class="bi-functions">
+            ${data.functions.map(f => `<div class="bi-func"><span class="bi-func-dot" style="background:${data.color}"></span><span>${f}</span></div>`).join('')}
+          </div>
+          <div class="bi-interpretation">
+            <div class="bi-interp-label">// Как это интерпретировать</div>
+            <p class="bi-interp-text">${data.interpretation}</p>
+          </div>
+        `;
+      });
+
+      // Hover glow
+      el.addEventListener('mouseenter', () => {
+        if (activeRegion !== el.dataset.region) {
+          el.style.filter = 'drop-shadow(0 0 8px currentColor)';
+        }
+      });
+      el.addEventListener('mouseleave', () => {
+        if (activeRegion !== el.dataset.region) {
+          el.style.filter = '';
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
