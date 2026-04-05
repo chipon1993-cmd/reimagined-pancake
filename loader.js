@@ -527,11 +527,13 @@
 
     const gaId = analytics.ga && analytics.ga.trim();
     if (!gaId) return;
+    const cbSettings = (d && d.global && d.global.cookieBanner) || {};
+    if (cbSettings.enabled === false) { injectGA(gaId); return; }
     const consent = localStorage.getItem('ac_cookie_consent');
     if (consent === 'accepted') {
       injectGA(gaId);
     } else if (!consent) {
-      showCookieBanner(gaId);
+      showCookieBanner(gaId, cbSettings);
     }
   }
 
@@ -549,8 +551,9 @@
   }
 
   // ── COOKIE CONSENT BANNER (GDPR) ──────────────────────
-  function showCookieBanner(gaId) {
+  function showCookieBanner(gaId, cbSettings) {
     if (document.getElementById('ac-cookie-banner')) return;
+    cbSettings = cbSettings || {};
     const style = document.createElement('style');
     style.textContent = `
       #ac-cookie-banner {
@@ -582,12 +585,14 @@
 
     const bar = document.createElement('div');
     bar.id = 'ac-cookie-banner';
+    var cbText = cbSettings.text || 'Этот сайт использует cookies для аналитики (Google Analytics). Данные помогают понять, какие страницы интересны, и улучшить сайт.';
+    var cbAccept = cbSettings.acceptText || 'Принять';
+    var cbDecline = cbSettings.declineText || 'Отклонить';
     bar.innerHTML = `
-      <span>Этот сайт использует cookies для аналитики (Google Analytics).
-        Данные помогают понять, какие страницы интересны, и улучшить сайт.</span>
+      <span>${cbText}</span>
       <div class="cb-btns">
-        <button class="cb-btn cb-accept" id="cb-accept">Принять</button>
-        <button class="cb-btn cb-decline" id="cb-decline">Отклонить</button>
+        <button class="cb-btn cb-accept" id="cb-accept">${cbAccept}</button>
+        <button class="cb-btn cb-decline" id="cb-decline">${cbDecline}</button>
       </div>`;
     document.body.appendChild(bar);
 
