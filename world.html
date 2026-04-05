@@ -206,7 +206,7 @@
   const starPos = new Float32Array(starCount * 3);
   for (let i = 0; i < starCount * 3; i++) starPos[i] = (Math.random() - 0.5) * 200;
   starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.15, transparent: true, opacity: 0.6 });
+  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.12, transparent: true, opacity: 0.7, sizeAttenuation: true });
   scene.add(new THREE.Points(starGeo, starMat));
 
   // ── NEBULA (subtle fog particles) ──
@@ -240,16 +240,18 @@
   ];
 
   BOARDS.forEach((board, i) => {
-    const geo = new THREE.IcosahedronGeometry(board.size, 2);
+    const geo = new THREE.SphereGeometry(board.size, 48, 32);
     const mat = new THREE.MeshPhysicalMaterial({
       color: board.color,
       emissive: board.color,
-      emissiveIntensity: 0.15,
-      metalness: 0.3,
-      roughness: 0.4,
+      emissiveIntensity: 0.2,
+      metalness: 0.15,
+      roughness: 0.25,
       transparent: true,
-      opacity: 0.85,
-      wireframe: false,
+      opacity: 0.88,
+      clearcoat: 0.4,
+      clearcoatRoughness: 0.2,
+      envMapIntensity: 0.5,
     });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.set(...positions[i]);
@@ -258,8 +260,8 @@
     spheres.push(mesh);
 
     // Glow ring
-    const ringGeo = new THREE.RingGeometry(board.size + 0.15, board.size + 0.25, 48);
-    const ringMat = new THREE.MeshBasicMaterial({ color: board.color, transparent: true, opacity: 0.2, side: THREE.DoubleSide });
+    const ringGeo = new THREE.RingGeometry(board.size + 0.1, board.size + 0.22, 64);
+    const ringMat = new THREE.MeshBasicMaterial({ color: board.color, transparent: true, opacity: 0.15, side: THREE.DoubleSide });
     const ring = new THREE.Mesh(ringGeo, ringMat);
     ring.position.copy(mesh.position);
     ring.lookAt(camera.position);
