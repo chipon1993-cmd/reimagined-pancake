@@ -1,5 +1,5 @@
 // Service Worker — offline caching for Andrii Chepelovskyi site
-const CACHE = 'ac-v16';
+const CACHE = 'ac-v17';
 const SHELL = [
   '/', '/index.html', '/about.html', '/journey.html',
   '/interests.html', '/videos.html', '/contact.html',
