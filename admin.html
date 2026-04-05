@@ -2209,6 +2209,7 @@ async function edBoards(){
     </div>
     <div id="bp-fields-${i}">${boardPostFields(p,i)}</div>
     ${fg('Теги (через запятую)',inp(`bp-tags-${i}`,(p.tags||[]).join(', ')))}
+    <div class="fg" style="margin-bottom:8px;"><label class="chk-row"><input type="checkbox" id="bp-pin-${i}"${p.pinned?' checked':''}><span><b>📌 Закрепить</b> <span style="color:var(--muted);font-size:.88em;font-weight:400;">— всегда наверху доски</span></span></label></div>
     <div class="fg" style="margin-bottom:0;"><label class="chk-row"><input type="checkbox" id="bp-pub-${i}"${p.published!==false?' checked':''}><span><b>Опубликовано</b> <span style="color:var(--muted);font-size:.88em;font-weight:400;">— черновик не виден на сайте</span></span></label></div>
   `)).join('');
 
@@ -2263,7 +2264,8 @@ function colBoards(){
     const vurl=document.getElementById(`bp-vurl-${i}`)?.value||'';
     const savedId = document.getElementById(`bp-id-${i}`)?.value;
     const published=!!document.getElementById(`bp-pub-${i}`)?.checked;
-    const post={id: savedId ? Number(savedId) : Date.now()+parseInt(i), type,tags,content,title,date,published};
+    const pinned=!!document.getElementById(`bp-pin-${i}`)?.checked;
+    const post={id: savedId ? Number(savedId) : Date.now()+parseInt(i), type,tags,content,title,date,published,pinned};
     if(type==='quote') post.author=author;
     if(type==='link')  post.url=url;
     if(type==='video' && vurl){
