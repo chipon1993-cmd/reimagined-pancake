@@ -167,38 +167,53 @@
       base = deepMerge(base, ruData);
     }
 
-    // 4. Language-specific content (Firestore → cache → auto-translate)
+    // 4. Language-specific content (Firestore → compare timestamp → auto-translate if stale)
     if (lang !== 'ru') {
       var lk = 'ac_content_' + lang;
+      var ruTs = (ruData && ruData._ts) || 0;
       var langData = await safeGet('content', lk);
-      if (langData && !langData._autoTranslated) {
-        // Admin manually edited this language
-        writeCache(lk, langData);
-        base = deepMerge(base, langData);
-      } else if (langData) {
-        // Auto-translated version exists in Firestore
-        writeCache(lk, langData);
-        base = deepMerge(base, langData);
+      var needsRetranslate = false;
+
+      if (langData) {
+        var langTs = langData._ts || 0;
+        // If Russian content is NEWER than translation → translation is stale
+        if (langData._autoTranslated && ruTs > langTs) {
+          needsRetranslate = true;
+        } else {
+          // Translation is fresh or manually edited — use it
+          writeCache(lk, langData);
+          base = deepMerge(base, langData);
+        }
       } else {
-        // No translation exists — try cache first
+        // No Firestore doc — check cache
         langData = readCache(lk);
         if (langData) {
-          base = deepMerge(base, langData);
-        } else if (ruData) {
-          // No cache either — auto-translate from Russian on the fly
-          try {
-            var translated = await translateObj(ruData, 'ru', lang, _skipTranslateKeys);
-            translated._autoTranslated = true;
-            translated._ts = Date.now();
-            writeCache(lk, translated);
-            base = deepMerge(base, translated);
-            // Save to Firestore in background for next visits
-            if (typeof window.fsSet === 'function') {
-              window.fsSet('content', lk, translated).catch(function(){});
-            }
-          } catch(e) {
-            // Translation failed — use Russian content (already merged)
+          var cachedTs = langData._ts || 0;
+          if (langData._autoTranslated && ruTs > cachedTs) {
+            needsRetranslate = true;
+          } else {
+            base = deepMerge(base, langData);
           }
+        } else {
+          needsRetranslate = true;
+        }
+      }
+
+      // Re-translate from current Russian content
+      if (needsRetranslate && ruData) {
+        try {
+          var translated = await translateObj(ruData, 'ru', lang, _skipTranslateKeys);
+          translated._autoTranslated = true;
+          translated._ts = Date.now();
+          writeCache(lk, translated);
+          base = deepMerge(base, translated);
+          // Save to Firestore in background for next visits
+          if (typeof window.fsSet === 'function') {
+            window.fsSet('content', lk, translated).catch(function(){});
+          }
+        } catch(e) {
+          // Translation failed — use whatever we had
+          if (langData) base = deepMerge(base, langData);
         }
       }
 
