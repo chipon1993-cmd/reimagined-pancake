@@ -21,9 +21,10 @@
     window.db = firebase.firestore();
     window.storage = firebase.storage();
     if (typeof firebase.analytics === 'function') { firebase.analytics(); }
+    console.log('[AC] ✓ Firebase initialized, project:', firebaseConfig.projectId);
     _resolve(true);
   } catch(e) {
-    console.warn('Firebase init failed:', e.message);
+    console.error('[AC] ✗ Firebase init FAILED:', e.message);
     window.db = null;
     window.storage = null;
     _resolve(false);
@@ -32,15 +33,24 @@
   // ── Firestore helpers ──────────────────────────
   // Read with 4s timeout — returns null if Firestore unreachable
   window.fsGet = async function (collection, docId) {
-    if (!window.db) return null;
+    if (!window.db) { console.error('[AC] ✗ fsGet: db is null'); return null; }
     try {
+      console.log('[AC] → Reading Firestore:', collection + '/' + docId);
       const result = await Promise.race([
         db.collection(collection).doc(docId).get(),
         new Promise(function(_, reject) { setTimeout(function() { reject(new Error('timeout')); }, 4000); })
       ]);
-      return result.exists ? result.data() : null;
+      if (result.exists) {
+        var data = result.data();
+        console.log('[AC] ✓ Firestore returned data, keys:', Object.keys(data).join(', '));
+        if (data.index) console.log('[AC]   index.badge =', JSON.stringify(data.index.badge));
+        return data;
+      } else {
+        console.warn('[AC] ⚠ Firestore doc NOT FOUND:', collection + '/' + docId);
+        return null;
+      }
     } catch (e) {
-      console.warn('Firestore read failed:', collection + '/' + docId, e.message);
+      console.error('[AC] ✗ Firestore read FAILED:', collection + '/' + docId, e.message, e.code || '');
       return null;
     }
   };
