@@ -798,8 +798,11 @@
     }
     .adm-sidebar.collapsed ~ .save-bar { left:60px; }
 
-    .save-status { font-size:.73rem; color:var(--muted); letter-spacing:.06em; transition:color .3s; }
+    .save-status { font-size:.85rem; color:var(--muted); letter-spacing:.04em; transition:all .3s; font-weight:500; }
     .save-status.ok { color:var(--success); }
+    .save-status.dirty { color:var(--warning); font-weight:600; }
+    .save-bar.has-changes { border-top:2px solid var(--warning); }
+    .save-bar.has-changes .save-status { color:var(--warning); }
 
     /* ═══════ TOAST — spring from bottom ═══════ */
     .toast {
@@ -1324,7 +1327,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
       <span style="font-size:.7rem;color:var(--muted);">Язык: <strong id="save-lang" style="color:var(--accent)">RU</strong></span>
-      <button class="xbtn save" onclick="saveAll()">💾 Сохранить <span style="opacity:.6;font-size:.7em">Ctrl+S</span></button>
+      <button class="xbtn save" onclick="saveAll()">💾 Сохранить <span style="opacity:.5;font-size:.7em">или Ctrl+S</span></button>
     </div>
   </div>
 </div>
@@ -1708,6 +1711,10 @@ function markDirty(){
   isDirty=true;
   const btn=document.querySelector('.xbtn.save');
   if(btn && !btn.classList.contains('pulse')) btn.classList.add('pulse');
+  const bar=document.querySelector('.save-bar');
+  if(bar) bar.classList.add('has-changes');
+  const st=document.getElementById('save-st');
+  if(st){ st.textContent='● Есть несохранённые изменения'; st.className='save-status dirty'; }
 }
 
 function validateBeforeSave(){
@@ -1902,9 +1909,10 @@ async function saveAll(){
     isDirty=false; autoSec=30;
     document.getElementById('save-auto').textContent='';
     const pulseBtn=document.querySelector('.xbtn.save'); if(pulseBtn) pulseBtn.classList.remove('pulse');
+    const bar=document.querySelector('.save-bar'); if(bar) bar.classList.remove('has-changes');
     const hints={ru:'RU',uk:'UK',no:'NO'};
     st.textContent='✓ Сохранено ('+hints[adminLang]+')'; st.className='save-status ok';
-    setTimeout(()=>{ st.textContent='Изменения не сохранены'; st.className='save-status'; },3000);
+    setTimeout(()=>{ st.textContent='Все изменения сохранены'; st.className='save-status'; },3000);
     const warns=validateBeforeSave();
     if(warns.length){
       showValidationWarnings(warns);
