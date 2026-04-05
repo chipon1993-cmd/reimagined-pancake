@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://www.gstatic.com https://www.googletagmanager.com https://plausible.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://firestore.googleapis.com https://*.firebaseio.com https://www.gstatic.com https://unpkg.com; frame-src 'none'; object-src 'none'; base-uri 'self';" />
+  <title>Мир мыслей · Andrii Chepelovskyi</title>
+  <meta name="description" content="Интерактивное 3D-пространство идей и интересов" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0ad0ff" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    #world-canvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; z-index: 0;
+    }
+    .world-ui {
+      position: fixed; top: 80px; left: 0; right: 0; bottom: 0;
+      z-index: 1; pointer-events: none;
+    }
+    .world-title {
+      position: absolute; top: 20px; left: 50%;
+      transform: translateX(-50%);
+      text-align: center; pointer-events: auto;
+    }
+    .world-title h1 {
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      font-weight: 800; color: var(--text);
+      margin-bottom: 6px; letter-spacing: -0.02em;
+    }
+    .world-title p {
+      font-size: 0.82rem; color: var(--muted);
+      max-width: 400px; line-height: 1.5;
+    }
+    .world-hint {
+      position: absolute; bottom: 30px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem; color: var(--muted);
+      opacity: 0.5; text-align: center;
+      pointer-events: none;
+      animation: hintPulse 3s ease-in-out infinite;
+    }
+    @keyframes hintPulse { 0%,100%{opacity:.3} 50%{opacity:.7} }
+
+    /* Sphere label */
+    .sphere-label {
+      position: fixed; z-index: 10;
+      background: rgba(10,14,26,0.85);
+      -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 12px; padding: 12px 18px;
+      pointer-events: none;
+      opacity: 0; transition: opacity 0.2s;
+      max-width: 260px;
+    }
+    .sphere-label.visible { opacity: 1; }
+    .sphere-label-icon { font-size: 1.4rem; margin-bottom: 4px; display: block; }
+    .sphere-label-title { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .sphere-label-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+    .sphere-label-count { font-size: 0.68rem; color: var(--accent); margin-top: 5px; }
+
+    [data-theme="light"] .sphere-label {
+      background: rgba(255,255,255,0.9);
+      border-color: rgba(0,0,0,0.08);
+    }
+
+    /* Loading */
+    .world-loading {
+      position: fixed; inset: 0; z-index: 20;
+      background: var(--bg, #050810);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+      transition: opacity 0.5s;
+    }
+    .world-loading.done { opacity: 0; pointer-events: none; }
+    .world-loading-text { font-size: 0.85rem; color: var(--muted); }
+    .world-loading-spinner {
+      width: 32px; height: 32px; border: 2px solid rgba(0,212,255,0.15);
+      border-top-color: var(--accent, #0ad0ff); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer { position: relative; z-index: 1; }
+    main.page-wrapper { position: relative; z-index: 1; min-height: 100vh; }
+  </style>
+</head>
+<body data-page="world">
+  <noscript><style>.fade-in{opacity:1!important;transform:none!important}#page-overlay{display:none!important}</style></noscript>
+  <div id="page-overlay"></div>
+  <nav role="navigation" aria-label="Основная навигация">
+    <a href="index.html" class="nav-logo">A<span>.</span>C</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="about.html"     onclick="closeMenu()">О себе</a></li>
+      <li><a href="journey.html"   onclick="closeMenu()">Мой путь</a></li>
+      <li><a href="interests.html" onclick="closeMenu()">Интересы</a></li>
+      <li><a href="videos.html"    onclick="closeMenu()">Видео</a></li>
+      <li><a href="world.html"     onclick="closeMenu()">Мир</a></li>
+      <li><a href="contact.html"   onclick="closeMenu()">Контакт</a></li>
+    </ul>
+    <div class="nav-controls">
+      <div class="theme-dots">
+        <button class="theme-dot t-cyan"   data-theme="cyan"   onclick="switchTheme('cyan')"   title="Cyan"   aria-label="Голубая тема"></button>
+        <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')" title="Purple" aria-label="Фиолетовая тема"></button>
+        <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')"  title="Green"  aria-label="Зелёная тема"></button>
+        <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')" title="Orange" aria-label="Оранжевая тема"></button>
+        <button class="theme-dot t-light"  data-theme="light"  onclick="switchTheme('light')"  title="Light"  aria-label="Светлая тема"></button>
+      </div>
+    </div>
+    <button class="burger" id="burger" onclick="toggleMenu()" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="world-loading" id="world-loading">
+    <div class="world-loading-spinner"></div>
+    <div class="world-loading-text">Загрузка мира...</div>
+  </div>
+
+  <canvas id="world-canvas"></canvas>
+
+  <div class="world-ui">
+    <div class="world-title fade-in">
+      <h1>Мир мыслей</h1>
+      <p>Каждая сфера — тема, которая не отпускает. Нажми чтобы исследовать.</p>
+    </div>
+    <div class="world-hint">Вращай мышкой · Скролл для приближения · Нажми на сферу</div>
+  </div>
+
+  <div class="sphere-label" id="sphere-label">
+    <span class="sphere-label-icon" id="sl-icon"></span>
+    <div class="sphere-label-title" id="sl-title"></div>
+    <div class="sphere-label-desc" id="sl-desc"></div>
+    <div class="sphere-label-count" id="sl-count"></div>
+  </div>
+
+  <main class="page-wrapper" style="display:none"></main>
+  <footer></footer>
+
+  <script defer src="site-data.js"></script>
+  <script defer src="translations.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script defer src="firebase-config.js"></script>
+  <script defer src="loader.js"></script>
+  <script defer src="nav.js"></script>
+
+  <script type="importmap">
+  { "imports": { "three": "https://unpkg.com/three@0.170.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/" } }
+  </script>
+
+  <script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+  // ── CONFIG ──
+  const BOARDS = [
+    { id:'psychology',  icon:'🧠', title:'Психология мышления',   desc:'Почему умные люди принимают плохие решения',      color: 0x00d4ff, size: 1.2 },
+    { id:'philosophy',  icon:'🌀', title:'Философия языка',        desc:'Слова формируют мышление или наоборот?',           color: 0xa855f7, size: 1.0 },
+    { id:'tech',        icon:'⚡', title:'Технологии и ИИ',         desc:'Что меняется, когда машины начинают думать',       color: 0x34d399, size: 1.0 },
+    { id:'sociology',   icon:'🌍', title:'Люди в разных средах',    desc:'Как место определяет мышление и поведение',        color: 0xf97316, size: 0.85 },
+    { id:'acrobatics',  icon:'🤸', title:'Акробатика',              desc:'10+ лет на сцене — тело как инструмент познания',  color: 0x00d4ff, size: 0.85 },
+  ];
+
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+  // ── SCENE SETUP ──
+  const canvas = document.getElementById('world-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 2, 12);
+
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.enablePan = false;
+  controls.minDistance = 5;
+  controls.maxDistance = 25;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.4;
+
+  // ── LIGHTING ──
+  scene.add(new THREE.AmbientLight(0x334466, 0.6));
+  const pointLight = new THREE.PointLight(0x00d4ff, 1.5, 50);
+  pointLight.position.set(5, 8, 5);
+  scene.add(pointLight);
+  const pointLight2 = new THREE.PointLight(0xa855f7, 1.0, 40);
+  pointLight2.position.set(-5, -3, -5);
+  scene.add(pointLight2);
+
+  // ── STARS ──
+  const starCount = isMobile ? 800 : 2000;
+  const starGeo = new THREE.BufferGeometry();
+  const starPos = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount * 3; i++) starPos[i] = (Math.random() - 0.5) * 200;
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.15, transparent: true, opacity: 0.6 });
+  scene.add(new THREE.Points(starGeo, starMat));
+
+  // ── NEBULA (subtle fog particles) ──
+  const nebulaGeo = new THREE.BufferGeometry();
+  const nebulaCount = isMobile ? 100 : 300;
+  const nebPos = new Float32Array(nebulaCount * 3);
+  const nebCol = new Float32Array(nebulaCount * 3);
+  for (let i = 0; i < nebulaCount; i++) {
+    nebPos[i*3]   = (Math.random()-0.5) * 60;
+    nebPos[i*3+1] = (Math.random()-0.5) * 40;
+    nebPos[i*3+2] = (Math.random()-0.5) * 60;
+    const c = Math.random() > 0.5 ? new THREE.Color(0x00d4ff) : new THREE.Color(0xa855f7);
+    nebCol[i*3] = c.r; nebCol[i*3+1] = c.g; nebCol[i*3+2] = c.b;
+  }
+  nebulaGeo.setAttribute('position', new THREE.BufferAttribute(nebPos, 3));
+  nebulaGeo.setAttribute('color', new THREE.BufferAttribute(nebCol, 3));
+  const nebMat = new THREE.PointsMaterial({ size: 1.5, transparent: true, opacity: 0.08, vertexColors: true });
+  scene.add(new THREE.Points(nebulaGeo, nebMat));
+
+  // ── SPHERES ──
+  const spheres = [];
+  const sphereGroup = new THREE.Group();
+  scene.add(sphereGroup);
+
+  const positions = [
+    [0, 1.5, 0],
+    [-3.5, -0.5, -2],
+    [3.5, 0, -1.5],
+    [-2, 2.5, 2.5],
+    [2.5, -1.5, 3],
+  ];
+
+  BOARDS.forEach((board, i) => {
+    const geo = new THREE.IcosahedronGeometry(board.size, 2);
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: board.color,
+      emissive: board.color,
+      emissiveIntensity: 0.15,
+      metalness: 0.3,
+      roughness: 0.4,
+      transparent: true,
+      opacity: 0.85,
+      wireframe: false,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(...positions[i]);
+    mesh.userData = { board, index: i, baseY: positions[i][1] };
+    sphereGroup.add(mesh);
+    spheres.push(mesh);
+
+    // Glow ring
+    const ringGeo = new THREE.RingGeometry(board.size + 0.15, board.size + 0.25, 48);
+    const ringMat = new THREE.MeshBasicMaterial({ color: board.color, transparent: true, opacity: 0.2, side: THREE.DoubleSide });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.copy(mesh.position);
+    ring.lookAt(camera.position);
+    ring.userData.parentSphere = mesh;
+    sphereGroup.add(ring);
+  });
+
+  // ── CONNECTION LINES ──
+  const lineMat = new THREE.LineBasicMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.08 });
+  for (let i = 0; i < spheres.length; i++) {
+    for (let j = i + 1; j < spheres.length; j++) {
+      const geo = new THREE.BufferGeometry().setFromPoints([spheres[i].position, spheres[j].position]);
+      const line = new THREE.Line(geo, lineMat.clone());
+      line.userData = { i, j };
+      sphereGroup.add(line);
+    }
+  }
+
+  // ── RAYCASTER (hover + click) ──
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2(-999, -999);
+  let hoveredSphere = null;
+  const label = document.getElementById('sphere-label');
+
+  canvas.addEventListener('mousemove', (e) => {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  });
+
+  canvas.addEventListener('click', () => {
+    if (hoveredSphere) {
+      const board = hoveredSphere.userData.board;
+      window.location.href = 'interest.html?id=' + board.id;
+    }
+  });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (hoveredSphere) {
+      const board = hoveredSphere.userData.board;
+      window.location.href = 'interest.html?id=' + board.id;
+    }
+  });
+
+  function updateHover() {
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(spheres);
+
+    if (hits.length > 0) {
+      const mesh = hits[0].object;
+      if (hoveredSphere !== mesh) {
+        // Reset previous
+        if (hoveredSphere) {
+          hoveredSphere.material.emissiveIntensity = 0.15;
+          hoveredSphere.scale.setScalar(1);
+        }
+        hoveredSphere = mesh;
+        mesh.material.emissiveIntensity = 0.5;
+        mesh.scale.setScalar(1.15);
+        canvas.style.cursor = 'pointer';
+
+        // Update label
+        const b = mesh.userData.board;
+        document.getElementById('sl-icon').textContent = b.icon;
+        document.getElementById('sl-title').textContent = b.title;
+        document.getElementById('sl-desc').textContent = b.desc;
+        document.getElementById('sl-count').textContent = 'Нажми чтобы открыть →';
+        label.classList.add('visible');
+      }
+
+      // Position label near cursor
+      const vec = mesh.position.clone().project(camera);
+      const x = (vec.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (-vec.y * 0.5 + 0.5) * window.innerHeight;
+      label.style.left = Math.min(x + 20, window.innerWidth - 280) + 'px';
+      label.style.top = Math.min(y - 20, window.innerHeight - 120) + 'px';
+
+    } else {
+      if (hoveredSphere) {
+        hoveredSphere.material.emissiveIntensity = 0.15;
+        hoveredSphere.scale.setScalar(1);
+        hoveredSphere = null;
+        canvas.style.cursor = 'grab';
+        label.classList.remove('visible');
+      }
+    }
+  }
+
+  // ── ANIMATION LOOP ──
+  let time = 0;
+  let isVisible = true;
+  document.addEventListener('visibilitychange', () => { isVisible = !document.hidden; if (isVisible) animate(); });
+
+  function animate() {
+    if (!isVisible) return;
+    requestAnimationFrame(animate);
+    time += 0.01;
+
+    // Float spheres
+    spheres.forEach((s, i) => {
+      s.position.y = s.userData.baseY + Math.sin(time * 0.8 + i * 1.3) * 0.3;
+      s.rotation.x += 0.002;
+      s.rotation.y += 0.003;
+    });
+
+    // Pulse connection lines
+    sphereGroup.children.forEach(child => {
+      if (child.isLine && child.material) {
+        child.material.opacity = 0.05 + Math.sin(time * 2 + (child.userData.i || 0)) * 0.04;
+      }
+    });
+
+    // Update rings to face camera
+    sphereGroup.children.forEach(child => {
+      if (child.userData && child.userData.parentSphere) {
+        child.position.copy(child.userData.parentSphere.position);
+        child.lookAt(camera.position);
+      }
+    });
+
+    controls.update();
+    updateHover();
+    renderer.render(scene, camera);
+  }
+
+  // ── RESIZE ──
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }, { passive: true });
+
+  // ── LOAD BOARD COUNTS FROM FIRESTORE ──
+  async function loadBoardData() {
+    try {
+      await new Promise(r => { const check = () => { if (window.fsGet) r(); else setTimeout(check, 100); }; check(); });
+      for (const board of BOARDS) {
+        try {
+          const doc = await window.fsGet('boards', board.id);
+          if (doc && doc.posts) {
+            const count = doc.posts.filter(p => p.published !== false).length;
+            board.postCount = count;
+            // Update sphere size based on post count
+            const idx = BOARDS.indexOf(board);
+            if (idx >= 0 && spheres[idx]) {
+              const newSize = Math.max(0.7, Math.min(1.8, 0.7 + count * 0.1));
+              spheres[idx].scale.setScalar(newSize / board.size);
+            }
+          }
+        } catch(e) {}
+      }
+    } catch(e) {}
+  }
+
+  // ── START ──
+  animate();
+  loadBoardData().then(() => {
+    setTimeout(() => { document.getElementById('world-loading').classList.add('done'); }, 500);
+  });
+
+  // Remove loading after timeout anyway
+  setTimeout(() => { document.getElementById('world-loading').classList.add('done'); }, 3000);
+  </script>
+</body>
+</html>
