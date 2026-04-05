@@ -47,7 +47,7 @@
 <body data-page="about">
   <noscript><style>.fade-in{opacity:1!important;transform:none!important}#page-overlay{display:none!important}</style></noscript>
   <div id="page-overlay"></div>
-  <nav>
+  <nav role="navigation" aria-label="Основная навигация">
     <a href="index.html" class="nav-logo">A<span>.</span>C</a>
     <ul class="nav-links" id="navLinks">
       <li><a href="about.html"     onclick="closeMenu()" data-i18n="nav_about">О себе</a></li>
@@ -58,11 +58,11 @@
     </ul>
     <div class="nav-controls">
       <div class="theme-dots">
-        <button class="theme-dot t-cyan"   data-theme="cyan"   onclick="switchTheme('cyan')"   title="Cyan"></button>
-        <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')" title="Purple"></button>
-        <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')"  title="Green"></button>
-        <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')" title="Orange"></button>
-        <button class="theme-dot t-light"  data-theme="light"  onclick="switchTheme('light')"  title="Light"></button>
+        <button class="theme-dot t-cyan"   data-theme="cyan"   onclick="switchTheme('cyan')"   title="Cyan" aria-label="Голубая тема"></button>
+        <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')" title="Purple" aria-label="Фиолетовая тема"></button>
+        <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')"  title="Green" aria-label="Зелёная тема"></button>
+        <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')" title="Orange" aria-label="Оранжевая тема"></button>
+        <button class="theme-dot t-light"  data-theme="light"  onclick="switchTheme('light')"  title="Light" aria-label="Светлая тема"></button>
       </div>
     </div>
     <button class="burger" id="burger" onclick="toggleMenu()" aria-label="Меню">
@@ -70,7 +70,7 @@
     </button>
   </nav>
 
-  <div class="page-wrapper">
+  <main class="page-wrapper">
     <div class="container">
       <div class="page-hero fade-in">
         <a href="index.html" class="back-link" data-i18n="back_home">← На главную</a>
@@ -85,7 +85,7 @@
       <h3 class="values-title fade-in" data-i18n="values_title">// Что мне важно</h3>
       <div id="about-values"></div>
     </div>
-  </div>
+  </main>
 
   <footer></footer>
 

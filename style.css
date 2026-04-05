@@ -496,6 +496,26 @@ footer {
   footer { flex-direction: column; gap: 8px; text-align: center; padding: 24px 20px; }
 }
 
+/* ── Tablet (769-1024px) ── */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .container { padding: 0 32px; }
+  nav { padding: 14px 32px; }
+  .hero { padding: 140px 32px 60px; }
+  .section-title { font-size: clamp(1.3rem, 3vw, 1.8rem); }
+  .nav-links { gap: 18px; }
+  .nav-links a { font-size: 0.75rem; padding: 4px 8px; }
+}
+
+/* ── Small phones (max-width: 480px) ── */
+@media (max-width: 480px) {
+  .container { padding: 0 14px; }
+  nav { padding: 12px 14px; }
+  .section-title { font-size: 1.2rem; }
+  .section-desc { font-size: 0.85rem; }
+  .page-hero { padding-top: 100px; }
+  footer { font-size: 0.7rem; padding: 18px 14px; }
+}
+
 /* =====================
    KEYBOARD FOCUS
    ===================== */
