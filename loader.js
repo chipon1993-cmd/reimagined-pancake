@@ -429,6 +429,23 @@
     if (!page) return;
     injectPreviewBanner();
     const data = await getData();
+
+    // Maintenance mode — block site for visitors
+    if (data.global && data.global.maintenance && data.global.maintenance.enabled) {
+      var mTitle = data.global.maintenance.title || 'Сайт на обслуживании';
+      var mMsg = data.global.maintenance.message || 'Мы скоро вернёмся.';
+      document.body.innerHTML = '';
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#050810;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;font-family:Inter,system-ui,sans-serif;';
+      overlay.innerHTML = '<div style="font-size:3rem;margin-bottom:20px;opacity:.6;">🔧</div>' +
+        '<h1 style="color:#f1f5f9;font-size:clamp(1.4rem,4vw,2rem);font-weight:800;margin-bottom:14px;">' + mTitle + '</h1>' +
+        '<p style="color:rgba(148,163,184,0.8);font-size:1rem;max-width:400px;line-height:1.7;">' + mMsg + '</p>';
+      document.body.appendChild(overlay);
+      var po = document.getElementById('page-overlay');
+      if (po) po.style.display = 'none';
+      return;
+    }
+
     injectAnalytics(data);
 
     if (data.seo && data.seo[page]) {

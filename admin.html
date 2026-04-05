@@ -2616,6 +2616,17 @@ async function edGlobal(){
     ${fg('Кнопка «Принять»',inp('gl-cb-accept',(g.cookieBanner&&g.cookieBanner.acceptText)||'Принять'),'Текст кнопки согласия')}
     ${fg('Кнопка «Отклонить»',inp('gl-cb-decline',(g.cookieBanner&&g.cookieBanner.declineText)||'Отклонить'),'Текст кнопки отказа')}
   </div>
+  <div class="fsec">Режим обслуживания</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">
+    Временно закрыть сайт для посетителей. Вместо содержимого покажется заглушка с вашим сообщением.<br>
+    <b style="color:var(--warning);">⚠ Админка продолжает работать</b> — только публичный сайт будет закрыт.
+  </p>
+  <label class="chk-row" style="margin-bottom:16px;">
+    <input type="checkbox" id="gl-maint"${(g.maintenance&&g.maintenance.enabled)?' checked':''}>
+    <span><b>Включить режим обслуживания</b></span>
+  </label>
+  ${fg('Заголовок заглушки',inp('gl-maint-title',(g.maintenance&&g.maintenance.title)||'Сайт на обслуживании'),'Крупный текст на заглушке')}
+  ${fg('Сообщение',`<textarea class="fi" id="gl-maint-msg" rows="2" oninput="markDirty()">${escTA((g.maintenance&&g.maintenance.message)||'Мы скоро вернёмся. Проводятся технические работы.')}</textarea>`,'Пояснение для посетителей')}
   <div class="fsec">Резервная копия</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">Скачайте все данные сайта в JSON или восстановите из файла.</p>
   <div class="backup-row">
@@ -2640,6 +2651,10 @@ function colGlobal(){
   D.global.cookieBanner.text=document.getElementById('gl-cb-text')?.value||'';
   D.global.cookieBanner.acceptText=v('gl-cb-accept')||'Принять';
   D.global.cookieBanner.declineText=v('gl-cb-decline')||'Отклонить';
+  if(!D.global.maintenance)D.global.maintenance={};
+  D.global.maintenance.enabled=!!document.getElementById('gl-maint')?.checked;
+  D.global.maintenance.title=v('gl-maint-title')||'Сайт на обслуживании';
+  D.global.maintenance.message=document.getElementById('gl-maint-msg')?.value||'';
   if(!D.global.newsletter)D.global.newsletter={};
   D.global.newsletter.buttondownId=v('gl-nl-bd');
   if(!D.global.giscus)D.global.giscus={};
