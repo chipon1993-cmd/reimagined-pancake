@@ -2884,7 +2884,12 @@ function colBoards(){
     }
     return post;
   });
-  saveBoardPosts(currentBoard, posts).catch(e=>console.warn('Board save failed',e));
+  saveBoardPosts(currentBoard, posts).then(()=>{
+    showToast('// Доска «'+currentBoard+'» сохранена','success');
+  }).catch(e=>{
+    console.warn('Board save failed',e);
+    showToast('// Ошибка сохранения доски: '+e.message,'error');
+  });
 }
 
 async function addBoardPost(){
