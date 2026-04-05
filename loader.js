@@ -68,54 +68,6 @@
   // Expose globally for nav.js to use
   window.applyCustomColors = applyCustomColors;
 
-  // ── TRANSLATION HELPER (MyMemory free API) ──
-  async function translateText(text, fromLang, toLang) {
-    if (!text || typeof text !== 'string' || text.trim().length < 3) return text;
-    if (/^[\d+\s\-→·.©]+$/.test(text) || /^https?:\/\//.test(text)) return text;
-    try {
-      var resp = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.substring(0,500)) + '&langpair=' + fromLang + '|' + toLang);
-      var data = await resp.json();
-      if (data && data.responseData && data.responseData.translatedText) {
-        var result = data.responseData.translatedText;
-        if (result === result.toUpperCase() && text !== text.toUpperCase()) return text;
-        return result;
-      }
-    } catch(e) {}
-    return text;
-  }
-
-  async function translateObj(obj, fromLang, toLang, skip) {
-    if (!obj || typeof obj !== 'object') return obj;
-    var result = Array.isArray(obj) ? [] : {};
-    var keys = Object.keys(obj);
-    for (var i = 0; i < keys.length; i++) {
-      var k = keys[i];
-      var val = obj[k];
-      if (skip && skip.indexOf(k) !== -1) { result[k] = val; continue; }
-      if (val === null || val === undefined) { result[k] = val; continue; }
-      if (Array.isArray(val)) {
-        result[k] = [];
-        for (var j = 0; j < val.length; j++) {
-          if (typeof val[j] === 'string') result[k].push(await translateText(val[j], fromLang, toLang));
-          else if (typeof val[j] === 'object') result[k].push(await translateObj(val[j], fromLang, toLang, skip));
-          else result[k].push(val[j]);
-        }
-      } else if (typeof val === 'object') {
-        result[k] = await translateObj(val, fromLang, toLang, skip);
-      } else if (typeof val === 'string') {
-        result[k] = await translateText(val, fromLang, toLang);
-      } else {
-        result[k] = val;
-      }
-    }
-    return result;
-  }
-
-  var _skipTranslateKeys = ['href','id','icon','type','embedId','thumb','web3formsKey',
-    'buttondownId','plausible','ga','repo','repoId','category','categoryId',
-    'defaultTheme','_ts','published','featured','showHeroStats','measurementId',
-    'footerLeft','footerRight'];
-
   // Safe Firestore read — waits for Firebase init, returns null if unavailable
   async function safeGet(collection, docId) {
     // Wait for Firebase to initialize (or fail) before reading
@@ -145,18 +97,10 @@
       } catch(e) {}
     }
 
-    var lang;
-    try { lang = localStorage.getItem('ac_lang') || 'ru'; } catch(e) { lang = 'ru'; }
-
     // 1. Base defaults — always works, no Firebase needed
     var base = JSON.parse(JSON.stringify(window.AC_DEFAULTS));
 
-    // 2. Merge language-specific translations (UK / NO)
-    if (lang !== 'ru' && window.AC_TRANSLATIONS && window.AC_TRANSLATIONS[lang]) {
-      base = deepMerge(base, window.AC_TRANSLATIONS[lang]);
-    }
-
-    // 3. Russian admin edits — ALWAYS try Firestore first, cache is offline-only fallback
+    // 2. Admin edits from Firestore (cache is offline-only fallback)
     var ruData = await safeGet('content', 'ac_content');
     if (ruData) {
       writeCache('ac_content', ruData);
@@ -165,66 +109,6 @@
     }
     if (ruData) {
       base = deepMerge(base, ruData);
-    }
-
-    // 4. Language-specific content (Firestore → compare timestamp → auto-translate if stale)
-    if (lang !== 'ru') {
-      var lk = 'ac_content_' + lang;
-      var ruTs = (ruData && ruData._ts) || 0;
-      var langData = await safeGet('content', lk);
-      var needsRetranslate = false;
-
-      if (langData) {
-        var langTs = langData._ts || 0;
-        // If Russian content is NEWER than translation → translation is stale
-        if (langData._autoTranslated && ruTs > langTs) {
-          needsRetranslate = true;
-        } else {
-          // Translation is fresh or manually edited — use it
-          writeCache(lk, langData);
-          base = deepMerge(base, langData);
-        }
-      } else {
-        // No Firestore doc — check cache
-        langData = readCache(lk);
-        if (langData) {
-          var cachedTs = langData._ts || 0;
-          if (langData._autoTranslated && ruTs > cachedTs) {
-            needsRetranslate = true;
-          } else {
-            base = deepMerge(base, langData);
-          }
-        } else {
-          needsRetranslate = true;
-        }
-      }
-
-      // Re-translate from current Russian content
-      if (needsRetranslate && ruData) {
-        try {
-          var translated = await translateObj(ruData, 'ru', lang, _skipTranslateKeys);
-          translated._autoTranslated = true;
-          translated._ts = Date.now();
-          writeCache(lk, translated);
-          base = deepMerge(base, translated);
-          // Save to Firestore in background for next visits
-          if (typeof window.fsSet === 'function') {
-            window.fsSet('content', lk, translated).catch(function(){});
-          }
-        } catch(e) {
-          // Translation failed — use whatever we had
-          if (langData) base = deepMerge(base, langData);
-        }
-      }
-
-      // 5. Restore nav translations from static translations file
-      if (window.AC_TRANSLATIONS && window.AC_TRANSLATIONS[lang]) {
-        var transNav = window.AC_TRANSLATIONS[lang].global && window.AC_TRANSLATIONS[lang].global.nav;
-        if (transNav && base.global) {
-          var adminNav = (langData && langData.global && langData.global.nav) || {};
-          Object.keys(transNav).forEach(function(k) { if (!adminNav[k]) base.global.nav[k] = transNav[k]; });
-        }
-      }
     }
 
     return base;
@@ -244,8 +128,7 @@
   function set(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
   function attr(id, a, v) { const el = document.getElementById(id); if (el) el.setAttribute(a, v); }
   function i18n(key, fallback) {
-    var lang; try { lang = localStorage.getItem('ac_lang') || 'ru'; } catch(e) { lang = 'ru'; }
-    const t = window.AC_I18N && window.AC_I18N[lang];
+    const t = window.AC_I18N && window.AC_I18N['ru'];
     return (t && t[key]) || fallback;
   }
 
@@ -548,8 +431,6 @@
     const data = await getData();
     injectAnalytics(data);
 
-    const lang = localStorage.getItem('ac_lang') || 'ru';
-    document.documentElement.lang = lang;
     if (data.seo && data.seo[page]) {
       if (data.seo[page].title) document.title = data.seo[page].title;
       let md = document.querySelector('meta[name="description"]');
