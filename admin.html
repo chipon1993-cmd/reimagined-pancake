@@ -3165,6 +3165,7 @@ function edAppearance(){
   ${pgRow('journey', 'Мой путь', 'journey.html')}
   ${pgRow('interests','Интересы','interests.html')}
   ${pgRow('videos',  'Видео',    'videos.html — скрой пока не добавишь контент')}
+  ${pgRow('world',   'Мир',      'world.html — 3D-страница с интерактивными сферами')}
   ${pgRow('contact', 'Контакт',  'contact.html')}
   <div class="fsec">Элементы главной страницы</div>
   <label class="chk-row">
@@ -3215,7 +3216,7 @@ function colAppearance(){
   D.appearance.favicon=v('ap-favicon')||'';
   D.appearance.showHeroStats=!!document.getElementById('ap-stats')?.checked;
   if(!D.appearance.pages)D.appearance.pages={};
-  ['about','journey','interests','videos','contact'].forEach(key=>{
+  ['about','journey','interests','videos','world','contact'].forEach(key=>{
     D.appearance.pages[key]=!!document.getElementById('ap-pg-'+key)?.checked;
   });
   // Save custom colors
