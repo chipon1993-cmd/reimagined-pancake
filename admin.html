@@ -316,20 +316,19 @@
     .sb-toggle:hover { color:var(--accent); border-color:var(--accent); background:var(--accent-glow); }
     .adm-sidebar.collapsed .sb-toggle { transform:rotate(180deg); }
 
-    /* Tooltip on collapsed items */
-    .adm-sidebar.collapsed .sb-item { position:relative; }
-    .adm-sidebar.collapsed .sb-item::after {
-      content:attr(data-tip);
-      position:absolute; left:calc(100% + 8px); top:50%;
-      transform:translateY(-50%);
+    /* Tooltip for collapsed sidebar */
+    .sb-tooltip {
+      position:fixed; z-index:9999;
       background:var(--bg-solid); color:var(--text);
-      font-size:.7rem; font-weight:600; white-space:nowrap;
-      padding:5px 10px; border-radius:8px;
-      border:1px solid var(--border); box-shadow:var(--shadow-sm);
-      opacity:0; pointer-events:none;
-      transition:opacity .15s; z-index:100;
+      font-size:.75rem; font-weight:600; white-space:nowrap;
+      padding:7px 14px; border-radius:8px;
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      pointer-events:none;
+      opacity:0; transition:opacity .15s;
+      letter-spacing:.02em;
     }
-    .adm-sidebar.collapsed .sb-item:hover::after { opacity:1; }
+    .sb-tooltip.show { opacity:1; }
 
     .sb-label {
       font-size:.58rem; font-weight:700; letter-spacing:.24em; text-transform:uppercase;
@@ -1263,6 +1262,7 @@
       <div class="sb-item" data-tab="i18n"       data-tip="Переводы"    onclick="showTab('i18n')">       <span class="sb-icon">🌐</span><span class="sb-item-text">Переводы</span></div>
       <div class="sb-status">Система активна</div>
     </div>
+    <div class="sb-tooltip" id="sb-tooltip"></div>
 
     <!-- Main -->
     <div class="adm-main" id="adm-main"></div>
@@ -1337,10 +1337,31 @@ function toggleSidebar(){
   sb.classList.toggle('collapsed');
   const collapsed = sb.classList.contains('collapsed');
   localStorage.setItem('ac_sidebar_collapsed', collapsed ? '1' : '');
-  // Update save-bar left position
   const saveBar = document.querySelector('.save-bar');
   if(saveBar && window.innerWidth > 900) saveBar.style.left = collapsed ? '60px' : '250px';
 }
+// Sidebar tooltip on hover (collapsed mode)
+(function(){
+  const tip = document.getElementById('sb-tooltip');
+  if(!tip) return;
+  document.addEventListener('mouseover', function(e){
+    const item = e.target.closest('.sb-item');
+    const sb = document.getElementById('adm-sidebar');
+    if(!item || !sb || !sb.classList.contains('collapsed')) { tip.classList.remove('show'); return; }
+    const text = item.getAttribute('data-tip');
+    if(!text) { tip.classList.remove('show'); return; }
+    const rect = item.getBoundingClientRect();
+    tip.textContent = text;
+    tip.style.left = (rect.right + 10) + 'px';
+    tip.style.top = (rect.top + rect.height/2) + 'px';
+    tip.style.transform = 'translateY(-50%)';
+    tip.classList.add('show');
+  });
+  document.addEventListener('mouseout', function(e){
+    const item = e.target.closest('.sb-item');
+    if(item) tip.classList.remove('show');
+  });
+})();
 (function(){
   const saved = localStorage.getItem('ac_admin_theme') || 'dark';
   document.documentElement.setAttribute('data-admin-theme', saved);
