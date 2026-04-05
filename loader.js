@@ -68,6 +68,54 @@
   // Expose globally for nav.js to use
   window.applyCustomColors = applyCustomColors;
 
+  // ── TRANSLATION HELPER (MyMemory free API) ──
+  async function translateText(text, fromLang, toLang) {
+    if (!text || typeof text !== 'string' || text.trim().length < 3) return text;
+    if (/^[\d+\s\-→·.©]+$/.test(text) || /^https?:\/\//.test(text)) return text;
+    try {
+      var resp = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.substring(0,500)) + '&langpair=' + fromLang + '|' + toLang);
+      var data = await resp.json();
+      if (data && data.responseData && data.responseData.translatedText) {
+        var result = data.responseData.translatedText;
+        if (result === result.toUpperCase() && text !== text.toUpperCase()) return text;
+        return result;
+      }
+    } catch(e) {}
+    return text;
+  }
+
+  async function translateObj(obj, fromLang, toLang, skip) {
+    if (!obj || typeof obj !== 'object') return obj;
+    var result = Array.isArray(obj) ? [] : {};
+    var keys = Object.keys(obj);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      var val = obj[k];
+      if (skip && skip.indexOf(k) !== -1) { result[k] = val; continue; }
+      if (val === null || val === undefined) { result[k] = val; continue; }
+      if (Array.isArray(val)) {
+        result[k] = [];
+        for (var j = 0; j < val.length; j++) {
+          if (typeof val[j] === 'string') result[k].push(await translateText(val[j], fromLang, toLang));
+          else if (typeof val[j] === 'object') result[k].push(await translateObj(val[j], fromLang, toLang, skip));
+          else result[k].push(val[j]);
+        }
+      } else if (typeof val === 'object') {
+        result[k] = await translateObj(val, fromLang, toLang, skip);
+      } else if (typeof val === 'string') {
+        result[k] = await translateText(val, fromLang, toLang);
+      } else {
+        result[k] = val;
+      }
+    }
+    return result;
+  }
+
+  var _skipTranslateKeys = ['href','id','icon','type','embedId','thumb','web3formsKey',
+    'buttondownId','plausible','ga','repo','repoId','category','categoryId',
+    'defaultTheme','_ts','published','featured','showHeroStats','measurementId',
+    'footerLeft','footerRight'];
+
   // Safe Firestore read — waits for Firebase init, returns null if unavailable
   async function safeGet(collection, docId) {
     // Wait for Firebase to initialize (or fail) before reading
@@ -119,27 +167,48 @@
       base = deepMerge(base, ruData);
     }
 
-    // 4. Language-specific admin fine-tuning
+    // 4. Language-specific content (Firestore → cache → auto-translate)
     if (lang !== 'ru') {
       var lk = 'ac_content_' + lang;
       var langData = await safeGet('content', lk);
-      if (langData) {
+      if (langData && !langData._autoTranslated) {
+        // Admin manually edited this language
         writeCache(lk, langData);
-      } else {
-        langData = readCache(lk);
-      }
-      if (langData) {
         base = deepMerge(base, langData);
+      } else if (langData) {
+        // Auto-translated version exists in Firestore
+        writeCache(lk, langData);
+        base = deepMerge(base, langData);
+      } else {
+        // No translation exists — try cache first
+        langData = readCache(lk);
+        if (langData) {
+          base = deepMerge(base, langData);
+        } else if (ruData) {
+          // No cache either — auto-translate from Russian on the fly
+          try {
+            var translated = await translateObj(ruData, 'ru', lang, _skipTranslateKeys);
+            translated._autoTranslated = true;
+            translated._ts = Date.now();
+            writeCache(lk, translated);
+            base = deepMerge(base, translated);
+            // Save to Firestore in background for next visits
+            if (typeof window.fsSet === 'function') {
+              window.fsSet('content', lk, translated).catch(function(){});
+            }
+          } catch(e) {
+            // Translation failed — use Russian content (already merged)
+          }
+        }
       }
-    }
 
-    // 5. Restore nav translations lost during RU master merge
-    //    (reuse langData from step 4 instead of duplicate Firestore call)
-    if (lang !== 'ru' && window.AC_TRANSLATIONS && window.AC_TRANSLATIONS[lang]) {
-      var transNav = window.AC_TRANSLATIONS[lang].global && window.AC_TRANSLATIONS[lang].global.nav;
-      if (transNav && base.global) {
-        var adminNav = (langData && langData.global && langData.global.nav) || {};
-        Object.keys(transNav).forEach(function(k) { if (!adminNav[k]) base.global.nav[k] = transNav[k]; });
+      // 5. Restore nav translations from static translations file
+      if (window.AC_TRANSLATIONS && window.AC_TRANSLATIONS[lang]) {
+        var transNav = window.AC_TRANSLATIONS[lang].global && window.AC_TRANSLATIONS[lang].global.nav;
+        if (transNav && base.global) {
+          var adminNav = (langData && langData.global && langData.global.nav) || {};
+          Object.keys(transNav).forEach(function(k) { if (!adminNav[k]) base.global.nav[k] = transNav[k]; });
+        }
       }
     }
 
