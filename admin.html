@@ -1480,6 +1480,80 @@ async function restoreBackup(i){
   }catch(e){ alert('Ошибка восстановления: '+e.message); }
 }
 
+// ── AUTO-TRANSLATION ──────────────────────────────────
+// Translates all text fields from Russian to target languages
+// Uses MyMemory free API (no key needed, 5000 words/day)
+
+async function translateText(text, fromLang, toLang) {
+  if (!text || typeof text !== 'string' || text.trim().length === 0) return text;
+  // Skip very short texts, numbers, URLs, emojis-only
+  if (text.length < 3 || /^[\d+\s\-→·.]+$/.test(text) || /^https?:\/\//.test(text)) return text;
+  // Skip HTML-heavy content
+  if (/<[a-z][\s\S]*>/i.test(text) && text.replace(/<[^>]*>/g,'').trim().length < 3) return text;
+  var langMap = {uk: 'uk', no: 'no'};
+  var tl = langMap[toLang] || toLang;
+  try {
+    var url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.substring(0, 500)) + '&langpair=' + fromLang + '|' + tl;
+    var resp = await fetch(url);
+    var data = await resp.json();
+    if (data && data.responseData && data.responseData.translatedText) {
+      var result = data.responseData.translatedText;
+      // MyMemory returns UPPERCASED text on quota exceed — detect and skip
+      if (result === result.toUpperCase() && text !== text.toUpperCase()) return text;
+      return result;
+    }
+    return text;
+  } catch(e) { return text; }
+}
+
+// Recursively translate all string fields in an object
+async function translateObj(obj, fromLang, toLang, skipKeys) {
+  if (!obj || typeof obj !== 'object') return obj;
+  var result = Array.isArray(obj) ? [] : {};
+  var keys = Object.keys(obj);
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    var val = obj[k];
+    // Skip non-translatable fields
+    if (skipKeys && skipKeys.indexOf(k) !== -1) { result[k] = val; continue; }
+    if (val === null || val === undefined) { result[k] = val; continue; }
+    if (Array.isArray(val)) {
+      result[k] = [];
+      for (var j = 0; j < val.length; j++) {
+        if (typeof val[j] === 'string') {
+          result[k].push(await translateText(val[j], fromLang, toLang));
+        } else if (typeof val[j] === 'object') {
+          result[k].push(await translateObj(val[j], fromLang, toLang, skipKeys));
+        } else {
+          result[k].push(val[j]);
+        }
+      }
+    } else if (typeof val === 'object') {
+      result[k] = await translateObj(val, fromLang, toLang, skipKeys);
+    } else if (typeof val === 'string') {
+      result[k] = await translateText(val, fromLang, toLang);
+    } else {
+      result[k] = val;
+    }
+  }
+  return result;
+}
+
+async function autoTranslateAll(sourceData) {
+  // Fields that should NOT be translated (URLs, IDs, keys, config)
+  var skip = ['href', 'id', 'icon', 'type', 'embedId', 'thumb', 'web3formsKey',
+    'buttondownId', 'plausible', 'ga', 'repo', 'repoId', 'category', 'categoryId',
+    'defaultTheme', 'measurementId', '_ts', 'published', 'featured', 'showHeroStats'];
+  var langs = ['uk', 'no'];
+  for (var li = 0; li < langs.length; li++) {
+    var lang = langs[li];
+    var translated = await translateObj(sourceData, 'ru', lang, skip);
+    translated._ts = Date.now();
+    translated._autoTranslated = true;
+    await fsSet('content', 'ac_content_' + lang, translated);
+  }
+}
+
 async function saveAll(){
   collectCurrent();
   const st=document.getElementById('save-st');
@@ -1504,6 +1578,12 @@ async function saveAll(){
     }
     // Backup is non-critical — don't block save on failure
     pushBackup().catch(function(e){ console.warn('Backup failed:', e.message); });
+    // Auto-translate to other languages (non-blocking)
+    if(adminLang==='ru'){
+      autoTranslateAll(D).then(function(){
+        showToast('// Переводы UK + NO обновлены');
+      }).catch(function(e){ console.warn('Auto-translate failed:', e.message); });
+    }
   } catch(e) {
     isDirty=true; // Ensure auto-save retries
     st.textContent='✕ Ошибка сохранения'; st.className='save-status';
