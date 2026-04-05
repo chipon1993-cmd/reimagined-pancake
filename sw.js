@@ -1,5 +1,5 @@
 // Service Worker — offline caching for Andrii Chepelovskyi site
-const CACHE = 'ac-v11';
+const CACHE = 'ac-v12';
 const SHELL = [
   '/', '/index.html', '/about.html', '/journey.html',
   '/interests.html', '/videos.html', '/contact.html',
@@ -42,8 +42,10 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       fetch(e.request)
         .then(r => {
-          const clone = r.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
+          if (r.ok) {
+            const clone = r.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone));
+          }
           return r;
         })
         .catch(() => caches.match(e.request).then(r => r || caches.match('/404.html')))
@@ -55,7 +57,10 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(cached => {
       const fetchPromise = fetch(e.request).then(r => {
-        if (r.ok) caches.open(CACHE).then(c => c.put(e.request, r.clone()));
+        if (r.ok) {
+          const clone = r.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
         return r;
       }).catch(() => {});
       return cached || fetchPromise;
