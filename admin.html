@@ -1289,6 +1289,7 @@
       <div class="sb-item" data-tab="boards"    data-tip="Доски"       onclick="showTab('boards')">   <span class="sb-icon">📋</span><span class="sb-item-text">Доски</span></div>
       <div class="sb-item" data-tab="contact"   data-tip="Контакт"     onclick="showTab('contact')">  <span class="sb-icon">✉️</span><span class="sb-item-text">Контакт</span></div>
       <div class="sb-item" data-tab="videos"     data-tip="Видео"       onclick="showTab('videos')">     <span class="sb-icon">🎬</span><span class="sb-item-text">Видео</span></div>
+      <div class="sb-item" data-tab="world"     data-tip="Мир"         onclick="showTab('world')">      <span class="sb-icon">🌌</span><span class="sb-item-text">Мир</span></div>
       <div class="sb-div"></div>
       <div class="sb-label">Настройки</div>
       <div class="sb-item" data-tab="seo"        data-tip="SEO"         onclick="showTab('seo')">        <span class="sb-icon">🔎</span><span class="sb-item-text">SEO</span></div>
@@ -2334,6 +2335,7 @@ async function _showTabDirect(tab){
     case 'contact':    m.innerHTML=edContact();    break;
     case 'global':     m.innerHTML=await edGlobal(); break;
     case 'videos':     m.innerHTML=edVideos();     break;
+    case 'world':      m.innerHTML=await edWorld();  break;
     case 'boards':     m.innerHTML=await edBoards(); break;
     case 'seo':        m.innerHTML=edSEO(); initSeoCounters(); break;
     case 'appearance': m.innerHTML=edAppearance(); break;
@@ -2377,6 +2379,7 @@ function collectCurrent(){
     case 'contact':    colContact();    break;
     case 'global':     colGlobal();     break;
     case 'videos':     colVideos();     break;
+    case 'world':      colWorld();      break;
     case 'boards':     colBoards();     break;
     case 'seo':        colSEO();        break;
     case 'appearance': colAppearance(); break;
@@ -2813,6 +2816,81 @@ function addVideo(){
   });
   CT=''; // prevent showTab→collectCurrent from re-reading stale DOM
   showTab('videos');
+}
+
+// ── WORLD (3D PAGE) ─────────────────────────
+async function edWorld(){
+  let w = {};
+  try { const doc = await fsGet('content','ac_world'); if(doc) w = doc; } catch(e){}
+  const title = w.title || 'Мир мыслей';
+  const desc = w.desc || 'Каждая сфера — тема, которая не отпускает. Нажми чтобы исследовать.';
+  const spheres = w.spheres || [
+    {id:'psychology', icon:'🧠', title:'Психология мышления',  desc:'Почему умные люди принимают плохие решения',     color:'#00d4ff'},
+    {id:'philosophy', icon:'🌀', title:'Философия языка',       desc:'Слова формируют мышление или наоборот?',          color:'#a855f7'},
+    {id:'tech',       icon:'⚡', title:'Технологии и ИИ',        desc:'Что меняется, когда машины начинают думать',      color:'#34d399'},
+    {id:'sociology',  icon:'🌍', title:'Люди в разных средах',   desc:'Как место определяет мышление и поведение',       color:'#f97316'},
+    {id:'acrobatics', icon:'🤸', title:'Акробатика',             desc:'10+ лет на сцене — тело как инструмент познания', color:'#00d4ff'},
+  ];
+
+  const sphereItems = spheres.map((s,i) => liW(i, s.icon+' '+s.title, `
+    <div class="frow">
+      ${fg('Иконка (emoji)',inp('ws-icon-'+i, s.icon))}
+      ${fg('Привязка к доске',`<select class="fi" id="ws-board-${i}">
+        <option value="psychology"${s.id==='psychology'?' selected':''}>🧠 Психология</option>
+        <option value="philosophy"${s.id==='philosophy'?' selected':''}>🌀 Философия</option>
+        <option value="tech"${s.id==='tech'?' selected':''}>⚡ Технологии</option>
+        <option value="sociology"${s.id==='sociology'?' selected':''}>🌍 Социология</option>
+        <option value="acrobatics"${s.id==='acrobatics'?' selected':''}>🤸 Акробатика</option>
+      </select>`)}
+    </div>
+    ${fg('Название',inp('ws-title-'+i, s.title))}
+    ${fg('Описание',inp('ws-desc-'+i, s.desc))}
+    <div class="frow">
+      ${fg('Цвет сферы',`<div class="color-pick-wrap"><input type="color" class="color-inp" id="ws-color-${i}" value="${esc(s.color||'#00d4ff')}"/><input class="fi color-hex" id="ws-color-hex-${i}" value="${esc(s.color||'#00d4ff')}" oninput="var c=this.value;if(/^#[0-9a-fA-F]{6}$/.test(c))document.getElementById('ws-color-${i}').value=c;"/></div>`)}
+      ${fg('Размер (0.5–2.0)',inp('ws-size-'+i, s.size||'1.0'),'Чем больше — тем крупнее сфера')}
+    </div>
+  `)).join('');
+
+  return `<div class="ed-header">
+    <div class="ed-tag">3D Мир</div>
+    <h2>🌌 Мир мыслей</h2>
+    <p>Настройки 3D-страницы с интерактивными сферами</p>
+  </div>
+  <div class="fsec">Заголовок страницы</div>
+  ${fg('Заголовок',inp('ws-page-title', title))}
+  ${fg('Описание',inp('ws-page-desc', desc))}
+  <div class="fsec">Сферы (${spheres.length})</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">
+    Каждая сфера привязана к доске интересов. Нажатие на сферу переводит на соответствующую доску.
+  </p>
+  <div class="leditor" id="ls-world">${sphereItems}</div>`;
+}
+
+async function colWorld(){
+  if(!document.getElementById('ws-page-title')) return;
+  const spheres = [...document.querySelectorAll('#ls-world .li-item')].map((li) => {
+    const i = li.dataset.idx;
+    return {
+      id: document.getElementById('ws-board-'+i)?.value || '',
+      icon: document.getElementById('ws-icon-'+i)?.value || '',
+      title: document.getElementById('ws-title-'+i)?.value || '',
+      desc: document.getElementById('ws-desc-'+i)?.value || '',
+      color: document.getElementById('ws-color-'+i)?.value || '#00d4ff',
+      size: parseFloat(document.getElementById('ws-size-'+i)?.value) || 1.0,
+    };
+  });
+  const data = {
+    title: v('ws-page-title') || 'Мир мыслей',
+    desc: v('ws-page-desc') || '',
+    spheres: spheres,
+    _ts: Date.now()
+  };
+  try {
+    await fsSet('content', 'ac_world', data);
+  } catch(e) {
+    console.warn('World save failed', e);
+    showToast('// Ошибка сохранения мира: '+e.message, 'error');
+  }
 }
 
 // ── BOARDS ───────────────────────────────────

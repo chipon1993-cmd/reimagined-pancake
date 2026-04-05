@@ -161,14 +161,30 @@
   import * as THREE from 'three';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-  // ── CONFIG ──
-  const BOARDS = [
-    { id:'psychology',  icon:'🧠', title:'Психология мышления',   desc:'Почему умные люди принимают плохие решения',      color: 0x00d4ff, size: 1.2 },
-    { id:'philosophy',  icon:'🌀', title:'Философия языка',        desc:'Слова формируют мышление или наоборот?',           color: 0xa855f7, size: 1.0 },
-    { id:'tech',        icon:'⚡', title:'Технологии и ИИ',         desc:'Что меняется, когда машины начинают думать',       color: 0x34d399, size: 1.0 },
-    { id:'sociology',   icon:'🌍', title:'Люди в разных средах',    desc:'Как место определяет мышление и поведение',        color: 0xf97316, size: 0.85 },
-    { id:'acrobatics',  icon:'🤸', title:'Акробатика',              desc:'10+ лет на сцене — тело как инструмент познания',  color: 0x00d4ff, size: 0.85 },
+  // ── CONFIG (defaults, overridden by Firestore) ──
+  const DEFAULT_BOARDS = [
+    { id:'psychology',  icon:'🧠', title:'Психология мышления',   desc:'Почему умные люди принимают плохие решения',      color:'#00d4ff', size: 1.2 },
+    { id:'philosophy',  icon:'🌀', title:'Философия языка',        desc:'Слова формируют мышление или наоборот?',           color:'#a855f7', size: 1.0 },
+    { id:'tech',        icon:'⚡', title:'Технологии и ИИ',         desc:'Что меняется, когда машины начинают думать',       color:'#34d399', size: 1.0 },
+    { id:'sociology',   icon:'🌍', title:'Люди в разных средах',    desc:'Как место определяет мышление и поведение',        color:'#f97316', size: 0.85 },
+    { id:'acrobatics',  icon:'🤸', title:'Акробатика',              desc:'10+ лет на сцене — тело как инструмент познания',  color:'#00d4ff', size: 0.85 },
   ];
+
+  // Load config from Firestore
+  async function loadWorldConfig() {
+    try {
+      await new Promise(r => { const check = () => { if (window.fsGet) r(); else setTimeout(check, 100); }; check(); });
+      const doc = await window.fsGet('content', 'ac_world');
+      if (doc) {
+        if (doc.title) document.querySelector('.world-title h1').textContent = doc.title;
+        if (doc.desc) document.querySelector('.world-title p').textContent = doc.desc;
+        if (doc.spheres && doc.spheres.length) return doc.spheres;
+      }
+    } catch(e) {}
+    return null;
+  }
+
+  function hexToInt(hex) { return parseInt((hex||'#00d4ff').replace('#',''), 16); }
 
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
@@ -349,11 +365,18 @@
     [2.5, -1.5, 3],
   ];
 
-  BOARDS.forEach((board, i) => {
-    const geo = new THREE.SphereGeometry(board.size, 48, 32);
-    const mat = new THREE.MeshPhysicalMaterial({
-      color: board.color,
-      emissive: board.color,
+  let BOARDS = DEFAULT_BOARDS;
+
+  function buildSpheres(data) {
+    BOARDS = data || DEFAULT_BOARDS;
+    BOARDS.forEach((board, i) => {
+      if (i >= positions.length) return;
+      const sz = board.size || 1.0;
+      const col = hexToInt(board.color);
+      const geo = new THREE.SphereGeometry(sz, 48, 32);
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: col,
+        emissive: col,
       emissiveIntensity: 0.2,
       metalness: 0.15,
       roughness: 0.25,
@@ -370,14 +393,15 @@
     spheres.push(mesh);
 
     // Glow ring
-    const ringGeo = new THREE.RingGeometry(board.size + 0.1, board.size + 0.22, 64);
-    const ringMat = new THREE.MeshBasicMaterial({ color: board.color, transparent: true, opacity: 0.15, side: THREE.DoubleSide });
+    const ringGeo = new THREE.RingGeometry(sz + 0.1, sz + 0.22, 64);
+    const ringMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.15, side: THREE.DoubleSide });
     const ring = new THREE.Mesh(ringGeo, ringMat);
     ring.position.copy(mesh.position);
     ring.lookAt(camera.position);
     ring.userData.parentSphere = mesh;
     sphereGroup.add(ring);
   });
+  }
 
   // ── CONNECTION LINES ──
   const lineMat = new THREE.LineBasicMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.08 });
@@ -522,7 +546,7 @@
             const idx = BOARDS.indexOf(board);
             if (idx >= 0 && spheres[idx]) {
               const newSize = Math.max(0.7, Math.min(1.8, 0.7 + count * 0.1));
-              spheres[idx].scale.setScalar(newSize / board.size);
+              spheres[idx].scale.setScalar(newSize / (board.size || 1));
             }
           }
         } catch(e) {}
@@ -531,8 +555,30 @@
   }
 
   // ── START ──
+  // Build with defaults first, then override from Firestore
+  buildSpheres(DEFAULT_BOARDS);
   animate();
-  loadBoardData().then(() => {
+
+  loadWorldConfig().then((firestoreSpheres) => {
+    if (firestoreSpheres && firestoreSpheres.length) {
+      // Rebuild spheres with Firestore data
+      // Clear existing
+      while(sphereGroup.children.length) sphereGroup.remove(sphereGroup.children[0]);
+      spheres.length = 0;
+      buildSpheres(firestoreSpheres);
+      // Rebuild connection lines
+      const lineMat2 = new THREE.LineBasicMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.08 });
+      for (let i = 0; i < spheres.length; i++) {
+        for (let j = i + 1; j < spheres.length; j++) {
+          const geo = new THREE.BufferGeometry().setFromPoints([spheres[i].position, spheres[j].position]);
+          const line = new THREE.Line(geo, lineMat2.clone());
+          line.userData = { i, j };
+          sphereGroup.add(line);
+        }
+      }
+    }
+    return loadBoardData();
+  }).then(() => {
     setTimeout(() => { document.getElementById('world-loading').classList.add('done'); }, 500);
   });
 
