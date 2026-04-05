@@ -48,9 +48,14 @@ function _moveControls(intoMenu, nl) {
 (function () {
   let cur = (window.location.pathname.split('/').pop() || 'index.html').split('?')[0];
   // interest.html board pages → highlight Интересы
-  if (cur === 'interest.html') cur = 'interests.html';
+  if (cur === 'interest.html' || cur === 'post.html') cur = 'interests.html';
   document.querySelectorAll('.nav-links a').forEach(a => {
-    if (a.getAttribute('href') === cur) a.classList.add('active');
+    if (a.getAttribute('href') === cur) {
+      a.classList.add('active');
+      // Also highlight parent dropdown
+      const parent = a.closest('.nav-has-sub');
+      if (parent) parent.querySelector(':scope > a')?.classList.add('active');
+    }
   });
 })();
 
