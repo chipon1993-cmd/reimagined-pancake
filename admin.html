@@ -330,6 +330,41 @@
     }
     .sb-tooltip.show { opacity:1; }
 
+    /* ── Unsaved changes dialog ── */
+    .unsaved-overlay {
+      position:fixed; inset:0; z-index:6000;
+      background:rgba(0,0,0,0.6);
+      -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none;
+      transition:opacity .2s var(--ease);
+    }
+    .unsaved-overlay.open { opacity:1; pointer-events:all; }
+    .unsaved-dialog {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--r); padding:32px;
+      max-width:380px; width:90%;
+      box-shadow:var(--shadow);
+      text-align:center;
+      transform:scale(0.95); transition:transform .25s var(--spring);
+    }
+    .unsaved-overlay.open .unsaved-dialog { transform:scale(1); }
+    .unsaved-dialog-icon { font-size:2.2rem; margin-bottom:14px; display:block; }
+    .unsaved-dialog h3 { font-size:1rem; font-weight:700; margin-bottom:8px; color:var(--text); }
+    .unsaved-dialog p { font-size:.85rem; color:var(--muted); margin-bottom:22px; line-height:1.5; }
+    .unsaved-dialog-btns { display:flex; gap:10px; justify-content:center; }
+    .unsaved-dialog-btns button {
+      padding:10px 20px; border-radius:10px; font-size:.82rem;
+      font-weight:600; cursor:pointer; font-family:inherit;
+      transition:all .2s var(--ease); border:1px solid var(--border);
+    }
+    .unsaved-btn-save { background:var(--accent); color:#000; border-color:var(--accent); }
+    .unsaved-btn-save:hover { box-shadow:0 4px 16px var(--accent-glow); transform:translateY(-1px); }
+    .unsaved-btn-discard { background:transparent; color:var(--muted); }
+    .unsaved-btn-discard:hover { color:var(--danger); border-color:var(--danger); }
+    .unsaved-btn-cancel { background:transparent; color:var(--muted); }
+    .unsaved-btn-cancel:hover { color:var(--text); border-color:var(--text); }
+
     .sb-label {
       font-size:.58rem; font-weight:700; letter-spacing:.24em; text-transform:uppercase;
       color:var(--muted); padding:0 20px; margin-bottom:8px; margin-top:4px;
@@ -1263,6 +1298,20 @@
       <div class="sb-status">Система активна</div>
     </div>
     <div class="sb-tooltip" id="sb-tooltip"></div>
+
+    <!-- Unsaved changes dialog -->
+    <div class="unsaved-overlay" id="unsaved-overlay">
+      <div class="unsaved-dialog">
+        <span class="unsaved-dialog-icon">⚠️</span>
+        <h3>Несохранённые изменения</h3>
+        <p>У вас есть изменения, которые ещё не сохранены. Что сделать?</p>
+        <div class="unsaved-dialog-btns">
+          <button class="unsaved-btn-save" onclick="unsavedAction('save')">💾 Сохранить</button>
+          <button class="unsaved-btn-discard" onclick="unsavedAction('discard')">Не сохранять</button>
+          <button class="unsaved-btn-cancel" onclick="unsavedAction('cancel')">Отмена</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Main -->
     <div class="adm-main" id="adm-main"></div>
@@ -2240,7 +2289,29 @@ function scrollToLast(leditorId){
 
 // ── TABS ─────────────────────────────────────
 let CT='index';
-async function showTab(tab){
+let _pendingTab = null;
+
+function unsavedAction(action) {
+  document.getElementById('unsaved-overlay').classList.remove('open');
+  if (action === 'save') {
+    saveAll().then(() => { if (_pendingTab) { isDirty = false; _showTabDirect(_pendingTab); _pendingTab = null; } });
+  } else if (action === 'discard') {
+    isDirty = false;
+    if (_pendingTab) { _showTabDirect(_pendingTab); _pendingTab = null; }
+  }
+  // 'cancel' — do nothing, stay on current tab
+}
+
+async function showTab(tab) {
+  if (isDirty && tab !== CT) {
+    _pendingTab = tab;
+    document.getElementById('unsaved-overlay').classList.add('open');
+    return;
+  }
+  _showTabDirect(tab);
+}
+
+async function _showTabDirect(tab){
   collectCurrent(); CT=tab;
   document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
   const m=document.getElementById('adm-main');
