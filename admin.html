@@ -3074,6 +3074,13 @@ function edAppearance(){
     <option value="medium"${a.dateFormat==='medium'?' selected':''}>5 апр. 2026</option>
     <option value="relative"${a.dateFormat==='relative'?' selected':''}>2 дня назад</option>
   </select>`,'Применяется к датам записей на досках и видео')}
+  <div class="fsec">Favicon (иконка сайта)</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6;">
+    Маленькая иконка на вкладке браузера. Загрузи картинку через <b style="color:var(--accent);">Медиа</b>, скопируй URL и вставь сюда.<br>
+    Рекомендуемый формат: SVG или PNG 32×32 / 64×64 px.
+  </p>
+  ${fg('URL favicon',inp('ap-favicon',(a.favicon||'')),'Пустое поле = стандартная иконка сайта')}
+  ${(a.favicon?`<div style="display:flex;align-items:center;gap:12px;margin-top:-8px;margin-bottom:16px;padding:12px 16px;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;"><img src="${esc(a.favicon)}" style="width:32px;height:32px;border-radius:4px;background:rgba(255,255,255,0.05);" onerror="this.style.display='none'"/><span style="font-size:.8rem;color:var(--muted);">Текущая иконка</span></div>`:'')}
   <div class="fsec">Видимость разделов</div>
   <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;line-height:1.6;">Снятая галочка — раздел исчезает из меню и с главной страницы. Прямая ссылка всё ещё работает.</p>
   ${pgRow('about',   'О себе',   'about.html')}
@@ -3127,6 +3134,7 @@ function colAppearance(){
   if(!D.appearance)D.appearance={};
   D.appearance.defaultTheme=v('ap-theme');
   D.appearance.dateFormat=v('ap-datefmt')||'long';
+  D.appearance.favicon=v('ap-favicon')||'';
   D.appearance.showHeroStats=!!document.getElementById('ap-stats')?.checked;
   if(!D.appearance.pages)D.appearance.pages={};
   ['about','journey','interests','videos','contact'].forEach(key=>{
