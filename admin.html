@@ -287,13 +287,55 @@
       -webkit-backdrop-filter: var(--glass);
       backdrop-filter: var(--glass);
       display:flex; flex-direction:column;
-      transition: all .4s var(--ease);
+      transition: width .35s var(--ease), padding .35s var(--ease);
       overflow-y:auto;
+      overflow-x:hidden;
+      position:relative;
     }
+
+    /* Collapsed sidebar */
+    .adm-sidebar.collapsed { width:60px; padding:24px 0; }
+    .adm-sidebar.collapsed .sb-label { opacity:0; height:0; margin:0; padding:0; overflow:hidden; }
+    .adm-sidebar.collapsed .sb-item { justify-content:center; padding:10px 0; margin:2px 6px; gap:0; }
+    .adm-sidebar.collapsed .sb-item-text { display:none; }
+    .adm-sidebar.collapsed .sb-icon { width:auto; font-size:1.15rem; }
+    .adm-sidebar.collapsed .sb-div { margin:8px 10px; }
+    .adm-sidebar.collapsed .sb-status { display:none; }
+    .adm-sidebar.collapsed + .adm-main { margin-left:0; }
+
+    /* Collapse toggle button */
+    .sb-toggle {
+      display:flex; align-items:center; justify-content:center;
+      width:28px; height:28px;
+      background:var(--s2); border:1px solid var(--border);
+      border-radius:8px; cursor:pointer; color:var(--muted);
+      font-size:.7rem; margin:0 auto 12px;
+      transition:all .2s var(--ease);
+      flex-shrink:0;
+    }
+    .sb-toggle:hover { color:var(--accent); border-color:var(--accent); background:var(--accent-glow); }
+    .adm-sidebar.collapsed .sb-toggle { transform:rotate(180deg); }
+
+    /* Tooltip on collapsed items */
+    .adm-sidebar.collapsed .sb-item { position:relative; }
+    .adm-sidebar.collapsed .sb-item::after {
+      content:attr(data-tip);
+      position:absolute; left:calc(100% + 8px); top:50%;
+      transform:translateY(-50%);
+      background:var(--bg-solid); color:var(--text);
+      font-size:.7rem; font-weight:600; white-space:nowrap;
+      padding:5px 10px; border-radius:8px;
+      border:1px solid var(--border); box-shadow:var(--shadow-sm);
+      opacity:0; pointer-events:none;
+      transition:opacity .15s; z-index:100;
+    }
+    .adm-sidebar.collapsed .sb-item:hover::after { opacity:1; }
 
     .sb-label {
       font-size:.58rem; font-weight:700; letter-spacing:.24em; text-transform:uppercase;
       color:var(--muted); padding:0 20px; margin-bottom:8px; margin-top:4px;
+      transition: opacity .2s, height .2s, margin .2s, padding .2s;
+      white-space:nowrap; overflow:hidden;
     }
     .sb-label::before { content:'// '; color:var(--accent); opacity:.5; }
 
@@ -307,7 +349,9 @@
       text-transform:uppercase;
       position:relative;
       transition: all .3s var(--ease);
+      white-space:nowrap;
     }
+    .sb-item-text { transition:opacity .2s; }
     .sb-item:hover {
       color:var(--text);
       background:var(--sb-hover);
@@ -337,6 +381,7 @@
       background: rgba(0,255,136,0.04);
       border: 1px solid rgba(0,255,136,0.12);
       border-radius:var(--r);
+      transition: opacity .2s;
       font-size:.68rem; color:var(--success);
       letter-spacing:.08em;
       display:flex; align-items:center; gap:8px;
@@ -715,8 +760,9 @@
       z-index:40;
       -webkit-backdrop-filter: var(--glass);
       backdrop-filter: var(--glass);
-      transition: all .4s var(--ease);
+      transition: all .35s var(--ease);
     }
+    .adm-sidebar.collapsed ~ .save-bar { left:60px; }
 
     .save-status { font-size:.73rem; color:var(--muted); letter-spacing:.06em; transition:color .3s; }
     .save-status.ok { color:var(--success); }
@@ -886,6 +932,10 @@
       .sb-label { display: none; }
       .sb-div { display: none; }
       .sb-status { display: none; }
+      .sb-toggle { display: none; }
+      .adm-sidebar.collapsed { width:100%; }
+      .adm-sidebar.collapsed .sb-item-text { display:inline !important; }
+      .adm-sidebar.collapsed .sb-item { justify-content:flex-start; padding:8px 12px; gap:6px; }
       .sb-item {
         padding: 8px 12px;
         font-size: .68rem;
@@ -1192,24 +1242,25 @@
   <div class="adm-layout">
 
     <!-- Sidebar -->
-    <div class="adm-sidebar">
+    <div class="adm-sidebar" id="adm-sidebar">
+      <button class="sb-toggle" onclick="toggleSidebar()" title="Свернуть/Развернуть">◀</button>
       <div class="sb-label">Страницы</div>
-      <div class="sb-item" data-tab="index"     onclick="showTab('index')">    <span class="sb-icon">🏠</span> Главная</div>
-      <div class="sb-item" data-tab="about"     onclick="showTab('about')">    <span class="sb-icon">👤</span> О себе</div>
-      <div class="sb-item" data-tab="journey"   onclick="showTab('journey')">  <span class="sb-icon">🗺️</span> Мой путь</div>
-      <div class="sb-item" data-tab="interests" onclick="showTab('interests')"><span class="sb-icon">🧠</span> Интересы</div>
-      <div class="sb-item" data-tab="boards"    onclick="showTab('boards')">   <span class="sb-icon">📋</span> Доски</div>
-      <div class="sb-item" data-tab="contact"   onclick="showTab('contact')">  <span class="sb-icon">✉️</span> Контакт</div>
+      <div class="sb-item" data-tab="index"     data-tip="Главная"     onclick="showTab('index')">    <span class="sb-icon">🏠</span><span class="sb-item-text">Главная</span></div>
+      <div class="sb-item" data-tab="about"     data-tip="О себе"      onclick="showTab('about')">    <span class="sb-icon">👤</span><span class="sb-item-text">О себе</span></div>
+      <div class="sb-item" data-tab="journey"   data-tip="Мой путь"    onclick="showTab('journey')">  <span class="sb-icon">🗺️</span><span class="sb-item-text">Мой путь</span></div>
+      <div class="sb-item" data-tab="interests" data-tip="Интересы"    onclick="showTab('interests')"><span class="sb-icon">🧠</span><span class="sb-item-text">Интересы</span></div>
+      <div class="sb-item" data-tab="boards"    data-tip="Доски"       onclick="showTab('boards')">   <span class="sb-icon">📋</span><span class="sb-item-text">Доски</span></div>
+      <div class="sb-item" data-tab="contact"   data-tip="Контакт"     onclick="showTab('contact')">  <span class="sb-icon">✉️</span><span class="sb-item-text">Контакт</span></div>
       <div class="sb-div"></div>
       <div class="sb-label">Настройки</div>
-      <div class="sb-item" data-tab="videos"     onclick="showTab('videos')">     <span class="sb-icon">🎬</span> Видео</div>
-      <div class="sb-item" data-tab="seo"        onclick="showTab('seo')">        <span class="sb-icon">🔎</span> SEO</div>
-      <div class="sb-item" data-tab="appearance" onclick="showTab('appearance')"> <span class="sb-icon">🎨</span> Внешний вид</div>
-      <div class="sb-item" data-tab="global"     onclick="showTab('global')">     <span class="sb-icon">⚙️</span> Общие</div>
-      <div class="sb-item" data-tab="security"   onclick="showTab('security')">   <span class="sb-icon">🔐</span> Безопасность</div>
-      <div class="sb-item" data-tab="media"    onclick="showTab('media')">    <span class="sb-icon">🖼️</span> Медиа</div>
-      <div class="sb-item" data-tab="bookmarks"   onclick="showTab('bookmarks')">   <span class="sb-icon">🔖</span> Закладки</div>
-      <div class="sb-item" data-tab="i18n"        onclick="showTab('i18n')">        <span class="sb-icon">🌐</span> Переводы</div>
+      <div class="sb-item" data-tab="videos"     data-tip="Видео"       onclick="showTab('videos')">     <span class="sb-icon">🎬</span><span class="sb-item-text">Видео</span></div>
+      <div class="sb-item" data-tab="seo"        data-tip="SEO"         onclick="showTab('seo')">        <span class="sb-icon">🔎</span><span class="sb-item-text">SEO</span></div>
+      <div class="sb-item" data-tab="appearance" data-tip="Внешний вид" onclick="showTab('appearance')"> <span class="sb-icon">🎨</span><span class="sb-item-text">Внешний вид</span></div>
+      <div class="sb-item" data-tab="global"     data-tip="Общие"       onclick="showTab('global')">     <span class="sb-icon">⚙️</span><span class="sb-item-text">Общие</span></div>
+      <div class="sb-item" data-tab="security"   data-tip="Безопасность" onclick="showTab('security')">  <span class="sb-icon">🔐</span><span class="sb-item-text">Безопасность</span></div>
+      <div class="sb-item" data-tab="media"      data-tip="Медиа"       onclick="showTab('media')">      <span class="sb-icon">🖼️</span><span class="sb-item-text">Медиа</span></div>
+      <div class="sb-item" data-tab="bookmarks"  data-tip="Закладки"    onclick="showTab('bookmarks')">  <span class="sb-icon">🔖</span><span class="sb-item-text">Закладки</span></div>
+      <div class="sb-item" data-tab="i18n"       data-tip="Переводы"    onclick="showTab('i18n')">       <span class="sb-icon">🌐</span><span class="sb-item-text">Переводы</span></div>
       <div class="sb-status">Система активна</div>
     </div>
 
@@ -1280,9 +1331,24 @@ function toggleAdminTheme(){
   document.documentElement.setAttribute('data-admin-theme', next);
   localStorage.setItem('ac_admin_theme', next);
 }
+function toggleSidebar(){
+  const sb = document.getElementById('adm-sidebar');
+  if(!sb) return;
+  sb.classList.toggle('collapsed');
+  const collapsed = sb.classList.contains('collapsed');
+  localStorage.setItem('ac_sidebar_collapsed', collapsed ? '1' : '');
+  // Update save-bar left position
+  const saveBar = document.querySelector('.save-bar');
+  if(saveBar && window.innerWidth > 900) saveBar.style.left = collapsed ? '60px' : '250px';
+}
 (function(){
   const saved = localStorage.getItem('ac_admin_theme') || 'dark';
   document.documentElement.setAttribute('data-admin-theme', saved);
+  // Restore sidebar state
+  if(localStorage.getItem('ac_sidebar_collapsed') === '1'){
+    const sb = document.getElementById('adm-sidebar');
+    if(sb) sb.classList.add('collapsed');
+  }
 })();
 </script>
 
