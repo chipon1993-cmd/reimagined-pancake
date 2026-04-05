@@ -256,7 +256,7 @@
   <noscript><style>.fade-in{opacity:1!important;transform:none!important}#page-overlay{display:none!important}</style></noscript>
   <div id="page-overlay"></div>
 
-  <nav>
+  <nav role="navigation" aria-label="Основная навигация">
     <a href="index.html" class="nav-logo">A<span>.</span>C</a>
     <ul class="nav-links" id="navLinks">
       <li><a href="about.html"     onclick="closeMenu()" data-i18n="nav_about">О себе</a></li>
@@ -267,11 +267,11 @@
     </ul>
     <div class="nav-controls">
       <div class="theme-dots">
-        <button class="theme-dot t-cyan"   data-theme="cyan"   onclick="switchTheme('cyan')"></button>
-        <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')"></button>
-        <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')"></button>
-        <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')"></button>
-        <button class="theme-dot t-light"  data-theme="light"  onclick="switchTheme('light')"></button>
+        <button class="theme-dot t-cyan"   data-theme="cyan"   onclick="switchTheme('cyan')" aria-label="Голубая тема"></button>
+        <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')" aria-label="Фиолетовая тема"></button>
+        <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')" aria-label="Зелёная тема"></button>
+        <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')" aria-label="Оранжевая тема"></button>
+        <button class="theme-dot t-light"  data-theme="light"  onclick="switchTheme('light')" aria-label="Светлая тема"></button>
       </div>
     </div>
     <button class="burger" id="burger" onclick="toggleMenu()" aria-label="Меню">
@@ -279,7 +279,7 @@
     </button>
   </nav>
 
-  <div class="page-wrapper">
+  <main class="page-wrapper">
     <div class="container">
 
       <!-- Page hero -->
@@ -313,7 +313,7 @@
       </div>
 
     </div>
-  </div>
+  </main>
 
   <footer></footer>
 
