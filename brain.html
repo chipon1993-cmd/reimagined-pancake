@@ -203,57 +203,105 @@
       <div class="brain-layout">
         <!-- SVG Brain (side view) -->
         <div class="brain-svg-wrap fade-in">
-          <svg viewBox="0 0 600 450" xmlns="http://www.w3.org/2000/svg">
-            <!-- Brain outline (side view) -->
+          <svg viewBox="0 0 620 480" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="inner-shadow"><feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur"/><feOffset dx="2" dy="3"/><feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/><feFlood flood-color="#000" flood-opacity="0.3"/><feComposite in2="SourceGraphic" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <!-- Gradients for realistic look -->
+              <radialGradient id="g-frontal" cx="40%" cy="45%"><stop offset="0%" stop-color="rgba(0,212,255,0.22)"/><stop offset="100%" stop-color="rgba(0,212,255,0.06)"/></radialGradient>
+              <radialGradient id="g-parietal" cx="50%" cy="40%"><stop offset="0%" stop-color="rgba(168,85,247,0.22)"/><stop offset="100%" stop-color="rgba(168,85,247,0.06)"/></radialGradient>
+              <radialGradient id="g-temporal" cx="45%" cy="50%"><stop offset="0%" stop-color="rgba(52,211,153,0.22)"/><stop offset="100%" stop-color="rgba(52,211,153,0.06)"/></radialGradient>
+              <radialGradient id="g-occipital" cx="55%" cy="45%"><stop offset="0%" stop-color="rgba(249,115,22,0.22)"/><stop offset="100%" stop-color="rgba(249,115,22,0.06)"/></radialGradient>
+              <radialGradient id="g-cerebellum" cx="50%" cy="40%"><stop offset="0%" stop-color="rgba(236,72,153,0.25)"/><stop offset="100%" stop-color="rgba(236,72,153,0.06)"/></radialGradient>
+              <radialGradient id="g-brainstem" cx="50%" cy="30%"><stop offset="0%" stop-color="rgba(251,191,36,0.25)"/><stop offset="100%" stop-color="rgba(251,191,36,0.06)"/></radialGradient>
             </defs>
 
-            <!-- Frontal Lobe -->
-            <path class="brain-region" id="r-frontal" data-region="frontal"
-              d="M100,200 C100,120 140,70 200,55 C240,47 270,50 300,65 L300,200 C300,210 280,240 260,250 L140,250 C120,245 100,230 100,200Z"
-              fill="rgba(0,212,255,0.12)" stroke="rgba(0,212,255,0.4)" />
+            <!-- Brain outer shadow for depth -->
+            <ellipse cx="290" cy="240" rx="220" ry="180" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="40" />
 
-            <!-- Parietal Lobe -->
-            <path class="brain-region" id="r-parietal" data-region="parietal"
-              d="M300,65 C340,50 380,48 420,60 C450,70 470,100 475,140 L475,190 L300,200 L300,65Z"
-              fill="rgba(168,85,247,0.12)" stroke="rgba(168,85,247,0.4)" />
+            <!-- === BRAIN REGIONS (anatomically correct side view) === -->
 
-            <!-- Temporal Lobe -->
-            <path class="brain-region" id="r-temporal" data-region="temporal"
-              d="M140,250 C130,260 120,280 115,310 C110,340 120,365 145,375 C180,388 240,390 300,380 L300,280 L260,250Z"
-              fill="rgba(52,211,153,0.12)" stroke="rgba(52,211,153,0.4)" />
+            <!-- Frontal Lobe — front/top of brain -->
+            <path class="brain-region" id="r-frontal" data-region="frontal" filter="url(#inner-shadow)"
+              d="M82,225 C78,180 85,135 105,100 C125,68 160,45 200,38 C230,33 258,35 285,48 C295,53 300,58 305,65 L305,140 C300,155 290,175 280,195 L280,230 C270,248 250,262 225,270 L150,270 C120,265 95,252 82,225Z"
+              fill="url(#g-frontal)" stroke="rgba(0,212,255,0.5)" />
 
-            <!-- Occipital Lobe -->
-            <path class="brain-region" id="r-occipital" data-region="occipital"
-              d="M475,190 C480,220 478,260 470,290 C460,320 440,345 410,360 C380,372 340,378 300,380 L300,280 L300,200 L475,190Z"
-              fill="rgba(249,115,22,0.12)" stroke="rgba(249,115,22,0.4)" />
+            <!-- Parietal Lobe — top/back -->
+            <path class="brain-region" id="r-parietal" data-region="parietal" filter="url(#inner-shadow)"
+              d="M305,65 C320,50 345,42 375,40 C410,38 440,48 462,68 C480,85 492,110 497,145 L497,200 L420,210 L350,205 L305,195 L305,140Z"
+              fill="url(#g-parietal)" stroke="rgba(168,85,247,0.5)" />
 
+            <!-- Temporal Lobe — lower front/middle -->
+            <path class="brain-region" id="r-temporal" data-region="temporal" filter="url(#inner-shadow)"
+              d="M150,270 C135,278 118,295 108,320 C98,348 95,370 105,388 C118,408 148,418 185,422 C225,425 268,420 305,408 L305,310 L305,270 L280,270 L280,230 L280,270 L225,270Z"
+              fill="url(#g-temporal)" stroke="rgba(52,211,153,0.5)" />
+
+            <!-- Occipital Lobe — back -->
+            <path class="brain-region" id="r-occipital" data-region="occipital" filter="url(#inner-shadow)"
+              d="M497,200 C502,235 500,270 492,300 C482,330 465,355 440,372 C415,386 380,395 345,402 L305,408 L305,310 L305,270 L305,205 L350,205 L420,210Z"
+              fill="url(#g-occipital)" stroke="rgba(249,115,22,0.5)" />
+
+            <!-- Cerebellum — back/bottom -->
+            <path class="brain-region" id="r-cerebellum" data-region="cerebellum" filter="url(#inner-shadow)"
+              d="M440,372 C458,362 478,345 492,320 C508,332 522,355 528,380 C532,405 522,425 502,435 C478,445 450,442 428,432 C408,422 398,405 400,390 C402,378 418,370 440,372Z"
+              fill="url(#g-cerebellum)" stroke="rgba(236,72,153,0.5)" />
+
+            <!-- Brain Stem — bottom center -->
+            <path class="brain-region" id="r-brainstem" data-region="brainstem" filter="url(#inner-shadow)"
+              d="M305,408 C315,418 328,430 335,448 C340,462 338,472 328,478 C318,482 308,480 300,472 C292,462 288,448 290,432 C292,420 298,412 305,408Z"
+              fill="url(#g-brainstem)" stroke="rgba(251,191,36,0.5)" />
+
+            <!-- === GYRI / SULCI (brain folds) === -->
+            <g class="brain-folds" opacity="0.25" fill="none" stroke-width="1" stroke-linecap="round">
+              <!-- Frontal folds -->
+              <path d="M120,160 C150,148 180,152 210,145" stroke="rgba(0,212,255,0.6)"/>
+              <path d="M105,195 C140,185 175,190 220,182" stroke="rgba(0,212,255,0.5)"/>
+              <path d="M130,130 C155,118 185,122 215,115" stroke="rgba(0,212,255,0.4)"/>
+              <path d="M160,100 C185,92 210,88 240,82" stroke="rgba(0,212,255,0.3)"/>
+              <path d="M115,225 C145,218 185,222 230,215" stroke="rgba(0,212,255,0.4)"/>
+              <!-- Central sulcus (divider frontal/parietal) -->
+              <path d="M300,60 C298,100 302,140 298,180 C295,210 292,240 305,270" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+              <!-- Parietal folds -->
+              <path d="M330,85 C360,78 395,82 430,90" stroke="rgba(168,85,247,0.5)"/>
+              <path d="M320,120 C355,112 390,118 440,125" stroke="rgba(168,85,247,0.5)"/>
+              <path d="M325,158 C365,148 405,155 460,165" stroke="rgba(168,85,247,0.4)"/>
+              <path d="M340,190 C375,182 415,188 470,195" stroke="rgba(168,85,247,0.3)"/>
+              <!-- Lateral sulcus (divider temporal) -->
+              <path d="M145,268 C195,255 250,258 305,268" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+              <!-- Temporal folds -->
+              <path d="M130,310 C175,300 225,305 280,298" stroke="rgba(52,211,153,0.5)"/>
+              <path d="M120,345 C165,335 215,340 270,332" stroke="rgba(52,211,153,0.4)"/>
+              <path d="M135,378 C180,370 228,375 285,365" stroke="rgba(52,211,153,0.3)"/>
+              <!-- Occipital folds -->
+              <path d="M370,240 C410,232 448,240 490,248" stroke="rgba(249,115,22,0.5)"/>
+              <path d="M355,278 C395,268 435,275 485,282" stroke="rgba(249,115,22,0.4)"/>
+              <path d="M345,318 C385,308 425,315 472,320" stroke="rgba(249,115,22,0.3)"/>
+              <path d="M340,355 C375,345 415,352 455,358" stroke="rgba(249,115,22,0.25)"/>
+              <!-- Cerebellum folds (horizontal striations) -->
+              <path d="M415,388 C440,382 465,385 500,392" stroke="rgba(236,72,153,0.5)"/>
+              <path d="M410,402 C438,396 462,400 495,408" stroke="rgba(236,72,153,0.4)"/>
+              <path d="M418,418 C445,412 470,416 498,422" stroke="rgba(236,72,153,0.3)"/>
+            </g>
+
+            <!-- === LABELS with connector lines === -->
+            <!-- Frontal -->
+            <line class="brain-arrow" id="a-frontal" x1="165" y1="155" x2="38" y2="115" stroke-dasharray="4,3"/>
+            <text class="brain-label" id="l-frontal" x="35" y="110" text-anchor="end">Лобная доля</text>
+            <!-- Parietal -->
+            <line class="brain-arrow" id="a-parietal" x1="420" y1="120" x2="565" y2="85" stroke-dasharray="4,3"/>
+            <text class="brain-label" id="l-parietal" x="568" y="82" text-anchor="start">Теменная доля</text>
+            <!-- Temporal -->
+            <line class="brain-arrow" id="a-temporal" x1="195" y1="345" x2="38" y2="375" stroke-dasharray="4,3"/>
+            <text class="brain-label" id="l-temporal" x="35" y="372" text-anchor="end">Височная доля</text>
+            <!-- Occipital -->
+            <line class="brain-arrow" id="a-occipital" x1="445" y1="305" x2="570" y2="275" stroke-dasharray="4,3"/>
+            <text class="brain-label" id="l-occipital" x="573" y="272" text-anchor="start">Затылочная</text>
             <!-- Cerebellum -->
-            <path class="brain-region" id="r-cerebellum" data-region="cerebellum"
-              d="M410,360 C430,355 455,340 470,310 C490,320 510,340 515,370 C518,395 505,415 480,420 C450,425 415,415 400,400 C390,388 400,370 410,360Z"
-              fill="rgba(236,72,153,0.12)" stroke="rgba(236,72,153,0.4)" />
-
+            <line class="brain-arrow" id="a-cerebellum" x1="480" y1="420" x2="565" y2="430" stroke-dasharray="4,3"/>
+            <text class="brain-label" id="l-cerebellum" x="568" y="433" text-anchor="start">Мозжечок</text>
             <!-- Brain Stem -->
-            <path class="brain-region" id="r-brainstem" data-region="brainstem"
-              d="M300,380 C310,390 320,400 325,420 C328,435 325,445 315,448 C305,450 295,448 288,440 C282,430 280,415 285,400 C288,390 295,383 300,380Z"
-              fill="rgba(251,191,36,0.12)" stroke="rgba(251,191,36,0.4)" />
-
-            <!-- Labels -->
-            <text class="brain-label" id="l-frontal" x="180" y="155" text-anchor="middle">Лобная</text>
-            <text class="brain-label" id="l-parietal" x="385" y="130" text-anchor="middle">Теменная</text>
-            <text class="brain-label" id="l-temporal" x="200" y="330" text-anchor="middle">Височная</text>
-            <text class="brain-label" id="l-occipital" x="400" y="280" text-anchor="middle">Затылочная</text>
-            <text class="brain-label" id="l-cerebellum" x="470" y="395" text-anchor="middle">Мозжечок</text>
-            <text class="brain-label" id="l-brainstem" x="260" y="438" text-anchor="middle">Ствол</text>
-
-            <!-- Arrow lines from labels to outside -->
-            <line class="brain-arrow" id="a-frontal"    x1="100" y1="155" x2="60"  y2="155" />
-            <line class="brain-arrow" id="a-parietal"    x1="475" y1="130" x2="540" y2="130" />
-            <line class="brain-arrow" id="a-temporal"    x1="115" y1="330" x2="60"  y2="330" />
-            <line class="brain-arrow" id="a-occipital"   x1="478" y1="280" x2="540" y2="280" />
-            <line class="brain-arrow" id="a-cerebellum"  x1="515" y1="395" x2="555" y2="395" />
-            <line class="brain-arrow" id="a-brainstem"   x1="260" y1="445" x2="220" y2="445" />
+            <line class="brain-arrow" id="a-brainstem" x1="295" y1="465" x2="220" y2="468" stroke-dasharray="4,3"/>
+            <text class="brain-label" id="l-brainstem" x="217" y="472" text-anchor="end">Ствол мозга</text>
           </svg>
         </div>
 
