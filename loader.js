@@ -479,6 +479,13 @@
       window._acDateFmt = data.appearance.dateFormat;
     }
 
+    if (data.appearance && data.appearance.favicon) {
+      var favUrl = data.appearance.favicon;
+      var favLink = document.querySelector('link[rel="icon"]');
+      if (favLink) { favLink.href = favUrl; }
+      else { var fl = document.createElement('link'); fl.rel = 'icon'; fl.href = favUrl; document.head.appendChild(fl); }
+    }
+
     if (data.appearance && data.appearance.pages) {
       applyPageVisibility(data.appearance.pages);
     }
