@@ -48,18 +48,41 @@
     /* Brain regions */
     .brain-region {
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.4s ease;
       stroke: rgba(255,255,255,0.15);
       stroke-width: 1.5;
+      animation: brain-breathe 4s ease-in-out infinite;
     }
+    .brain-region:nth-child(1) { animation-delay: 0s; }
+    .brain-region:nth-child(2) { animation-delay: 0.7s; }
+    .brain-region:nth-child(3) { animation-delay: 1.4s; }
+    .brain-region:nth-child(4) { animation-delay: 2.1s; }
+    .brain-region:nth-child(5) { animation-delay: 2.8s; }
+    .brain-region:nth-child(6) { animation-delay: 3.5s; }
+
+    @keyframes brain-breathe {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
     .brain-region:hover, .brain-region.active {
       stroke-width: 2.5;
       filter: drop-shadow(0 0 12px currentColor);
+      animation: none;
+      opacity: 1;
     }
     .brain-region.active {
       stroke-width: 3;
       filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px currentColor);
     }
+
+    /* Dim other regions when one is active */
+    .brain-region.dimmed {
+      opacity: 0.15;
+      filter: grayscale(0.8);
+      animation: none;
+    }
+    .brain-folds.dimmed { opacity: 0.08; }
 
     /* Labels on SVG */
     .brain-label {
@@ -444,12 +467,19 @@
         if (activeRegion === region) return;
 
         // Deactivate previous
-        document.querySelectorAll('.brain-region').forEach(r => r.classList.remove('active'));
+        document.querySelectorAll('.brain-region').forEach(r => {
+          r.classList.remove('active');
+          r.classList.remove('dimmed');
+        });
         document.querySelectorAll('.brain-label').forEach(l => l.classList.remove('active'));
         document.querySelectorAll('.brain-arrow').forEach(a => a.classList.remove('active'));
 
-        // Activate current
+        // Activate current + dim others
         el.classList.add('active');
+        document.querySelectorAll('.brain-region').forEach(r => {
+          if (r !== el) r.classList.add('dimmed');
+        });
+        document.querySelector('.brain-folds')?.classList.add('dimmed');
         document.getElementById('l-' + region)?.classList.add('active');
         document.getElementById('a-' + region)?.classList.add('active');
         activeRegion = region;
@@ -493,6 +523,23 @@
           el.style.filter = '';
         }
       });
+    });
+
+    // Click on empty SVG area → deselect all
+    document.querySelector('.brain-svg-wrap svg').addEventListener('click', (e) => {
+      if (!e.target.closest('.brain-region')) {
+        document.querySelectorAll('.brain-region').forEach(r => {
+          r.classList.remove('active', 'dimmed');
+        });
+        document.querySelectorAll('.brain-label').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.brain-arrow').forEach(a => a.classList.remove('active'));
+        document.querySelector('.brain-folds')?.classList.remove('dimmed');
+        activeRegion = null;
+        document.getElementById('bi-content').style.display = 'none';
+        document.getElementById('bi-placeholder').style.display = '';
+        document.getElementById('brain-info').classList.remove('has-data');
+        document.getElementById('brain-info').style.borderColor = '';
+      }
     });
   })();
   </script>
