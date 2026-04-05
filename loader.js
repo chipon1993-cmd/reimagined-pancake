@@ -368,6 +368,7 @@
       journey:   'journey.html',
       interests: 'interests.html',
       videos:    'videos.html',
+      world:     'world.html',
       contact:   'contact.html'
     };
     Object.entries(map).forEach(([key, href]) => {
