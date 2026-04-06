@@ -2450,6 +2450,12 @@ function initSortables(){
       easing: 'cubic-bezier(0.22,1,0.36,1)',
       onEnd: function(){
         markDirty();
+        // For block editor: collect and re-render to fix field IDs
+        if(el.id==='pe-blocks'){
+          var blocks=_peCollectBlocks();
+          _peRenderBlocks(blocks);
+          return;
+        }
         // Re-number indices after drag
         el.querySelectorAll('.li-item').forEach((li,i)=>{
           li.dataset.idx = i;
@@ -3831,7 +3837,7 @@ function _renderBlock(b,i){
     <div class="li-hdr" onclick="toggleLI(this)">
       <span class="drag-handle" title="Перетащить">⠿</span>
       <span class="li-idx">${n}</span>
-      <span class="li-title">${typeInfo.icon} ${esc(typeInfo.label)}${b.content?' — '+esc(String(b.content).substring(0,40))+'…':''}</span>
+      <span class="li-title">${typeInfo.icon} ${esc(typeInfo.label)}${b.content&&String(b.content).trim()?' — '+esc(String(b.content).substring(0,40)):''}</span>
       <div class="li-acts">
         <button class="lib del" onclick="event.stopPropagation();peDelBlock(this)" title="Удалить">✕</button>
       </div>
@@ -3841,40 +3847,49 @@ function _renderBlock(b,i){
 }
 
 function peBlockTypeChanged(idx,newType){
-  // Collect current blocks, change type, re-render
+  // Collect all blocks first, then change the type at correct position
   const blocks=_peCollectBlocks();
-  blocks[idx]={type:newType};
+  // idx comes from the DOM element, find the actual position
+  const actualIdx=parseInt(idx,10);
+  if(actualIdx>=0&&actualIdx<blocks.length){
+    blocks[actualIdx]={type:newType};
+  }
   _peRenderBlocks(blocks);
 }
 
 function _peCollectBlocks(){
   const items=[...document.querySelectorAll('#pe-blocks .li-item')];
-  return items.map((li,_unused)=>{
-    const i=li.dataset.idx; // Use stored idx for field lookup
-    const type=document.getElementById(`pb-type-${i}`)?.value||'text';
+  return items.map(function(li){
+    // Use data-idx to find the matching form fields
+    const i=li.dataset.idx;
+    // Fallback: try to find type select inside the li-body directly
+    const typeEl=li.querySelector('select[id^="pb-type-"]')||document.getElementById('pb-type-'+i);
+    const type=typeEl?typeEl.value:'text';
     const block={type};
+    // Helper to get field value by id
+    function fv(prefix){ const el=document.getElementById(prefix+i); return el?el.value:''; }
     switch(type){
       case 'text': case 'heading': case 'callout':
-        block.content=document.getElementById(`pb-content-${i}`)?.value||'';
+        block.content=fv('pb-content-');
         break;
       case 'quote':
-        block.content=document.getElementById(`pb-content-${i}`)?.value||'';
-        block.author=document.getElementById(`pb-author-${i}`)?.value||'';
+        block.content=fv('pb-content-');
+        block.author=fv('pb-author-');
         break;
       case 'divider': break;
       case 'list':
-        block.items=(document.getElementById(`pb-items-${i}`)?.value||'').split('\n').filter(s=>s.trim());
+        block.items=fv('pb-items-').split('\n').filter(function(s){return s.trim();});
         break;
       case 'stats':
-        block.items=(document.getElementById(`pb-items-${i}`)?.value||'').split('\n').filter(s=>s.trim()).map(line=>{
-          const parts=line.split('|');
+        block.items=fv('pb-items-').split('\n').filter(function(s){return s.trim();}).map(function(line){
+          var parts=line.split('|');
           return {num:(parts[0]||'').trim(), label:(parts[1]||'').trim()};
         });
         break;
       case 'image':
-        block.src=document.getElementById(`pb-src-${i}`)?.value||'';
-        block.alt=document.getElementById(`pb-alt-${i}`)?.value||'';
-        block.caption=document.getElementById(`pb-caption-${i}`)?.value||'';
+        block.src=fv('pb-src-');
+        block.alt=fv('pb-alt-');
+        block.caption=fv('pb-caption-');
         break;
     }
     return block;
