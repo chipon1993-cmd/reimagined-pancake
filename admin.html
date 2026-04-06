@@ -1237,6 +1237,61 @@
 
     /* ═══════ NAV BUILDER ═══════ */
     .nav-child .fg { margin-bottom:8px; flex:1; }
+
+    /* ═══════ EDITOR.JS VISUAL EDITOR ═══════ */
+    .ejs-wrap {
+      background:var(--bg-solid);
+      border:1px solid var(--border);
+      border-radius:var(--r);
+      min-height:300px;
+      padding:20px 0;
+      position:relative;
+    }
+    .ejs-wrap .codex-editor { max-width:100%; }
+    .ejs-wrap .ce-block__content,
+    .ejs-wrap .ce-toolbar__content { max-width:calc(100% - 80px); margin:0 auto; }
+    .ejs-wrap .ce-paragraph { color:var(--text); font-size:1rem; line-height:1.7; }
+    .ejs-wrap .ce-header { color:var(--text); }
+    .ejs-wrap h2.ce-header { font-size:1.4rem; font-weight:800; }
+    .ejs-wrap h3.ce-header { font-size:1.2rem; font-weight:700; }
+    .ejs-wrap .cdx-quote__text { color:var(--text); font-style:italic; border-left:3px solid var(--accent); padding-left:16px; }
+    .ejs-wrap .cdx-quote__caption { color:var(--accent); font-size:.85rem; }
+    .ejs-wrap .ce-delimiter { line-height:1.6em; color:var(--muted); }
+    .ejs-wrap .cdx-warning { background:rgba(10,208,255,0.04); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:var(--r); }
+    .ejs-wrap .cdx-warning__title { color:var(--accent); font-weight:700; }
+    .ejs-wrap .cdx-warning__message { color:var(--muted); }
+    .ejs-wrap .cdx-list { color:var(--text); }
+    .ejs-wrap .ce-toolbar__plus,
+    .ejs-wrap .ce-toolbar__settings-btn { color:var(--muted); background:var(--surface); border:1px solid var(--border); }
+    .ejs-wrap .ce-toolbar__plus:hover,
+    .ejs-wrap .ce-toolbar__settings-btn:hover { color:var(--accent); border-color:var(--accent); }
+    .ejs-wrap .ce-inline-toolbar,
+    .ejs-wrap .ce-conversion-toolbar,
+    .ejs-wrap .ce-settings { background:var(--bg-solid); border:1px solid var(--border); box-shadow:var(--shadow); }
+    .ejs-wrap .ce-inline-toolbar__toggler-and-button-wrapper .ce-inline-tool,
+    .ejs-wrap .ce-conversion-tool,
+    .ejs-wrap .ce-settings__button { color:var(--text); }
+    .ejs-wrap .ce-inline-tool:hover,
+    .ejs-wrap .ce-conversion-tool:hover,
+    .ejs-wrap .ce-settings__button:hover { background:var(--sb-hover); }
+    .ejs-wrap .ce-popover { background:var(--bg-solid); border:1px solid var(--border); box-shadow:var(--shadow); }
+    .ejs-wrap .ce-popover-item__title { color:var(--text); }
+    .ejs-wrap .ce-popover-item__icon { color:var(--muted); background:var(--surface); border:1px solid var(--border); }
+    .ejs-wrap .ce-popover-item:hover { background:var(--sb-hover); }
+    .ejs-wrap .image-tool__image-picture img { max-width:100%; border-radius:8px; }
+    .ejs-wrap .image-tool__caption { color:var(--muted); font-size:.85rem; }
+    .ejs-wrap .cdx-input { background:var(--input-bg); color:var(--text); border-color:var(--border); }
+    .ejs-wrap .cdx-input:focus { border-color:var(--accent); }
+    .ejs-wrap .embed-tool__caption { color:var(--muted); }
+    /* Stats block fallback (form-based) */
+    .ejs-stats-block { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px; margin:8px 0; }
+    .ejs-stats-block textarea { width:100%; background:var(--input-bg); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:10px; font-family:inherit; font-size:.9rem; resize:vertical; }
+    .ejs-stats-block textarea:focus { border-color:var(--accent); outline:none; }
+    .ejs-stats-label { font-size:.75rem; color:var(--muted); margin-bottom:6px; display:block; }
+    .ejs-mode-toggle { display:flex; gap:8px; margin-bottom:12px; }
+    .ejs-mode-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--muted); font-size:.8rem; cursor:pointer; transition:all .2s; }
+    .ejs-mode-btn.active { background:var(--accent); color:#000; border-color:var(--accent); font-weight:600; }
+    .ejs-mode-btn:hover:not(.active) { border-color:var(--accent); color:var(--text); }
   </style>
 </head>
 <body>
@@ -2434,7 +2489,7 @@ async function _showTabDirect(tab){
     case 'help':       m.innerHTML=edHelp(); break;
     case 'pages':      m.innerHTML=await edPages(); break;
     case 'navigation': m.innerHTML=await edNavigation(); break;
-    case 'page-edit':  m.innerHTML=await edPageEdit(); initSortables(); break;
+    case 'page-edit':  m.innerHTML=await edPageEdit(); _editorMode='visual'; await _initPageEditor(); break;
   }
   initSortables();
 }
@@ -2487,7 +2542,10 @@ function collectCurrent(){
     case 'media':      break; // no form data
     case 'pages':      break; // own save buttons
     case 'navigation': break; // own save button
-    case 'page-edit':  break; // own save button
+    case 'page-edit':
+      // Destroy Editor.js instance when leaving tab
+      if(_editorInstance){ try{_editorInstance.destroy();}catch(e){} _editorInstance=null; }
+      break; // own save button
   }
 }
 
@@ -3919,7 +3977,7 @@ async function pageDel(id){
   } catch(e){ showToast('// Ошибка: '+e.message); }
 }
 
-// ── PAGE BLOCK EDITOR ───────────────────────
+// ── PAGE BLOCK EDITOR (Editor.js visual) ────
 const _blockTypes=[
   {type:'text',label:'Текст',icon:'📝'},
   {type:'heading',label:'Заголовок',icon:'🔤'},
@@ -3933,6 +3991,233 @@ const _blockTypes=[
   {type:'file',label:'Файл / документ',icon:'📎'}
 ];
 
+// ── Editor.js instance ──
+var _editorInstance = null;
+var _editorMode = 'visual'; // 'visual' or 'blocks'
+
+// Convert site blocks → Editor.js blocks
+function _blocksToEditorJS(blocks){
+  if(!blocks||!blocks.length) return [];
+  return blocks.map(function(b){
+    switch(b.type){
+      case 'text':
+        return {type:'paragraph', data:{text: b.content||''}};
+      case 'heading':
+        return {type:'header', data:{text: b.content||'', level: b.level||2}};
+      case 'quote':
+        return {type:'quote', data:{text: b.content||'', caption: b.author||'', alignment:'left'}};
+      case 'divider':
+        return {type:'delimiter', data:{}};
+      case 'list':
+        return {type:'list', data:{style:'unordered', items: (b.items||[]).map(function(it){ return it; })}};
+      case 'callout':
+        return {type:'warning', data:{title:'', message: b.content||''}};
+      case 'image':
+        return {type:'image', data:{url: b.src||'', caption: b.caption||'', withBorder:false, withBackground:false, stretched:false, file:{url: b.src||''}}};
+      case 'video':
+        var yt=((b.src||'').match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/));
+        if(yt){
+          return {type:'embed', data:{service:'youtube', source:'https://www.youtube.com/watch?v='+yt[1], embed:'https://www.youtube.com/embed/'+yt[1], width:580, height:320, caption:b.caption||''}};
+        }
+        // non-YouTube video: store as paragraph with marker
+        return {type:'paragraph', data:{text:'🎬 Видео: '+(b.src||'')+' '+(b.caption?'('+b.caption+')':'')}};
+      case 'file':
+        return {type:'paragraph', data:{text:'📎 Файл: <a href="'+(b.src||'')+'">'+(b.content||b.src||'Файл')+'</a> '+(b.caption?'— '+b.caption:'')}};
+      case 'stats':
+        // Store stats as raw data in a paragraph with marker
+        var statsText=(b.items||[]).map(function(s){ return (s.num||'')+'|'+(s.label||''); }).join('\n');
+        return {type:'paragraph', data:{text:'📊 [stats]\n'+statsText}};
+      default:
+        return {type:'paragraph', data:{text: b.content||''}};
+    }
+  });
+}
+
+// Convert Editor.js blocks → site blocks
+function _editorJSToBlocks(ejsBlocks){
+  if(!ejsBlocks||!ejsBlocks.length) return [];
+  return ejsBlocks.map(function(b){
+    switch(b.type){
+      case 'paragraph':
+        var t=(b.data&&b.data.text)||'';
+        // Detect special markers
+        if(t.startsWith('📊 [stats]')){
+          var lines=t.replace('📊 [stats]','').trim().split('\n').filter(function(s){return s.trim();});
+          return {type:'stats', items:lines.map(function(l){ var p=l.split('|'); return {num:(p[0]||'').trim(),label:(p[1]||'').trim()}; })};
+        }
+        if(t.startsWith('🎬 Видео: ')){
+          var m=t.match(/🎬 Видео: (\S+)/);
+          return {type:'video', src:m?m[1]:'', caption:''};
+        }
+        if(t.startsWith('📎 Файл: ')){
+          var hm=t.match(/href="([^"]+)">([^<]*)<\/a>/);
+          return {type:'file', src:hm?hm[1]:'', content:hm?hm[2]:'', caption:''};
+        }
+        return {type:'text', content:t};
+      case 'header':
+        return {type:'heading', content:(b.data&&b.data.text)||'', level:(b.data&&b.data.level)||2};
+      case 'quote':
+        return {type:'quote', content:(b.data&&b.data.text)||'', author:(b.data&&b.data.caption)||''};
+      case 'delimiter':
+        return {type:'divider'};
+      case 'list':
+        return {type:'list', items:(b.data&&b.data.items)||[]};
+      case 'warning':
+        return {type:'callout', content:(b.data&&b.data.message)||''};
+      case 'image':
+        var url=(b.data&&b.data.file&&b.data.file.url)||(b.data&&b.data.url)||'';
+        return {type:'image', src:url, alt:'', caption:(b.data&&b.data.caption)||''};
+      case 'embed':
+        var src=(b.data&&b.data.source)||(b.data&&b.data.embed)||'';
+        return {type:'video', src:src, caption:(b.data&&b.data.caption)||''};
+      default:
+        return {type:'text', content:(b.data&&b.data.text)||''};
+    }
+  });
+}
+
+// Initialize Editor.js on the page
+async function _initEditorJS(blocks){
+  if(_editorInstance){
+    try { _editorInstance.destroy(); } catch(e){}
+    _editorInstance=null;
+  }
+  var holder=document.getElementById('ejs-editor');
+  if(!holder) return;
+  // Wait for Editor.js to be loaded
+  if(typeof EditorJS==='undefined'){
+    showToast('Editor.js загружается...','info');
+    await new Promise(function(r){ var iv=setInterval(function(){ if(typeof EditorJS!=='undefined'){clearInterval(iv);r();}},200); setTimeout(function(){clearInterval(iv);r();},5000); });
+    if(typeof EditorJS==='undefined'){
+      holder.innerHTML='<p style="color:var(--danger);padding:20px;">Не удалось загрузить визуальный редактор. Используйте режим «Блоки».</p>';
+      return;
+    }
+  }
+  var ejsBlocks=_blocksToEditorJS(blocks);
+  var tools={};
+  if(typeof Header!=='undefined') tools.header={class:Header, config:{levels:[2,3,4],defaultLevel:2}, shortcut:'CMD+SHIFT+H'};
+  if(typeof List!=='undefined') tools.list={class:List, inlineToolbar:true};
+  if(typeof Quote!=='undefined') tools.quote={class:Quote, shortcut:'CMD+SHIFT+O'};
+  if(typeof Delimiter!=='undefined') tools.delimiter={class:Delimiter};
+  if(typeof Warning!=='undefined') tools.warning={class:Warning, config:{titlePlaceholder:'Заголовок',messagePlaceholder:'Текст выноски'}};
+  if(typeof Embed!=='undefined') tools.embed={class:Embed, config:{services:{youtube:true,vimeo:true}}};
+  if(typeof ImageTool!=='undefined'){
+    tools.image={
+      class:ImageTool,
+      config:{
+        uploader:{
+          uploadByFile: function(file){
+            return new Promise(function(resolve,reject){
+              if(!window.storage){ reject('Firebase Storage не подключен'); return; }
+              if(file.size>50*1024*1024){ reject('Файл > 50 MB'); return; }
+              var name=Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'');
+              var ref=storage.ref('media/'+name);
+              ref.put(file,{contentType:file.type}).then(function(){
+                return ref.getDownloadURL();
+              }).then(function(url){
+                resolve({success:1, file:{url:url}});
+              }).catch(function(e){
+                showToast('// Ошибка загрузки: '+e.message,'error');
+                reject(e.message);
+              });
+            });
+          },
+          uploadByUrl: function(url){
+            return Promise.resolve({success:1, file:{url:url}});
+          }
+        },
+        captionPlaceholder:'Подпись к изображению'
+      }
+    };
+  }
+  try {
+    _editorInstance = new EditorJS({
+      holder: 'ejs-editor',
+      tools: tools,
+      data: { blocks: ejsBlocks },
+      placeholder: 'Начните писать или нажмите + чтобы добавить блок...',
+      onChange: function(){ markDirty(); },
+      i18n: {
+        messages: {
+          ui: {
+            blockTunes: { toggler: { 'Click to tune': 'Настроить', 'or drag to move': 'или перетащите' } },
+            inlineToolbar: { converter: { 'Convert to': 'Конвертировать' } },
+            toolbar: { toolbox: { Add: 'Добавить' } }
+          },
+          toolNames: {
+            Text: 'Текст', Heading: 'Заголовок', List: 'Список',
+            Quote: 'Цитата', Delimiter: 'Разделитель', Warning: 'Выноска',
+            Image: 'Изображение', Embed: 'Видео'
+          },
+          tools: {
+            warning: { Title: 'Заголовок', Message: 'Текст' },
+            image: { Caption: 'Подпись', 'Select an Image': 'Выберите изображение', 'With border': 'С рамкой', 'Stretch image': 'Растянуть', 'With background': 'С фоном' },
+            header: { 'Heading 2': 'Заголовок 2', 'Heading 3': 'Заголовок 3', 'Heading 4': 'Заголовок 4' }
+          },
+          blockTunes: { delete: { Delete: 'Удалить', 'Click to delete': 'Нажмите для удаления' }, moveUp: { 'Move up': 'Вверх' }, moveDown: { 'Move down': 'Вниз' } }
+        }
+      }
+    });
+    await _editorInstance.isReady;
+  } catch(e){
+    console.error('Editor.js init error:',e);
+    holder.innerHTML='<p style="color:var(--danger);padding:20px;">Ошибка инициализации редактора: '+e.message+'</p>';
+  }
+}
+
+// Get blocks from Editor.js
+async function _getEditorBlocks(){
+  if(_editorMode==='blocks'){
+    return _peCollectBlocks();
+  }
+  if(!_editorInstance) return [];
+  try {
+    var data = await _editorInstance.save();
+    return _editorJSToBlocks(data.blocks||[]);
+  } catch(e){
+    showToast('// Ошибка чтения редактора','error');
+    return [];
+  }
+}
+
+// Init page editor after DOM is ready
+async function _initPageEditor(){
+  initSortables();
+  var blocks=window._pageEditBlocks||[];
+  _editorMode='visual';
+  await _initEditorJS(blocks);
+}
+
+// Switch editor mode
+async function peSetMode(mode){
+  if(mode===_editorMode) return;
+  // Collect current data before switching
+  var blocks;
+  if(_editorMode==='visual'&&_editorInstance){
+    try {
+      var data=await _editorInstance.save();
+      blocks=_editorJSToBlocks(data.blocks||[]);
+    }catch(e){ blocks=[]; }
+  } else {
+    blocks=_peCollectBlocks();
+  }
+  _editorMode=mode;
+  // Update toggle buttons
+  document.querySelectorAll('.ejs-mode-btn').forEach(function(b){
+    b.classList.toggle('active',b.dataset.mode===mode);
+  });
+  if(mode==='visual'){
+    document.getElementById('pe-blocks-wrap').style.display='none';
+    document.getElementById('ejs-editor-wrap').style.display='block';
+    await _initEditorJS(blocks);
+  } else {
+    if(_editorInstance){ try{_editorInstance.destroy();}catch(e){} _editorInstance=null; }
+    document.getElementById('ejs-editor-wrap').style.display='none';
+    document.getElementById('pe-blocks-wrap').style.display='block';
+    _peRenderBlocks(blocks);
+  }
+}
+
 async function edPageEdit(){
   if(!_editingPageId) return '<p style="color:var(--danger);padding:40px;">Страница не выбрана. <a href="#" onclick="showTab(\'pages\');return false;" style="color:var(--accent)">← Назад к списку</a></p>';
   // Ensure pages cache is loaded for parent selector and sub-pages list
@@ -3940,6 +4225,7 @@ async function edPageEdit(){
   const data=await fsGet('pages',_editingPageId);
   if(!data) return '<p style="color:var(--danger);padding:40px;">Страница не найдена. <a href="#" onclick="showTab(\'pages\');return false;" style="color:var(--accent)">← Назад к списку</a></p>';
   const blocks=data.blocks||[];
+  window._pageEditBlocks=blocks; // store for Editor.js init
   let blocksHtml='';
   blocks.forEach((b,i)=>{
     blocksHtml+=_renderBlock(b,i);
@@ -4046,14 +4332,23 @@ async function edPageEdit(){
       +'</div>';
   })()}
   <div class="fsec">Блоки контента</div>
-  <div class="leditor" id="pe-blocks">${blocksHtml}</div>
-  <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:28px;">
-    <select class="fi" id="pe-add-type" style="max-width:200px;">
-      ${_blockTypes.map(bt=>'<option value="'+bt.type+'">'+bt.icon+' '+bt.label+'</option>').join('')}
-    </select>
-    <button class="xbtn cyan" onclick="peAddBlock()">+ Добавить блок</button>
+  <div class="ejs-mode-toggle">
+    <button class="ejs-mode-btn active" data-mode="visual" onclick="peSetMode('visual')">Визуальный редактор</button>
+    <button class="ejs-mode-btn" data-mode="blocks" onclick="peSetMode('blocks')">Блоки (продвинутый)</button>
   </div>
-  <button class="xbtn save" onclick="pePageSave()" style="margin-top:8px;">💾 Сохранить страницу</button>
+  <div id="ejs-editor-wrap" class="ejs-wrap" style="display:block;">
+    <div id="ejs-editor"></div>
+  </div>
+  <div id="pe-blocks-wrap" style="display:none;">
+    <div class="leditor" id="pe-blocks">${blocksHtml}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:12px;">
+      <select class="fi" id="pe-add-type" style="max-width:200px;">
+        ${_blockTypes.map(bt=>'<option value="'+bt.type+'">'+bt.icon+' '+bt.label+'</option>').join('')}
+      </select>
+      <button class="xbtn cyan" onclick="peAddBlock()">+ Добавить блок</button>
+    </div>
+  </div>
+  <button class="xbtn save" onclick="pePageSave()" style="margin-top:16px;">💾 Сохранить страницу</button>
   <span id="pe-save-msg" style="margin-left:14px;font-size:.85rem;"></span>`;
 }
 
@@ -4226,7 +4521,7 @@ function peDelBlock(btn){
 async function pePageSave(){
   const msg=document.getElementById('pe-save-msg');
   if(!_editingPageId){ msg.innerHTML='<span style="color:var(--danger)">Нет ID страницы</span>'; return; }
-  const blocks=_peCollectBlocks();
+  const blocks=await _getEditorBlocks();
   const data={
     title: v('pe-title'),
     desc: v('pe-desc'),
@@ -4480,5 +4775,14 @@ auth.onAuthStateChanged(async function(user){
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
+<!-- Editor.js visual editor + plugins -->
+<script defer src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.30.8/dist/editorjs.umd.bundle.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.8/dist/header.umd.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@editorjs/list@1.10.0/dist/bundle.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.7.6/dist/quote.umd.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.4.2/dist/delimiter.umd.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@editorjs/warning@1.4.1/dist/warning.umd.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.10.1/dist/image.umd.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.6/dist/embed.umd.js"></script>
 </body>
 </html>

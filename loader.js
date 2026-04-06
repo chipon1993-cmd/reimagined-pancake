@@ -404,7 +404,8 @@
       case 'text':
         return '<div class="block-text fade-in">' + safeParagraph(b.content || '') + '</div>';
       case 'heading':
-        return '<h2 class="block-heading fade-in">' + esc(b.content || '') + '</h2>';
+        var hlvl = b.level && [2,3,4].indexOf(b.level) >= 0 ? b.level : 2;
+        return '<h' + hlvl + ' class="block-heading fade-in">' + esc(b.content || '') + '</h' + hlvl + '>';
       case 'quote':
         return '<div class="block-quote fade-in"><p>' + esc(b.content || '') + '</p>' +
           (b.author ? '<cite>' + esc(b.author) + '</cite>' : '') + '</div>';
