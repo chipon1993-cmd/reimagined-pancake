@@ -1903,7 +1903,7 @@ function loadPreviewForTab(tab){
   collectCurrent();
   localStorage.setItem('ac_preview', JSON.stringify(D));
   const sep = file.includes('?') ? '&' : '?';
-  const src = file + sep + 'preview=1&t=' + Date.now();
+  const src = file + sep + 'preview=1&embed=1&t=' + Date.now();
   iframe.src = src;
 }
 
