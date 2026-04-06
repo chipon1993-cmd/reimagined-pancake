@@ -3740,9 +3740,15 @@ async function edPages(){
   <div id="pg-create-form" style="display:none;margin-bottom:24px;">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;backdrop-filter:var(--glass);">
       <div class="fsec" style="margin-top:0;">Новая страница</div>
-      ${fg('ID (slug)','<input class="fi" id="pg-new-id" value="" oninput="_pgSlugManual=true;pgSlugPreview()"/>','Латиница, кириллица или дефисы — автоматически транслитерируется')}
-      <div id="pg-slug-preview" style="font-size:.82rem;color:var(--muted);margin:-10px 0 12px 0;">введите ID</div>
-      ${fg('Заголовок','<input class="fi" id="pg-new-title" value="" oninput="pgAutoSlug()"/>','Название страницы')}
+      ${fg('Заголовок','<input class="fi" id="pg-new-title" value="" placeholder="Например: Мой первый проект" oninput="pgAutoSlug()"/>','Начни с названия — адрес страницы создастся автоматически')}
+      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin:-6px 0 16px 0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label class="flbl" style="margin:0;font-size:.8rem;">Адрес страницы (ID)</label>
+          <span style="font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:underline;" onclick="document.getElementById('pg-new-id').readOnly=false;document.getElementById('pg-new-id').focus();_pgSlugManual=true;">изменить вручную</span>
+        </div>
+        <input class="fi" id="pg-new-id" value="" readonly placeholder="заполнится из заголовка" oninput="_pgSlugManual=true;pgSlugPreview()" style="opacity:.8;"/>
+        <div id="pg-slug-preview" style="font-size:.8rem;color:var(--muted);margin-top:6px;">Введи заголовок выше — адрес появится здесь</div>
+      </div>
       ${fg('Описание',ta('pg-new-desc','',2),'Краткое описание')}
       ${fg('Метка раздела',inp('pg-new-label',''),'Подпись над заголовком, напр. «Проект»')}
       <div class="fg"><label class="flbl">Статус</label><select class="fi" id="pg-new-status"><option value="draft">Черновик</option><option value="published">Опубликовано</option></select></div>
