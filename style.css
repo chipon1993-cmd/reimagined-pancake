@@ -224,7 +224,7 @@ nav::after { display: none; }
 }
 .nav-logo span { color: var(--accent); }
 
-.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links { display: flex; gap: 20px; list-style: none; flex-wrap: wrap; align-items: center; }
 
 .nav-links a {
   color: var(--muted);

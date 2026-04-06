@@ -1322,7 +1322,6 @@
       <div class="sb-div"></div>
 
       <div class="sb-label">Настройки</div>
-      <div class="sb-item" data-tab="navigation" data-tip="Навигация"   onclick="showTab('navigation')"><span class="sb-icon">🔗</span><span class="sb-item-text">Навигация</span></div>
       <div class="sb-item" data-tab="seo"        data-tip="SEO"         onclick="showTab('seo')">        <span class="sb-icon">🔎</span><span class="sb-item-text">SEO</span></div>
       <div class="sb-item" data-tab="appearance" data-tip="Внешний вид" onclick="showTab('appearance')"> <span class="sb-icon">🎨</span><span class="sb-item-text">Внешний вид</span></div>
       <div class="sb-item" data-tab="global"     data-tip="Общие"       onclick="showTab('global')">     <span class="sb-icon">⚙️</span><span class="sb-item-text">Общие</span></div>
@@ -2412,7 +2411,7 @@ async function showTab(tab) {
 async function _showTabDirect(tab){
   collectCurrent(); CT=tab;
   localStorage.setItem('ac_admin_tab', tab);
-  const sbTab = tab==='page-edit'?'pages':tab;
+  const sbTab = (tab==='page-edit'||tab==='navigation')?'pages':tab;
   document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===sbTab));
   const m=document.getElementById('adm-main');
   m.style.animation='none'; m.offsetHeight; m.style.animation='';
@@ -2547,18 +2546,15 @@ function edHelp(){
 <p>В редакторе страницы внизу есть блок «Навигация» — показывает, есть ли страница в меню сайта. Можно добавить или убрать одной кнопкой.</p>
 </div>
 
-<div class="fsec">Навигация (меню сайта)</div>
+<div class="fsec">Где показывать страницу</div>
 <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;">
-<p>Здесь настраивается верхнее меню сайта — то, что видят посетители.</p>
-<p><b>Как добавить пункт:</b></p>
-<ol style="padding-left:20px;">
-<li>Нажми <b>«+ Добавить пункт»</b></li>
-<li>Введи название и URL (например <code>page.html?id=my-page</code> или <code>about.html</code>)</li>
-<li>Нажми <b>«Сохранить навигацию»</b></li>
-</ol>
-<p style="margin-top:10px;"><b>Подменю:</b> нажми «+ дочерний» на любом пункте — появится вложенный элемент. На сайте он будет в выпадающем подменю.</p>
-<p>Пункты можно перетаскивать мышкой. Не забудь сохранить после изменений.</p>
-<p><b>Быстрое добавление:</b> внизу есть кнопка «Добавить из страниц» — она покажет список созданных страниц, которых ещё нет в меню.</p>
+<p>В редакторе каждой страницы есть раздел <b>«Где показывать»</b>. Два варианта:</p>
+<ul style="padding-left:20px;">
+<li><b>Меню сайта</b> — верхняя навигация. Можно добавить как основной пункт или как подпункт (выпадающее подменю).</li>
+<li><b>Карточки на главной</b> — те самые карточки-вопросы на главной странице. Одной кнопкой добавляешь или убираешь.</li>
+</ul>
+<p style="margin-top:10px;">Страницу можно разместить сразу в обоих местах или только в одном.</p>
+<p style="margin-top:10px;"><b>Полное управление меню:</b> в разделе «Страницы» есть кнопка <b>«Управление меню»</b> — там можно руками переставлять пункты, менять их названия и ссылки.</p>
 </div>
 
 <div class="fsec">Настройки</div>
@@ -3736,7 +3732,10 @@ async function edPages(){
     rows='<p style="color:var(--muted);text-align:center;padding:40px 0;">Нет созданных страниц</p>';
   }
   return `<div class="ed-header"><div class="ed-tag">Динамические</div><h2>Страницы</h2><p>Создание и управление дополнительными страницами сайта</p></div>
-  <button class="xbtn save" onclick="pageCreateShow()" style="margin-bottom:24px;">+ Создать страницу</button>
+  <div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;">
+    <button class="xbtn save" onclick="pageCreateShow()">+ Создать страницу</button>
+    <button class="xbtn cyan" onclick="_showTabDirect('navigation')">🔗 Управление меню</button>
+  </div>
   <div id="pg-create-form" style="display:none;margin-bottom:24px;">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;backdrop-filter:var(--glass);">
       <div class="fsec" style="margin-top:0;">Новая страница</div>
@@ -3869,24 +3868,68 @@ async function edPageEdit(){
   let navData=null;
   try { navData=await fsGet('content','ac_navigation'); }catch(e){}
   const pageHref='page.html?id='+_editingPageId;
-  const inNav=navData&&navData.header&&navData.header.some(h=>h.href===pageHref);
+  const inNav=navData&&navData.header?navData.header.findIndex(h=>h.href===pageHref):-1;
   // Find which parent it could be a child of
-  let inSubOf=null;
+  let inSubOf=null; let inSubOfIdx=-1; let inSubOfChIdx=-1;
   if(navData&&navData.header){
-    navData.header.forEach(h=>{
-      if(h.children&&h.children.some(ch=>ch.href===pageHref)) inSubOf=h.label;
-    });
-  }
-  // Build parent options for "add as submenu"
-  let parentOpts='<option value="">— Как основной пункт —</option>';
-  if(navData&&navData.header){
-    navData.header.forEach((h,i)=>{
-      if(h.children&&h.children.length||h.href!==pageHref){
-        parentOpts+='<option value="'+i+'">↳ Подпункт: '+esc(h.label)+'</option>';
+    navData.header.forEach((h,hi)=>{
+      if(h.children){
+        h.children.forEach((ch,ci)=>{
+          if(ch.href===pageHref){ inSubOf=h.label; inSubOfIdx=hi; inSubOfChIdx=ci; }
+        });
       }
     });
   }
-  const navStatus=inNav?'<span style="color:var(--success);">✓ В меню</span>':(inSubOf?'<span style="color:var(--success);">✓ Подпункт «'+esc(inSubOf)+'»</span>':'<span style="color:var(--muted);">Не в меню</span>');
+  const isInMenu=inNav>=0||inSubOf;
+  // Check if page is in homepage cards
+  let inCards=false;
+  if(D.index&&D.index.navCards){
+    inCards=D.index.navCards.some(c=>c.href===pageHref);
+  }
+  // Build parent options
+  let parentOpts='<option value="_top">Как отдельный пункт меню</option>';
+  if(navData&&navData.header){
+    navData.header.forEach((h,i)=>{
+      if(h.href!==pageHref){
+        parentOpts+='<option value="'+i+'">↳ Подпункт «'+esc(h.label)+'»</option>';
+      }
+    });
+  }
+
+  // Build nav section HTML
+  let navSectionHtml='<div class="fsec" style="margin-top:0;">Где показывать страницу</div>';
+  // --- Menu status ---
+  navSectionHtml+='<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">';
+  navSectionHtml+='<span style="font-size:.85rem;font-weight:600;">Меню сайта:</span> ';
+  if(inNav>=0){
+    navSectionHtml+='<span style="color:var(--success);font-size:.85rem;">✓ Основной пункт</span>';
+    navSectionHtml+=' <button class="xbtn red" style="padding:4px 12px;font-size:.78rem;" onclick="peNavRemove()">Убрать</button>';
+  } else if(inSubOf){
+    navSectionHtml+='<span style="color:var(--success);font-size:.85rem;">✓ Подпункт «'+esc(inSubOf)+'»</span>';
+    navSectionHtml+=' <button class="xbtn red" style="padding:4px 12px;font-size:.78rem;" onclick="peNavRemove()">Убрать</button>';
+  } else {
+    navSectionHtml+='<span style="color:var(--muted);font-size:.85rem;">Не в меню</span>';
+  }
+  navSectionHtml+='</div>';
+  // Add to menu controls (if not already in menu)
+  if(!isInMenu){
+    navSectionHtml+=`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+      <select class="fi" id="pe-nav-parent" style="max-width:300px;">${parentOpts}</select>
+      <button class="xbtn cyan" style="padding:6px 16px;" onclick="peNavAdd()">+ В меню</button>
+    </div>`;
+  }
+  // --- Homepage cards status ---
+  navSectionHtml+='<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;margin-top:16px;flex-wrap:wrap;">';
+  navSectionHtml+='<span style="font-size:.85rem;font-weight:600;">Карточки на главной:</span> ';
+  if(inCards){
+    navSectionHtml+='<span style="color:var(--success);font-size:.85rem;">✓ Есть на главной</span>';
+    navSectionHtml+=' <button class="xbtn red" style="padding:4px 12px;font-size:.78rem;" onclick="peCardRemove()">Убрать</button>';
+  } else {
+    navSectionHtml+='<span style="color:var(--muted);font-size:.85rem;">Нет на главной</span>';
+    navSectionHtml+=' <button class="xbtn cyan" style="padding:4px 12px;font-size:.78rem;" onclick="peCardAdd()">+ На главную</button>';
+  }
+  navSectionHtml+='</div>';
+  navSectionHtml+='<p style="font-size:.75rem;color:var(--muted);margin-top:8px;">Страницу можно разместить в меню сайта, на главной или в обоих местах.</p>';
 
   return `<div class="ed-header">
     <div class="ed-tag">Редактор страницы</div>
@@ -3903,14 +3946,7 @@ async function edPageEdit(){
     <div class="fg"><label class="flbl">Статус</label><select class="fi" id="pe-status"><option value="draft"${(data.status||'draft')==='draft'?' selected':''}>Черновик</option><option value="published"${data.status==='published'?' selected':''}>Опубликовано</option></select></div>
   </div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;backdrop-filter:var(--glass);">
-    <div class="fsec" style="margin-top:0;">Навигация</div>
-    <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Статус: ${navStatus}</p>
-    ${inNav||inSubOf?`<button class="xbtn red" onclick="peNavRemove()">✕ Убрать из меню</button>`:`
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <select class="fi" id="pe-nav-parent" style="max-width:280px;">${parentOpts}</select>
-      <button class="xbtn cyan" onclick="peNavAdd()">+ Добавить в меню</button>
-    </div>
-    <p style="font-size:.78rem;color:var(--muted);margin-top:8px;">Выберите куда добавить: как отдельный пункт или как подпункт существующего.</p>`}
+    ${navSectionHtml}
   </div>
   <div class="fsec">Блоки контента</div>
   <div class="leditor" id="pe-blocks">${blocksHtml}</div>
@@ -4071,7 +4107,7 @@ async function pePageSave(){
   }
 }
 
-// ── PAGE ↔ NAV INTEGRATION ─────────────────
+// ── PAGE ↔ NAV / CARDS INTEGRATION ─────────
 async function peNavAdd(){
   if(!_editingPageId) return;
   let navData;
@@ -4081,19 +4117,19 @@ async function peNavAdd(){
   const pageHref='page.html?id='+_editingPageId;
   const title=document.getElementById('pe-title')?.value||_editingPageId;
   const parentSel=document.getElementById('pe-nav-parent');
-  const parentIdx=parentSel?.value;
-  if(parentIdx!==''&&parentIdx!=null&&navData.header[parseInt(parentIdx)]){
-    // Add as child
-    const pi=parseInt(parentIdx);
-    if(!navData.header[pi].children) navData.header[pi].children=[];
-    navData.header[pi].children.push({label:title,href:pageHref});
-  } else {
-    // Add as top-level
+  const parentVal=parentSel?.value||'_top';
+  if(parentVal==='_top'){
     navData.header.push({label:title,href:pageHref,children:[]});
+  } else {
+    const pi=parseInt(parentVal);
+    if(navData.header[pi]){
+      if(!navData.header[pi].children) navData.header[pi].children=[];
+      navData.header[pi].children.push({label:title,href:pageHref});
+    }
   }
   try {
     await db.collection('content').doc('ac_navigation').set(navData);
-    showToast('// Страница добавлена в меню');
+    showToast('// Добавлено в меню');
     CT=''; _showTabDirect('page-edit');
   }catch(e){ showToast('// Ошибка: '+e.message); }
 }
@@ -4104,15 +4140,41 @@ async function peNavRemove(){
   try { navData=await fsGet('content','ac_navigation'); }catch(e){}
   if(!navData||!navData.header) return;
   const pageHref='page.html?id='+_editingPageId;
-  // Remove from top-level
   navData.header=navData.header.filter(h=>h.href!==pageHref);
-  // Remove from children
   navData.header.forEach(h=>{
     if(h.children) h.children=h.children.filter(ch=>ch.href!==pageHref);
   });
   try {
     await db.collection('content').doc('ac_navigation').set(navData);
-    showToast('// Страница убрана из меню');
+    showToast('// Убрано из меню');
+    CT=''; _showTabDirect('page-edit');
+  }catch(e){ showToast('// Ошибка: '+e.message); }
+}
+
+async function peCardAdd(){
+  if(!_editingPageId) return;
+  const pageHref='page.html?id='+_editingPageId;
+  const title=document.getElementById('pe-title')?.value||_editingPageId;
+  const desc=document.getElementById('pe-desc')?.value||'';
+  if(!D.index) D.index={};
+  if(!D.index.navCards) D.index.navCards=[];
+  if(D.index.navCards.some(c=>c.href===pageHref)){ showToast('// Уже на главной'); return; }
+  D.index.navCards.push({icon:'🔗',title:title,desc:desc,href:pageHref});
+  try {
+    await saveAll();
+    showToast('// Добавлено на главную');
+    CT=''; _showTabDirect('page-edit');
+  }catch(e){ showToast('// Ошибка: '+e.message); }
+}
+
+async function peCardRemove(){
+  if(!_editingPageId) return;
+  const pageHref='page.html?id='+_editingPageId;
+  if(!D.index||!D.index.navCards) return;
+  D.index.navCards=D.index.navCards.filter(c=>c.href!==pageHref);
+  try {
+    await saveAll();
+    showToast('// Убрано с главной');
     CT=''; _showTabDirect('page-edit');
   }catch(e){ showToast('// Ошибка: '+e.message); }
 }
@@ -4156,7 +4218,9 @@ async function edNavigation(){
     </div>`;
   });
 
-  return `<div class="ed-header"><div class="ed-tag">Настройки</div><h2>Навигация</h2><p>Структура меню сайта. Добавляйте пункты и подменю.</p></div>
+  return `<div class="ed-header"><div class="ed-tag">Меню сайта</div><h2>Навигация</h2>
+    <p><a href="#" onclick="_showTabDirect('pages');return false;" style="color:var(--accent);text-decoration:none;">← Назад к страницам</a>
+    &nbsp;&nbsp;·&nbsp;&nbsp;Структура верхнего меню сайта</p></div>
   <div class="leditor" id="nav-items">${itemsHtml}</div>
   <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:8px;">
     <button class="xbtn cyan" onclick="navAddItem()">+ Добавить пункт меню</button>
