@@ -1621,6 +1621,8 @@ async function grantAccess(){
   updateAdminLangBtns();
   const lastTab = localStorage.getItem('ac_admin_tab') || 'index';
   await showTab(lastTab);
+  // If we just reloaded for a sync, run it now
+  await runPendingSync();
 }
 
 async function doLogout(){
@@ -1941,37 +1943,52 @@ async function saveAll(){
 }
 
 async function syncFromCode(){
-  if(!confirm('Синхронизировать данные из site-data.js?\n\nДефолты из кода будут записаны в Firestore.\nАдмин-панель и сайт обновятся.')){
+  if(!confirm('Обновить данные из кода?\n\nСтраница перезагрузится, свежие данные из site-data.js запишутся в Firestore.\nСайт и админка обновятся.')){
+    return;
+  }
+  // Mark that after reload we need to auto-sync
+  localStorage.setItem('ac_pending_sync','1');
+  // Clear all caches so browser fetches fresh files
+  ['ac_content','ac_content_uk','ac_content_no'].forEach(function(k){
+    try{ localStorage.removeItem(k); }catch(e){}
+  });
+  // Hard reload — bypass browser cache
+  location.reload(true);
+}
+
+// Auto-sync after reload (step 2 of the process)
+async function runPendingSync(){
+  if(localStorage.getItem('ac_pending_sync')!=='1') return;
+  localStorage.removeItem('ac_pending_sync');
+  // Wait for Firebase to be ready
+  if(window.firebaseReady){ try{ await window.firebaseReady; }catch(e){} }
+  if(typeof fsSet!=='function'){
+    showToast('// Ошибка: Firebase не подключён');
     return;
   }
   try{
-    showToast('// Синхронизация...');
-    // 1. Fresh defaults from site-data.js
+    showToast('// Синхронизация данных из кода...');
+    // Write fresh RU defaults to Firestore
     const fresh=JSON.parse(JSON.stringify(window.AC_DEFAULTS));
     fresh._ts=Date.now();
-    // 2. Write RU defaults to Firestore
     await fsSet('content','ac_content',fresh);
-    // 3. Write UK/NO translations to Firestore
+    // Write UK/NO translations
     if(window.AC_TRANSLATIONS){
       for(const lang of ['uk','no']){
         if(window.AC_TRANSLATIONS[lang]){
-          const tr=JSON.parse(JSON.stringify(window.AC_DEFAULTS));
-          const merged=deepMerge(tr,window.AC_TRANSLATIONS[lang]);
+          const base=JSON.parse(JSON.stringify(window.AC_DEFAULTS));
+          const merged=deepMerge(base,window.AC_TRANSLATIONS[lang]);
           merged._ts=Date.now();
           await fsSet('content','ac_content_'+lang,merged);
         }
       }
     }
-    // 4. Clear localStorage caches so site fetches fresh from Firestore
-    ['ac_content','ac_content_uk','ac_content_no'].forEach(function(k){
-      try{ localStorage.removeItem(k); }catch(e){}
-    });
-    // 5. Reload admin panel with fresh data
+    // Reload admin state
     D=await getDataForLang(adminLang);
     const savedCT=CT; CT='';
     showTab(savedCT);
     isDirty=false;
-    showToast('// Обновлено — админка и сайт синхронизированы');
+    showToast('// Данные обновлены из кода — сайт синхронизирован');
   }catch(e){
     showToast('// Ошибка синхронизации: '+e.message);
   }
