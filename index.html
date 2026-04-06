@@ -91,7 +91,7 @@
     .section-sep::before,.section-sep::after { content:''; flex:1; height:1px; background:var(--border); }
 
     /* NAV CARDS — glass */
-    .nav-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:80px; }
+    .nav-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin-bottom:80px; }
     .nav-card {
       border-radius:var(--radius); padding:32px 28px;
       text-decoration:none; color:var(--text);
@@ -102,12 +102,14 @@
       -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
     }
     .nav-card:hover { border-color:var(--border-h); box-shadow:var(--shadow-sm); transform:translateY(-3px); }
-    .nav-card-icon { font-size:1.8rem; display:flex; align-items:center; }
-    .nav-card-icon svg { width:30px; height:30px; stroke:var(--accent); stroke-width:1.75; fill:none; }
-    .nav-card-title { font-size:.95rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
-    .nav-card-desc { font-size:.84rem; color:var(--muted); line-height:1.6; }
-    .nav-card-arrow { margin-top:auto; color:var(--accent); font-size:1rem; transition:transform var(--transition); }
-    .nav-card:hover .nav-card-arrow { transform:translateX(6px); }
+    .nav-card-icon { font-size:1.6rem; display:flex; align-items:center; opacity:.7; }
+    .nav-card-icon svg { width:26px; height:26px; stroke:var(--accent); stroke-width:1.75; fill:none; }
+    .nav-card-title { font-size:1.05rem; font-weight:600; line-height:1.4; letter-spacing:-.01em; }
+    .nav-card-desc { font-size:.82rem; color:var(--muted); line-height:1.65; font-style:italic; opacity:.7; }
+    .nav-card-arrow { margin-top:auto; color:var(--accent); font-size:1rem; transition:transform var(--transition); opacity:.5; }
+    .nav-card:hover .nav-card-arrow { transform:translateX(6px); opacity:1; }
+    .nav-card:hover .nav-card-icon { opacity:1; }
+    .nav-card:hover .nav-card-title { color:var(--accent); }
 
     /* QUOTE — glass */
     .home-quote {
@@ -241,7 +243,7 @@
         <div class="hero-meta" id="hero-meta"></div>
       </section>
 
-      <div class="section-sep fade-in"><span data-i18n="nav_section">Навигация</span></div>
+      <div class="section-sep fade-in"><span data-i18n="nav_section">Зачем ты здесь?</span></div>
 
       <div class="nav-cards" id="nav-cards"><!-- loader.js --></div>
 

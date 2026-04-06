@@ -9,7 +9,7 @@ window.AC_I18N = {
     nav_about:'О себе', nav_journey:'Мой путь', nav_interests:'Интересы', nav_videos:'Видео', nav_contact:'Контакт',
     back_home:'← На главную', back_interests:'← К интересам',
     lbl_about:'Обо мне', lbl_journey:'Хронология', lbl_interests:'Интересы', lbl_videos:'Контент', lbl_contact:'Контакт',
-    values_title:'// Что мне важно', topics_title:'// Темы', nav_section:'Навигация',
+    values_title:'// Что мне важно', topics_title:'// Темы', nav_section:'Зачем ты здесь?',
     menu_label:'Меню', footer_right:'Норвегия · Живу настоящим',
     open_board:'Открыть доску →', featured_label:'Избранное', watch_btn:'▶ Смотреть'
   },
@@ -17,7 +17,7 @@ window.AC_I18N = {
     nav_about:'Про мене', nav_journey:'Мій шлях', nav_interests:'Інтереси', nav_videos:'Відео', nav_contact:'Контакт',
     back_home:'← На головну', back_interests:'← До інтересів',
     lbl_about:'Про мене', lbl_journey:'Хронологія', lbl_interests:'Інтереси', lbl_videos:'Контент', lbl_contact:'Контакт',
-    values_title:'// Що мені важливо', topics_title:'// Теми', nav_section:'Навігація',
+    values_title:'// Що мені важливо', topics_title:'// Теми', nav_section:'Навіщо ти тут?',
     menu_label:'Меню', footer_right:'Норвегія · Живу теперішнім',
     open_board:'Відкрити дошку →', featured_label:'Обране', watch_btn:'▶ Дивитися'
   },
@@ -25,7 +25,7 @@ window.AC_I18N = {
     nav_about:'Om meg', nav_journey:'Min reise', nav_interests:'Interesser', nav_videos:'Video', nav_contact:'Kontakt',
     back_home:'← Tilbake', back_interests:'← Til interesser',
     lbl_about:'Om meg', lbl_journey:'Kronologi', lbl_interests:'Interesser', lbl_videos:'Innhold', lbl_contact:'Kontakt',
-    values_title:'// Hva er viktig for meg', topics_title:'// Temaer', nav_section:'Navigasjon',
+    values_title:'// Hva er viktig for meg', topics_title:'// Temaer', nav_section:'Hvorfor er du her?',
     menu_label:'Meny', footer_right:'Norge · Lever i nuet',
     open_board:'Åpne tavle →', featured_label:'Utvalgt', watch_btn:'▶ Se'
   }
@@ -60,11 +60,11 @@ window.AC_TRANSLATIONS = {
       quote:       '«Кожна людина може дати і поділитися тим, чим вона є всередині — незалежно від того, що вона декларує. Пережитий досвід, інтегровані моделі та патерни поведінки — це те, що будує наше життя.»',
       quoteAuthor: '— Andrii Chepelovskyi',
       navCards: [
-        { icon:'👤', title:'Про мене',  desc:'Одне слово не підходить. Жодне.',                        href:'about.html'     },
-        { icon:'🗺️', title:'Мій шлях', desc:'Не кар\'єра. Серія незворотних рішень.',                 href:'journey.html'   },
-        { icon:'🧠', title:'Інтереси', desc:'Чому мислення — єдина справжня загадка.',                href:'interests.html' },
-        { icon:'🎬', title:'Відео',    desc:'Те, що я знімаю — замість того, щоб пояснювати.',        href:'videos.html'    },
-        { icon:'✉️', title:'Контакт',  desc:'Не для всіх. Але якщо ти читаєш це — можливо, для тебе.',href:'contact.html'   }
+        { icon:'🪞', title:'Ти коли-небудь міняв усе з нуля?',             desc:'Не план. Серія точок, після яких назад уже не можна.',                              href:'journey.html'   },
+        { icon:'🧩', title:'Тобі казали, що ти занадто багато думаєш?',    desc:'Може, справа не в кількості думок — а в якості питань.',                             href:'interests.html' },
+        { icon:'🔬', title:'Ти знаєш, чому приймаєш свої рішення?',       desc:'Не ті, які пояснюєш іншим. Справжні.',                                               href:'about.html'     },
+        { icon:'📡', title:'Слова чи дії — чому ти довіряєш?',            desc:'Іноді краще дивитися, ніж слухати. Тут — без фільтрів.',                               href:'videos.html'    },
+        { icon:'💬', title:'Є думка, якій нікуди подітися?',              desc:'Не шукай відповідь. Іноді потрібна просто людина, яка зрозуміє питання.',              href:'contact.html'   }
       ]
     },
     about: {
@@ -161,11 +161,11 @@ window.AC_TRANSLATIONS = {
       quote:       '«Hvert menneske kan gi og dele det det er innenfra seg selv — uavhengig av hva det erklærer. Opplevd erfaring, integrerte modeller og atferdsmønstre — det er det som bygger livene våre.»',
       quoteAuthor: '— Andrii Chepelovskyi',
       navCards: [
-        { icon:'👤', title:'Om meg',     desc:'Ett ord passer ikke. Ikke ett eneste.',                   href:'about.html'     },
-        { icon:'🗺️', title:'Min reise', desc:'Ikke karriere. En serie ugjenkallelige valg.',            href:'journey.html'   },
-        { icon:'🧠', title:'Interesser', desc:'Hvorfor tenkning er det eneste virkelige mysteriet.',    href:'interests.html' },
-        { icon:'🎬', title:'Video',      desc:'Det jeg filmer — i stedet for å forklare.',              href:'videos.html'    },
-        { icon:'✉️', title:'Kontakt',    desc:'Ikke for alle. Men hvis du leser dette — kanskje for deg.',href:'contact.html' }
+        { icon:'🪞', title:'Har du noen gang begynt helt på nytt?',        desc:'Ikke en plan. En serie punkter du ikke kan gå tilbake fra.',                          href:'journey.html'   },
+        { icon:'🧩', title:'Har noen sagt at du tenker for mye?',          desc:'Kanskje problemet ikke er mengden tanker — men kvaliteten på spørsmålene.',            href:'interests.html' },
+        { icon:'🔬', title:'Vet du hvorfor du tar dine egne valg?',        desc:'Ikke de du forklarer til andre. De virkelige.',                                        href:'about.html'     },
+        { icon:'📡', title:'Ord eller handlinger — hva stoler du på?',     desc:'Noen ganger er det bedre å se enn å lytte. Her — uten filtre.',                        href:'videos.html'    },
+        { icon:'💬', title:'Har du en tanke som ikke finner sin plass?',   desc:'Ikke let etter svar. Noen ganger trenger du bare en som forstår spørsmålet.',          href:'contact.html'   }
       ]
     },
     about: {
