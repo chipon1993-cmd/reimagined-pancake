@@ -606,7 +606,7 @@
     if (!document.getElementById('ac-preview-style')) {
       const st = document.createElement('style');
       st.id = 'ac-preview-style';
-      st.textContent = '@keyframes pvpulse{0%,100%{opacity:1}50%{opacity:.3}} #ac-preview-bar~* { } body { padding-top:38px !important; }';
+      st.textContent = '@keyframes pvpulse{0%,100%{opacity:1}50%{opacity:.3}} body { padding-top:38px !important; } body > nav { top:38px !important; }';
       document.head.appendChild(st);
     }
     document.body.prepend(bar);
