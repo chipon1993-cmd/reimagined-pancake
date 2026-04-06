@@ -1305,6 +1305,7 @@
     <!-- Sidebar -->
     <div class="adm-sidebar" id="adm-sidebar">
       <button class="sb-toggle" onclick="toggleSidebar()" title="Свернуть/Развернуть">◀</button>
+      <div class="sb-item" data-tab="help" data-tip="Инструкция" onclick="showTab('help')" style="margin-bottom:8px;opacity:.7;"><span class="sb-icon">?</span><span class="sb-item-text">Инструкция</span></div>
       <div class="sb-label">Основные</div>
       <div class="sb-item" data-tab="index"     data-tip="Главная"     onclick="showTab('index')">    <span class="sb-icon">🏠</span><span class="sb-item-text">Главная</span></div>
       <div class="sb-item" data-tab="about"     data-tip="О себе"      onclick="showTab('about')">    <span class="sb-icon">👤</span><span class="sb-item-text">О себе</span></div>
@@ -2431,6 +2432,7 @@ async function _showTabDirect(tab){
     case 'media':      m.innerHTML=edMedia(); initMediaDrop(); break;
     case 'i18n':       m.innerHTML=await edTranslations(); break;
     case 'bookmarks':  m.innerHTML=await edBookmarks(); initBookmarksSearch(); break;
+    case 'help':       m.innerHTML=edHelp(); break;
     case 'pages':      m.innerHTML=await edPages(); break;
     case 'navigation': m.innerHTML=await edNavigation(); break;
     case 'page-edit':  m.innerHTML=await edPageEdit(); initSortables(); break;
@@ -2481,12 +2483,107 @@ function collectCurrent(){
     case 'seo':        colSEO();        break;
     case 'appearance': colAppearance(); break;
     case 'i18n':       colTranslations(); break;
+    case 'help':       break; // read-only
     case 'security':   break; // own save button
     case 'media':      break; // no form data
     case 'pages':      break; // own save buttons
     case 'navigation': break; // own save button
     case 'page-edit':  break; // own save button
   }
+}
+
+// ── HELP / ИНСТРУКЦИЯ ────────────────────────
+function edHelp(){
+  return `<div class="ed-header"><div class="ed-tag">Справка</div><h2>Как пользоваться админкой</h2><p>Простая инструкция по всем разделам</p></div>
+
+<div style="max-width:780px;line-height:1.7;font-size:.95rem;">
+
+<div class="fsec">Общий принцип</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;">
+<p>Слева — меню с разделами. Нажимаешь на раздел — справа открывается его редактор. Меняешь что нужно, жмёшь <b>Сохранить</b> внизу. Всё.</p>
+<p>Если ты что-то поменял и не сохранил, при переходе в другой раздел выскочит окошко: «Сохранить? Не сохранять? Отмена».</p>
+<p><b>Кнопка «Обновить данные»</b> (вверху) — перезаписывает данные из кода в базу. Нужна, если разработчик обновил код сайта и надо подтянуть новые настройки.</p>
+</div>
+
+<div class="fsec">Основные разделы</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;">
+<p><b>Главная</b> — герой-экран (большой заголовок, описание, кнопки), карточки-вопросы и цитата внизу. Карточки можно перетаскивать мышкой за иконку ☰ чтобы менять порядок.</p>
+<p><b>О себе</b> — текст о тебе, статистика (числа в кружках), ценности. Абзацы и блоки можно добавлять, удалять и сортировать.</p>
+<p><b>Мой путь</b> — таймлайн событий. Каждый пункт: год, заголовок, описание.</p>
+<p><b>Интересы</b> — карточки увлечений с иконками.</p>
+<p><b>Видео</b> — ссылки на YouTube-видео. Вставляешь ссылку — превью подтянется автоматически.</p>
+<p><b>Контакт</b> — контактная информация, ссылки на соцсети, темы для обсуждения.</p>
+<p><b>Мир</b> — страница «Мой мир», свободный контент.</p>
+<p><b>Доски</b> — доски заметок в стиле Kanban.</p>
+</div>
+
+<div class="fsec">Страницы (динамические)</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;">
+<p>Здесь ты создаёшь новые страницы сайта — как конструктор.</p>
+<p><b>Как создать страницу:</b></p>
+<ol style="padding-left:20px;">
+<li>Нажми <b>«+ Создать страницу»</b></li>
+<li>Введи <b>заголовок</b> — ID (slug) заполнится автоматически из заголовка (кириллица переведётся в латиницу). Или введи свой ID вручную.</li>
+<li>Под полем ID увидишь превью адреса: <code>page.html?id=my-page</code></li>
+<li>Заполни описание, метку, выбери статус (черновик или опубликовано)</li>
+<li>Нажми <b>«Создать»</b> — откроется редактор страницы</li>
+</ol>
+
+<p style="margin-top:14px;"><b>Редактор страницы — блоки:</b></p>
+<p>Страница состоит из блоков. Каждый блок — это кусочек контента. Типы блоков:</p>
+<ul style="padding-left:20px;">
+<li><b>Текст</b> — обычный абзац. Поддерживает HTML-теги для форматирования.</li>
+<li><b>Заголовок</b> — крупный заголовок внутри страницы (h2 или h3).</li>
+<li><b>Цитата</b> — выделенный блок с цитатой и автором.</li>
+<li><b>Разделитель</b> — горизонтальная линия между блоками.</li>
+<li><b>Список</b> — маркированный список пунктов.</li>
+<li><b>Статистика</b> — числа с подписями (как на главной).</li>
+<li><b>Выноска</b> — цветной блок-подсказка (info, warning, success, error).</li>
+<li><b>Изображение</b> — картинка по URL с подписью.</li>
+</ul>
+<p style="margin-top:10px;">Блоки можно перетаскивать (за ☰), удалять (кнопка ✕) и менять их тип.</p>
+
+<p style="margin-top:14px;"><b>Навигация на странице:</b></p>
+<p>В редакторе страницы внизу есть блок «Навигация» — показывает, есть ли страница в меню сайта. Можно добавить или убрать одной кнопкой.</p>
+</div>
+
+<div class="fsec">Навигация (меню сайта)</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;">
+<p>Здесь настраивается верхнее меню сайта — то, что видят посетители.</p>
+<p><b>Как добавить пункт:</b></p>
+<ol style="padding-left:20px;">
+<li>Нажми <b>«+ Добавить пункт»</b></li>
+<li>Введи название и URL (например <code>page.html?id=my-page</code> или <code>about.html</code>)</li>
+<li>Нажми <b>«Сохранить навигацию»</b></li>
+</ol>
+<p style="margin-top:10px;"><b>Подменю:</b> нажми «+ дочерний» на любом пункте — появится вложенный элемент. На сайте он будет в выпадающем подменю.</p>
+<p>Пункты можно перетаскивать мышкой. Не забудь сохранить после изменений.</p>
+<p><b>Быстрое добавление:</b> внизу есть кнопка «Добавить из страниц» — она покажет список созданных страниц, которых ещё нет в меню.</p>
+</div>
+
+<div class="fsec">Настройки</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;">
+<p><b>SEO</b> — заголовки и описания для поисковиков. Есть счётчик символов — старайся не выходить за рекомендации.</p>
+<p><b>Внешний вид</b> — цвета сайта, шрифты, стиль.</p>
+<p><b>Общие</b> — название сайта, язык, подвал (footer).</p>
+<p><b>Безопасность</b> — смена пароля администратора.</p>
+<p><b>Медиа</b> — загрузка картинок в Firebase Storage. Перетащи файл или нажми на область загрузки. Скопируй ссылку и используй в контенте.</p>
+<p><b>Закладки</b> — коллекция ссылок / заметок.</p>
+<p><b>Переводы</b> — тексты на украинском и норвежском. Русский — основной язык, его редактируешь в остальных разделах.</p>
+</div>
+
+<div class="fsec">Полезные советы</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;">
+<ul style="padding-left:20px;">
+<li>Везде, где есть списки (карточки, пункты, блоки) — можно менять порядок перетаскиванием за ☰</li>
+<li>Кнопка <b>«Превью»</b> вверху — открывает сайт в новом окне, чтобы посмотреть результат</li>
+<li>Если что-то сломалось — нажми <b>«Обновить данные»</b>, это сбросит всё к исходному коду</li>
+<li>Черновики (draft) не видны посетителям — используй статус «Опубликовано» когда страница готова</li>
+<li>ID страницы нельзя изменить после создания — выбирай осмысленный slug сразу</li>
+</ul>
+</div>
+
+</div>`;
 }
 
 // ── INDEX ────────────────────────────────────
