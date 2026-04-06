@@ -274,34 +274,98 @@
       50% { box-shadow:0 4px 28px var(--accent-glow), 0 0 0 6px var(--accent-glow); }
     }
 
-    /* Layout */
-    .adm-layout { display:flex; flex:1; }
+    /* Layout — Wix-style: icon nav + editor + live preview */
+    .adm-layout { display:flex; flex:1; height:calc(100vh - 54px); overflow:hidden; }
 
-    /* ═══════ SIDEBAR — glass ═══════ */
+    /* ═══════ ICON NAV BAR (far left) ═══════ */
     .adm-sidebar {
-      width: 250px; flex-shrink:0;
+      width: 62px; flex-shrink:0;
       background: var(--surface);
       border-right: 1px solid var(--border);
-      padding: 24px 0;
-      min-height: calc(100vh - 54px);
+      padding: 12px 0;
       -webkit-backdrop-filter: var(--glass);
       backdrop-filter: var(--glass);
       display:flex; flex-direction:column;
-      transition: width .35s var(--ease), padding .35s var(--ease);
       overflow-y:auto;
       overflow-x:hidden;
       position:relative;
     }
+    /* In Wix mode, sidebar is always icon-only */
+    .adm-sidebar .sb-label { opacity:0; height:0; margin:0; padding:0; overflow:hidden; }
+    .adm-sidebar .sb-item { justify-content:center; padding:10px 0; margin:2px 6px; gap:0; }
+    .adm-sidebar .sb-item-text { display:none; }
+    .adm-sidebar .sb-icon { width:auto; font-size:1.15rem; }
+    .adm-sidebar .sb-div { margin:8px 10px; }
+    .adm-sidebar .sb-status { display:none; }
+    .adm-sidebar .sb-toggle { display:none; }
 
-    /* Collapsed sidebar */
-    .adm-sidebar.collapsed { width:60px; padding:24px 0; }
-    .adm-sidebar.collapsed .sb-label { opacity:0; height:0; margin:0; padding:0; overflow:hidden; }
-    .adm-sidebar.collapsed .sb-item { justify-content:center; padding:10px 0; margin:2px 6px; gap:0; }
-    .adm-sidebar.collapsed .sb-item-text { display:none; }
-    .adm-sidebar.collapsed .sb-icon { width:auto; font-size:1.15rem; }
-    .adm-sidebar.collapsed .sb-div { margin:8px 10px; }
-    .adm-sidebar.collapsed .sb-status { display:none; }
-    .adm-sidebar.collapsed + .adm-main { margin-left:0; }
+    /* ═══════ EDITOR PANEL (center) ═══════ */
+    .adm-editor-panel {
+      width: 420px; flex-shrink:0;
+      background: var(--bg-solid);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      transition: width .35s var(--ease);
+    }
+    .adm-editor-panel.collapsed { width:0; overflow:hidden; }
+
+    /* Toggle button for editor panel */
+    .editor-toggle {
+      position:absolute; top:12px; right:-32px; z-index:10;
+      width:28px; height:28px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:0 8px 8px 0; cursor:pointer; color:var(--muted);
+      font-size:.7rem; display:flex; align-items:center; justify-content:center;
+      transition:all .2s var(--ease);
+    }
+    .editor-toggle:hover { color:var(--accent); border-color:var(--accent); }
+    .adm-editor-panel.collapsed .editor-toggle { right:-32px; transform:rotate(180deg); }
+
+    /* ═══════ LIVE PREVIEW (right) ═══════ */
+    .adm-preview {
+      flex:1; position:relative;
+      background: var(--s2);
+      display:flex; flex-direction:column;
+      min-width:0;
+    }
+    .preview-toolbar {
+      display:flex; align-items:center; gap:10px;
+      padding:8px 16px;
+      background:var(--surface);
+      border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+    .preview-toolbar-title {
+      font-size:.7rem; font-weight:700; letter-spacing:.14em;
+      text-transform:uppercase; color:var(--muted); flex:1;
+    }
+    .preview-toolbar-title::before { content:'◉ '; color:var(--success); }
+    .preview-device-btn {
+      background:none; border:1px solid var(--border); border-radius:6px;
+      padding:4px 10px; cursor:pointer; color:var(--muted);
+      font-size:.72rem; font-family:inherit; transition:all .2s;
+    }
+    .preview-device-btn:hover, .preview-device-btn.active {
+      color:var(--accent); border-color:var(--accent); background:var(--accent-glow);
+    }
+    .preview-frame-wrap {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      padding:0; overflow:hidden; position:relative;
+    }
+    .preview-frame-wrap.device-mobile { padding:20px; }
+    .preview-frame-wrap.device-mobile iframe { max-width:390px; border-radius:20px; box-shadow:var(--shadow); }
+    .preview-frame-wrap.device-tablet { padding:16px; }
+    .preview-frame-wrap.device-tablet iframe { max-width:768px; border-radius:12px; box-shadow:var(--shadow); }
+    #preview-iframe {
+      width:100%; height:100%; border:none;
+      background:#fff; transition:max-width .3s var(--ease), border-radius .3s;
+    }
+
+    /* Collapsed sidebar compat (unused in wix mode but keep for safety) */
+    .adm-sidebar.collapsed { width:62px; }
+    .adm-sidebar.collapsed + .adm-editor-panel + .adm-preview { }
 
     /* Collapse toggle button */
     .sb-toggle {
@@ -428,10 +492,9 @@
     }
     @keyframes pulse2{0%,100%{opacity:1}50%{opacity:.35}}
 
-    /* ═══════ MAIN CONTENT ═══════ */
+    /* ═══════ MAIN CONTENT (inside editor panel) ═══════ */
     .adm-main {
-      flex:1; padding:44px 56px 130px;
-      overflow-y:auto;
+      padding:28px 24px 130px;
       animation: contentFadeIn .35s var(--ease);
     }
     @keyframes contentFadeIn {
@@ -440,7 +503,7 @@
     }
 
     .ed-header {
-      margin-bottom:44px;
+      margin-bottom:24px;
       animation: slideDown .4s var(--ease);
     }
     @keyframes slideDown {
@@ -453,7 +516,7 @@
     }
     .ed-header .ed-tag::before { content:'// '; opacity:.4; }
     .ed-header h2 {
-      font-size:1.8rem; font-weight:800; letter-spacing:-.02em;
+      font-size:1.3rem; font-weight:800; letter-spacing:-.02em;
       color:var(--text);
     }
     .ed-header p { font-size:.88rem; color:var(--muted); margin-top:8px; line-height:1.7; }
@@ -466,7 +529,7 @@
     .skeleton-input { height:48px; margin-bottom:18px; }
 
     /* ═══════ FORMS — premium ═══════ */
-    .fg { margin-bottom:24px; }
+    .fg { margin-bottom:18px; }
     .flbl {
       display:block; font-size:.65rem; font-weight:600;
       letter-spacing:.12em; text-transform:uppercase;
@@ -678,10 +741,10 @@
       .fs-body[data-mode="split"] .fs-divider { display:none; }
       .fs-body[data-mode="split"] .fs-edit-pane { flex:1; }
     }
-    .frow { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .frow { display:grid; grid-template-columns:1fr; gap:12px; }
     .fsec {
       font-size:.65rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
-      color:var(--accent); margin:40px 0 18px;
+      color:var(--accent); margin:28px 0 14px;
       padding-bottom:12px;
       border-bottom:1px solid var(--border);
       display:flex; align-items:center; gap:10px;
@@ -785,17 +848,16 @@
 
     /* ═══════ SAVE BAR — glass ═══════ */
     .save-bar {
-      position:fixed; bottom:0; left:250px; right:0;
+      position:fixed; bottom:0; left:62px; right:0;
       background: var(--surface);
       border-top:1px solid var(--border);
-      padding:14px 56px;
+      padding:14px 24px;
       display:flex; align-items:center; justify-content:space-between;
       z-index:40;
       -webkit-backdrop-filter: var(--glass);
       backdrop-filter: var(--glass);
       transition: all .35s var(--ease);
     }
-    .adm-sidebar.collapsed ~ .save-bar { left:60px; }
 
     .save-status { font-size:.85rem; color:var(--muted); letter-spacing:.04em; transition:all .3s; font-weight:500; }
     .save-status.ok { color:var(--success); }
@@ -902,7 +964,7 @@
     .bk-meta span   { color:var(--muted); font-size:.78rem; }
     .fhint { font-size:.72rem; color:var(--muted); margin-top:5px; margin-bottom:0; font-style:italic; opacity:.7; line-height:1.5; }
     .warn-panel {
-      position:fixed; bottom:54px; left:250px; right:0;
+      position:fixed; bottom:54px; left:62px; right:0;
       background: color-mix(in srgb, var(--warning) 6%, var(--bg-solid) 94%);
       border-top:1px solid color-mix(in srgb, var(--warning) 20%, transparent);
       padding:12px 48px; z-index:39;
@@ -950,7 +1012,7 @@
       .adm-hdr-r > .xbtn:not(.red) { display:none; }
       .adm-subtitle { display:none; }
 
-      .adm-layout { flex-direction: column; }
+      .adm-layout { flex-direction: column; height:auto; overflow:auto; }
 
       .adm-sidebar {
         width: 100%;
@@ -965,13 +1027,8 @@
         overflow-x:auto;
         -webkit-overflow-scrolling:touch;
       }
-      .sb-label { display: none; }
-      .sb-div { display: none; }
-      .sb-status { display: none; }
-      .sb-toggle { display: none; }
-      .adm-sidebar.collapsed { width:100%; }
-      .adm-sidebar.collapsed .sb-item-text { display:inline !important; }
-      .adm-sidebar.collapsed .sb-item { justify-content:flex-start; padding:8px 12px; gap:6px; }
+      .adm-sidebar .sb-item-text { display:inline !important; }
+      .adm-sidebar .sb-item { justify-content:flex-start; padding:8px 12px; gap:6px; }
       .sb-item {
         padding: 8px 12px;
         font-size: .68rem;
@@ -988,6 +1045,11 @@
         border-bottom-color: var(--accent);
       }
       .sb-icon { font-size: .85rem; }
+
+      /* On mobile: hide preview, show editor full-width */
+      .adm-editor-panel { width:100% !important; border-right:none; }
+      .adm-preview { display:none; }
+      .editor-toggle { display:none; }
 
       .adm-main {
         padding: 20px 16px 100px !important;
@@ -1280,6 +1342,7 @@
       <div class="adm-subtitle">Control Panel</div>
     </div>
     <div class="adm-hdr-r">
+      <button class="xbtn cyan" onclick="toggleEditorPanel()" title="Скрыть/показать редактор">◧ Панель</button>
       <button class="xbtn cyan" onclick="toggleAllItems('open')"  title="Раскрыть все блоки">▾ Развернуть</button>
       <button class="xbtn cyan" onclick="toggleAllItems('close')" title="Свернуть все блоки">▴ Свернуть</button>
       <div class="adm-lang-sw" title="Язык редактирования">
@@ -1293,7 +1356,7 @@
         <span class="theme-toggle-label">🌙</span>
       </div>
       <button class="xbtn cyan" onclick="syncFromCode()" title="Записать данные из site-data.js в Firestore и обновить сайт">🔄 Обновить данные</button>
-      <button class="xbtn cyan" onclick="previewSite()" title="Предпросмотр">👁 Превью</button>
+      <button class="xbtn cyan" onclick="previewSite()" title="Открыть в новой вкладке">↗ В новой вкладке</button>
       <a href="index.html" target="_blank" rel="noopener noreferrer" class="xbtn cyan">↗ Сайт</a>
       <button class="xbtn red" onclick="doLogout()">✕ Выйти</button>
     </div>
@@ -1333,8 +1396,25 @@
     </div>
     <div class="sb-tooltip" id="sb-tooltip"></div>
 
-    <!-- Main -->
-    <div class="adm-main" id="adm-main"></div>
+    <!-- Editor Panel -->
+    <div class="adm-editor-panel" id="adm-editor-panel">
+      <button class="editor-toggle" onclick="toggleEditorPanel()" title="Скрыть/показать панель">◀</button>
+      <div class="adm-main" id="adm-main"></div>
+    </div>
+
+    <!-- Live Preview -->
+    <div class="adm-preview" id="adm-preview">
+      <div class="preview-toolbar">
+        <span class="preview-toolbar-title" id="preview-title">Предпросмотр</span>
+        <button class="preview-device-btn active" data-device="desktop" onclick="setPreviewDevice('desktop')" title="Десктоп">🖥</button>
+        <button class="preview-device-btn" data-device="tablet" onclick="setPreviewDevice('tablet')" title="Планшет">📱</button>
+        <button class="preview-device-btn" data-device="mobile" onclick="setPreviewDevice('mobile')" title="Телефон">📲</button>
+        <button class="preview-device-btn" onclick="refreshPreview()" title="Обновить превью">🔄</button>
+      </div>
+      <div class="preview-frame-wrap" id="preview-frame-wrap">
+        <iframe id="preview-iframe" src="about:blank"></iframe>
+      </div>
+    </div>
   </div>
 
   <!-- Unsaved changes dialog (outside layout to avoid flex issues) -->
@@ -1415,22 +1495,22 @@ function toggleAdminTheme(){
   localStorage.setItem('ac_admin_theme', next);
 }
 function toggleSidebar(){
-  const sb = document.getElementById('adm-sidebar');
-  if(!sb) return;
-  sb.classList.toggle('collapsed');
-  const collapsed = sb.classList.contains('collapsed');
-  localStorage.setItem('ac_sidebar_collapsed', collapsed ? '1' : '');
-  const saveBar = document.querySelector('.save-bar');
-  if(saveBar && window.innerWidth > 900) saveBar.style.left = collapsed ? '60px' : '250px';
+  // In Wix mode, sidebar is always icon-only — toggle editor panel instead
+  toggleEditorPanel();
 }
-// Sidebar tooltip on hover (collapsed mode)
+function toggleEditorPanel(){
+  const ep = document.getElementById('adm-editor-panel');
+  if(!ep) return;
+  ep.classList.toggle('collapsed');
+  localStorage.setItem('ac_editor_collapsed', ep.classList.contains('collapsed') ? '1' : '');
+}
+// Sidebar tooltip on hover (always show in icon-only mode)
 (function(){
   const tip = document.getElementById('sb-tooltip');
   if(!tip) return;
   document.addEventListener('mouseover', function(e){
     const item = e.target.closest('.sb-item');
-    const sb = document.getElementById('adm-sidebar');
-    if(!item || !sb || !sb.classList.contains('collapsed')) { tip.classList.remove('show'); return; }
+    if(!item) { tip.classList.remove('show'); return; }
     const text = item.getAttribute('data-tip');
     if(!text) { tip.classList.remove('show'); return; }
     const rect = item.getBoundingClientRect();
@@ -1448,10 +1528,10 @@ function toggleSidebar(){
 (function(){
   const saved = localStorage.getItem('ac_admin_theme') || 'dark';
   document.documentElement.setAttribute('data-admin-theme', saved);
-  // Restore sidebar state
-  if(localStorage.getItem('ac_sidebar_collapsed') === '1'){
-    const sb = document.getElementById('adm-sidebar');
-    if(sb) sb.classList.add('collapsed');
+  // Restore editor panel state
+  if(localStorage.getItem('ac_editor_collapsed') === '1'){
+    const ep = document.getElementById('adm-editor-panel');
+    if(ep) ep.classList.add('collapsed');
   }
 })();
 </script>
@@ -1750,6 +1830,8 @@ function markDirty(){
   if(bar) bar.classList.add('has-changes');
   const st=document.getElementById('save-st');
   if(st){ st.textContent='● Есть несохранённые изменения'; st.className='save-status dirty'; }
+  // Push live update to iframe preview
+  pushLiveUpdate();
 }
 
 function validateBeforeSave(){
@@ -1789,18 +1871,68 @@ function showValidationWarnings(warns){
 }
 
 // ── PREVIEW ──────────────────────────────────
+const TAB_PAGE_MAP={
+  index:'index.html', about:'about.html', journey:'journey.html',
+  interests:'interests.html', videos:'videos.html', contact:'contact.html'
+};
+
 function previewSite(){
   collectCurrent();
-  // Map admin tab → site page file
-  const pageMap={
-    index:'index.html', about:'about.html', journey:'journey.html',
-    interests:'interests.html', videos:'videos.html', contact:'contact.html'
-  };
-  const file = pageMap[CT] || 'index.html';
-  // Write full current state snapshot (for getData() in loader.js)
+  const file = TAB_PAGE_MAP[CT] || 'index.html';
   localStorage.setItem('ac_preview', JSON.stringify(D));
   window.open(file+'?preview=1', '_blank');
   showToast('// Предпросмотр → '+file);
+}
+
+// ── LIVE PREVIEW IFRAME ─────────────────────
+let _previewDebounce = null;
+
+function loadPreviewForTab(tab){
+  const iframe = document.getElementById('preview-iframe');
+  if(!iframe) return;
+  let file;
+  if(tab === 'page-edit' && _editingPageId){
+    file = 'page.html?id=' + encodeURIComponent(_editingPageId);
+  } else {
+    file = TAB_PAGE_MAP[tab] || 'index.html';
+  }
+  const titleEl = document.getElementById('preview-title');
+  if(titleEl) titleEl.textContent = 'Предпросмотр — ' + file.split('?')[0];
+  // Write current data for preview
+  collectCurrent();
+  localStorage.setItem('ac_preview', JSON.stringify(D));
+  const sep = file.includes('?') ? '&' : '?';
+  const src = file + sep + 'preview=1&t=' + Date.now();
+  iframe.src = src;
+}
+
+function pushLiveUpdate(){
+  // Debounced: push current data to iframe
+  clearTimeout(_previewDebounce);
+  _previewDebounce = setTimeout(function(){
+    collectCurrent();
+    localStorage.setItem('ac_preview', JSON.stringify(D));
+    const iframe = document.getElementById('preview-iframe');
+    if(iframe && iframe.contentWindow){
+      try {
+        iframe.contentWindow.postMessage({type:'ac_live_update', data:D}, '*');
+      } catch(e){}
+    }
+  }, 400);
+}
+
+function refreshPreview(){
+  loadPreviewForTab(CT);
+  showToast('// Превью обновлено');
+}
+
+function setPreviewDevice(device){
+  const wrap = document.getElementById('preview-frame-wrap');
+  if(!wrap) return;
+  wrap.className = 'preview-frame-wrap' + (device !== 'desktop' ? ' device-'+device : '');
+  document.querySelectorAll('.preview-device-btn[data-device]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.device === device);
+  });
 }
 
 // ── BACKUPS ──────────────────────────────────
@@ -2439,6 +2571,10 @@ async function _showTabDirect(tab){
     case 'page-edit':  m.innerHTML=await edPageEdit(); initSortables(); break;
   }
   initSortables();
+  // Load live preview for content tabs
+  if(TAB_PAGE_MAP[tab] || tab === 'page-edit'){
+    loadPreviewForTab(tab);
+  }
 }
 
 function initSortables(){
