@@ -1214,6 +1214,29 @@
     }
     .hist-badge.lang { background:var(--sb-active); color:var(--accent); }
     .hist-badge.user { background:rgba(168,85,247,.1); color:var(--accent2); }
+
+    /* ═══════ PAGES MANAGER ═══════ */
+    .pg-row {
+      display:flex; align-items:center; gap:14px;
+      padding:14px 18px; margin-bottom:8px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--r);
+      backdrop-filter:var(--glass);
+      transition:all .2s var(--ease);
+    }
+    .pg-row:hover { border-color:var(--border-h); box-shadow:var(--shadow-sm); }
+    .pg-dot {
+      width:8px; height:8px; border-radius:50%; flex-shrink:0;
+      box-shadow:0 0 6px currentColor;
+    }
+    .pg-info { flex:1; min-width:0; }
+    .pg-title { display:block; font-size:.9rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pg-slug { display:block; font-size:.7rem; color:var(--muted); margin-top:2px; font-family:monospace; }
+    .pg-tpl { flex-shrink:0; }
+    .pg-acts { display:flex; gap:6px; flex-shrink:0; }
+
+    /* ═══════ NAV BUILDER ═══════ */
+    .nav-child .fg { margin-bottom:8px; flex:1; }
   </style>
 </head>
 <body>
@@ -1270,7 +1293,7 @@
         <div class="theme-toggle" id="theme-toggle" onclick="toggleAdminTheme()"></div>
         <span class="theme-toggle-label">🌙</span>
       </div>
-      <button class="xbtn cyan" onclick="resetToDefaults()" title="Сбросить данные Firestore и применить дефолты из site-data.js">🔄 Обновить данные</button>
+      <button class="xbtn cyan" onclick="syncFromCode()" title="Записать данные из site-data.js в Firestore и обновить сайт">🔄 Обновить данные</button>
       <button class="xbtn cyan" onclick="previewSite()" title="Предпросмотр">👁 Превью</button>
       <a href="index.html" target="_blank" rel="noopener noreferrer" class="xbtn cyan">↗ Сайт</a>
       <button class="xbtn red" onclick="doLogout()">✕ Выйти</button>
@@ -1282,17 +1305,23 @@
     <!-- Sidebar -->
     <div class="adm-sidebar" id="adm-sidebar">
       <button class="sb-toggle" onclick="toggleSidebar()" title="Свернуть/Развернуть">◀</button>
-      <div class="sb-label">Страницы</div>
+      <div class="sb-label">Основные</div>
       <div class="sb-item" data-tab="index"     data-tip="Главная"     onclick="showTab('index')">    <span class="sb-icon">🏠</span><span class="sb-item-text">Главная</span></div>
       <div class="sb-item" data-tab="about"     data-tip="О себе"      onclick="showTab('about')">    <span class="sb-icon">👤</span><span class="sb-item-text">О себе</span></div>
       <div class="sb-item" data-tab="journey"   data-tip="Мой путь"    onclick="showTab('journey')">  <span class="sb-icon">🗺️</span><span class="sb-item-text">Мой путь</span></div>
       <div class="sb-item" data-tab="interests" data-tip="Интересы"    onclick="showTab('interests')"><span class="sb-icon">🧠</span><span class="sb-item-text">Интересы</span></div>
-      <div class="sb-item" data-tab="boards"    data-tip="Доски"       onclick="showTab('boards')">   <span class="sb-icon">📋</span><span class="sb-item-text">Доски</span></div>
+      <div class="sb-item" data-tab="videos"    data-tip="Видео"       onclick="showTab('videos')">   <span class="sb-icon">🎬</span><span class="sb-item-text">Видео</span></div>
       <div class="sb-item" data-tab="contact"   data-tip="Контакт"     onclick="showTab('contact')">  <span class="sb-icon">✉️</span><span class="sb-item-text">Контакт</span></div>
-      <div class="sb-item" data-tab="videos"     data-tip="Видео"       onclick="showTab('videos')">     <span class="sb-icon">🎬</span><span class="sb-item-text">Видео</span></div>
-      <div class="sb-item" data-tab="world"     data-tip="Мир"         onclick="showTab('world')">      <span class="sb-icon">🌌</span><span class="sb-item-text">Мир</span></div>
+      <div class="sb-item" data-tab="world"     data-tip="Мир"         onclick="showTab('world')">    <span class="sb-icon">🌌</span><span class="sb-item-text">Мир</span></div>
+      <div class="sb-item" data-tab="boards"    data-tip="Доски"       onclick="showTab('boards')">   <span class="sb-icon">📋</span><span class="sb-item-text">Доски</span></div>
       <div class="sb-div"></div>
+
+      <div class="sb-label">Динамические</div>
+      <div class="sb-item" data-tab="pages"     data-tip="Страницы"    onclick="showTab('pages')">    <span class="sb-icon">📄</span><span class="sb-item-text">Страницы</span></div>
+      <div class="sb-div"></div>
+
       <div class="sb-label">Настройки</div>
+      <div class="sb-item" data-tab="navigation" data-tip="Навигация"   onclick="showTab('navigation')"><span class="sb-icon">🔗</span><span class="sb-item-text">Навигация</span></div>
       <div class="sb-item" data-tab="seo"        data-tip="SEO"         onclick="showTab('seo')">        <span class="sb-icon">🔎</span><span class="sb-item-text">SEO</span></div>
       <div class="sb-item" data-tab="appearance" data-tip="Внешний вид" onclick="showTab('appearance')"> <span class="sb-icon">🎨</span><span class="sb-item-text">Внешний вид</span></div>
       <div class="sb-item" data-tab="global"     data-tip="Общие"       onclick="showTab('global')">     <span class="sb-icon">⚙️</span><span class="sb-item-text">Общие</span></div>
@@ -1621,6 +1650,8 @@ async function grantAccess(){
   updateAdminLangBtns();
   const lastTab = localStorage.getItem('ac_admin_tab') || 'index';
   await showTab(lastTab);
+  // If we just reloaded for a sync, run it now
+  await runPendingSync();
 }
 
 async function doLogout(){
@@ -1940,29 +1971,55 @@ async function saveAll(){
   }
 }
 
-async function resetToDefaults(){
-  if(!confirm('Сбросить все данные к дефолтам из site-data.js?\n\nДанные в Firestore будут удалены. Сайт загрузит свежие значения из кода.\n\nЭто действие необратимо.')){
+async function syncFromCode(){
+  if(!confirm('Обновить данные из кода?\n\nСтраница перезагрузится, свежие данные из site-data.js запишутся в Firestore.\nСайт и админка обновятся.')){
+    return;
+  }
+  // Mark that after reload we need to auto-sync
+  localStorage.setItem('ac_pending_sync','1');
+  // Clear all caches so browser fetches fresh files
+  ['ac_content','ac_content_uk','ac_content_no'].forEach(function(k){
+    try{ localStorage.removeItem(k); }catch(e){}
+  });
+  // Hard reload — bypass browser cache
+  location.reload(true);
+}
+
+// Auto-sync after reload (step 2 of the process)
+async function runPendingSync(){
+  if(localStorage.getItem('ac_pending_sync')!=='1') return;
+  localStorage.removeItem('ac_pending_sync');
+  // Wait for Firebase to be ready
+  if(window.firebaseReady){ try{ await window.firebaseReady; }catch(e){} }
+  if(typeof fsSet!=='function'){
+    showToast('// Ошибка: Firebase не подключён');
     return;
   }
   try{
-    // Clear Firestore content documents
-    const keys=['ac_content','ac_content_uk','ac_content_no'];
-    for(const k of keys){
-      if(typeof window.fsSet==='function'){
-        try{ await fsSet('content',k,{}); }catch(e){}
+    showToast('// Синхронизация данных из кода...');
+    // Write fresh RU defaults to Firestore
+    const fresh=JSON.parse(JSON.stringify(window.AC_DEFAULTS));
+    fresh._ts=Date.now();
+    await fsSet('content','ac_content',fresh);
+    // Write UK/NO translations
+    if(window.AC_TRANSLATIONS){
+      for(const lang of ['uk','no']){
+        if(window.AC_TRANSLATIONS[lang]){
+          const base=JSON.parse(JSON.stringify(window.AC_DEFAULTS));
+          const merged=deepMerge(base,window.AC_TRANSLATIONS[lang]);
+          merged._ts=Date.now();
+          await fsSet('content','ac_content_'+lang,merged);
+        }
       }
     }
-    // Clear localStorage caches
-    keys.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
-    try{ localStorage.removeItem('ac_preview'); }catch(e){}
-    // Reload admin with fresh defaults
-    D=JSON.parse(JSON.stringify(window.AC_DEFAULTS));
+    // Reload admin state
+    D=await getDataForLang(adminLang);
     const savedCT=CT; CT='';
     showTab(savedCT);
     isDirty=false;
-    showToast('// Данные сброшены к дефолтам из site-data.js');
+    showToast('// Данные обновлены из кода — сайт синхронизирован');
   }catch(e){
-    showToast('// Ошибка сброса: '+e.message);
+    showToast('// Ошибка синхронизации: '+e.message);
   }
 }
 
@@ -2327,6 +2384,9 @@ function scrollToLast(leditorId){
 // ── TABS ─────────────────────────────────────
 let CT='index';
 let _pendingTab = null;
+let _editingPageId = null;
+let _pagesCache = [];
+let _navData = null;
 
 function unsavedAction(action) {
   document.getElementById('unsaved-overlay').classList.remove('open');
@@ -2351,7 +2411,8 @@ async function showTab(tab) {
 async function _showTabDirect(tab){
   collectCurrent(); CT=tab;
   localStorage.setItem('ac_admin_tab', tab);
-  document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
+  const sbTab = tab==='page-edit'?'pages':tab;
+  document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===sbTab));
   const m=document.getElementById('adm-main');
   m.style.animation='none'; m.offsetHeight; m.style.animation='';
   switch(tab){
@@ -2370,6 +2431,9 @@ async function _showTabDirect(tab){
     case 'media':      m.innerHTML=edMedia(); initMediaDrop(); break;
     case 'i18n':       m.innerHTML=await edTranslations(); break;
     case 'bookmarks':  m.innerHTML=await edBookmarks(); initBookmarksSearch(); break;
+    case 'pages':      m.innerHTML=await edPages(); break;
+    case 'navigation': m.innerHTML=await edNavigation(); break;
+    case 'page-edit':  m.innerHTML=await edPageEdit(); initSortables(); break;
   }
   initSortables();
 }
@@ -2386,6 +2450,12 @@ function initSortables(){
       easing: 'cubic-bezier(0.22,1,0.36,1)',
       onEnd: function(){
         markDirty();
+        // For block editor: collect and re-render to fix field IDs
+        if(el.id==='pe-blocks'){
+          var blocks=_peCollectBlocks();
+          _peRenderBlocks(blocks);
+          return;
+        }
         // Re-number indices after drag
         el.querySelectorAll('.li-item').forEach((li,i)=>{
           li.dataset.idx = i;
@@ -2413,6 +2483,9 @@ function collectCurrent(){
     case 'i18n':       colTranslations(); break;
     case 'security':   break; // own save button
     case 'media':      break; // no form data
+    case 'pages':      break; // own save buttons
+    case 'navigation': break; // own save button
+    case 'page-edit':  break; // own save button
   }
 }
 
@@ -3538,6 +3611,544 @@ function _bmRenderTree(nodes,allOpen){
   s.textContent='._bop > span:first-child { transform:rotate(90deg)!important } div._bop { display:block!important }';
   document.head.appendChild(s);
 })();
+
+// ── PAGES MANAGER ───────────────────────────
+async function edPages(){
+  try { _pagesCache = await fsListCollection('pages'); } catch(e){ _pagesCache=[]; }
+  let rows='';
+  if(_pagesCache.length){
+    rows=_pagesCache.map(p=>{
+      const st=p.status||'draft';
+      const dotColor=st==='published'?'var(--success)':'var(--warning)';
+      const stLabel=st==='published'?'Опубликовано':'Черновик';
+      return `<div class="pg-row">
+        <span class="pg-dot" style="background:${dotColor}" title="${stLabel}"></span>
+        <div class="pg-info">
+          <span class="pg-title">${esc(p.title||p.id)}</span>
+          <span class="pg-slug">${esc(p.id)}</span>
+        </div>
+        <span class="pg-tpl" style="color:var(--muted);font-size:.72rem;">${esc(p.label||'—')}</span>
+        <div class="pg-acts">
+          <button class="xbtn cyan" onclick="pageEdit('${esc(p.id)}')">✎ Редакт.</button>
+          <button class="xbtn cyan" onclick="pageDup('${esc(p.id)}')">⧉</button>
+          <button class="xbtn red" onclick="pageDel('${esc(p.id)}')">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    rows='<p style="color:var(--muted);text-align:center;padding:40px 0;">Нет созданных страниц</p>';
+  }
+  return `<div class="ed-header"><div class="ed-tag">Динамические</div><h2>Страницы</h2><p>Создание и управление дополнительными страницами сайта</p></div>
+  <button class="xbtn save" onclick="pageCreateShow()" style="margin-bottom:24px;">+ Создать страницу</button>
+  <div id="pg-create-form" style="display:none;margin-bottom:24px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;backdrop-filter:var(--glass);">
+      <div class="fsec" style="margin-top:0;">Новая страница</div>
+      ${fg('ID (slug)','<input class="fi" id="pg-new-id" value="" oninput="_pgSlugManual=true;pgSlugPreview()"/>','Латиница, кириллица или дефисы — автоматически транслитерируется')}
+      <div id="pg-slug-preview" style="font-size:.82rem;color:var(--muted);margin:-10px 0 12px 0;">введите ID</div>
+      ${fg('Заголовок','<input class="fi" id="pg-new-title" value="" oninput="pgAutoSlug()"/>','Название страницы')}
+      ${fg('Описание',ta('pg-new-desc','',2),'Краткое описание')}
+      ${fg('Метка раздела',inp('pg-new-label',''),'Подпись над заголовком, напр. «Проект»')}
+      <div class="fg"><label class="flbl">Статус</label><select class="fi" id="pg-new-status"><option value="draft">Черновик</option><option value="published">Опубликовано</option></select></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="xbtn save" onclick="pageCreateSave()">Создать</button>
+        <button class="xbtn cyan" onclick="document.getElementById('pg-create-form').style.display='none'">Отмена</button>
+      </div>
+      <div id="pg-create-msg" style="margin-top:10px;font-size:.85rem;"></div>
+    </div>
+  </div>
+  <div id="pg-list">${rows}</div>`;
+}
+
+function pageCreateShow(){
+  const f=document.getElementById('pg-create-form');
+  if(f) f.style.display=f.style.display==='none'?'block':'none';
+  _pgSlugManual=false;
+}
+
+function slugify(str){
+  var map={'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya','і':'i','ї':'yi','є':'ye','ґ':'g'};
+  return str.trim().toLowerCase().split('').map(function(c){return map[c]||c;}).join('').replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'');
+}
+
+function pgSlugPreview(){
+  var raw=v('pg-new-id');
+  var slug=slugify(raw);
+  var prev=document.getElementById('pg-slug-preview');
+  if(prev) prev.textContent=slug?'→ page.html?id='+slug:'введите ID';
+}
+var _pgSlugManual=false;
+function pgAutoSlug(){
+  var idField=document.getElementById('pg-new-id');
+  if(!idField) return;
+  // If user typed into ID field manually, don't overwrite
+  if(_pgSlugManual) return;
+  idField.value=v('pg-new-title');
+  pgSlugPreview();
+}
+
+async function pageCreateSave(){
+  const id=slugify(v('pg-new-id'));
+  const title=v('pg-new-title').trim();
+  const msg=document.getElementById('pg-create-msg');
+  if(!id){ msg.innerHTML='<span style="color:var(--danger)">Введите ID (slug)</span>'; return; }
+  if(!title){ msg.innerHTML='<span style="color:var(--danger)">Введите заголовок</span>'; return; }
+  // Check for duplicate
+  if(_pagesCache.find(p=>p.id===id)){
+    msg.innerHTML='<span style="color:var(--danger)">Страница с таким ID уже существует</span>'; return;
+  }
+  const data={
+    title: title,
+    desc: v('pg-new-desc').trim(),
+    label: v('pg-new-label').trim(),
+    status: v('pg-new-status')||'draft',
+    blocks: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  try {
+    await fsSet('pages', id, data);
+    showToast('// Страница создана — открываю редактор');
+    _editingPageId=id;
+    CT=''; _showTabDirect('page-edit');
+  } catch(e){
+    msg.innerHTML='<span style="color:var(--danger)">Ошибка: '+e.message+'</span>';
+  }
+}
+
+function pageEdit(id){
+  _editingPageId=id;
+  CT=''; _showTabDirect('page-edit');
+}
+
+async function pageDup(id){
+  const src=_pagesCache.find(p=>p.id===id);
+  if(!src) return;
+  const newId=id+'-copy-'+Date.now().toString(36).slice(-4);
+  const data=Object.assign({},src,{title:src.title+' (копия)',createdAt:Date.now(),updatedAt:Date.now()});
+  delete data.id;
+  try {
+    await fsSet('pages',newId,data);
+    showToast('// Страница продублирована');
+    CT=''; _showTabDirect('pages');
+  } catch(e){ showToast('// Ошибка: '+e.message); }
+}
+
+async function pageDel(id){
+  if(!confirm('Удалить страницу «'+id+'»? Это действие необратимо.')) return;
+  try {
+    await fsDelete('pages',id);
+    showToast('// Страница удалена');
+    CT=''; _showTabDirect('pages');
+  } catch(e){ showToast('// Ошибка: '+e.message); }
+}
+
+// ── PAGE BLOCK EDITOR ───────────────────────
+const _blockTypes=[
+  {type:'text',label:'Текст',icon:'📝'},
+  {type:'heading',label:'Заголовок',icon:'🔤'},
+  {type:'quote',label:'Цитата',icon:'❝'},
+  {type:'divider',label:'Разделитель',icon:'―'},
+  {type:'list',label:'Список',icon:'•'},
+  {type:'stats',label:'Статистика',icon:'📊'},
+  {type:'callout',label:'Выноска',icon:'💡'},
+  {type:'image',label:'Изображение',icon:'🖼️'}
+];
+
+async function edPageEdit(){
+  if(!_editingPageId) return '<p style="color:var(--danger);padding:40px;">Страница не выбрана. <a href="#" onclick="showTab(\'pages\');return false;" style="color:var(--accent)">← Назад к списку</a></p>';
+  const data=await fsGet('pages',_editingPageId);
+  if(!data) return '<p style="color:var(--danger);padding:40px;">Страница не найдена. <a href="#" onclick="showTab(\'pages\');return false;" style="color:var(--accent)">← Назад к списку</a></p>';
+  const blocks=data.blocks||[];
+  let blocksHtml='';
+  blocks.forEach((b,i)=>{
+    blocksHtml+=_renderBlock(b,i);
+  });
+  // Check if page is in nav
+  let navData=null;
+  try { navData=await fsGet('content','ac_navigation'); }catch(e){}
+  const pageHref='page.html?id='+_editingPageId;
+  const inNav=navData&&navData.header&&navData.header.some(h=>h.href===pageHref);
+  // Find which parent it could be a child of
+  let inSubOf=null;
+  if(navData&&navData.header){
+    navData.header.forEach(h=>{
+      if(h.children&&h.children.some(ch=>ch.href===pageHref)) inSubOf=h.label;
+    });
+  }
+  // Build parent options for "add as submenu"
+  let parentOpts='<option value="">— Как основной пункт —</option>';
+  if(navData&&navData.header){
+    navData.header.forEach((h,i)=>{
+      if(h.children&&h.children.length||h.href!==pageHref){
+        parentOpts+='<option value="'+i+'">↳ Подпункт: '+esc(h.label)+'</option>';
+      }
+    });
+  }
+  const navStatus=inNav?'<span style="color:var(--success);">✓ В меню</span>':(inSubOf?'<span style="color:var(--success);">✓ Подпункт «'+esc(inSubOf)+'»</span>':'<span style="color:var(--muted);">Не в меню</span>');
+
+  return `<div class="ed-header">
+    <div class="ed-tag">Редактор страницы</div>
+    <h2>${esc(data.title||_editingPageId)}</h2>
+    <p><a href="#" onclick="showTab('pages');return false;" style="color:var(--accent);text-decoration:none;">← Назад к списку страниц</a>
+    &nbsp;&nbsp;·&nbsp;&nbsp;<a href="page.html?id=${esc(_editingPageId)}" target="_blank" style="color:var(--muted);text-decoration:none;">Открыть страницу ↗</a></p>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;backdrop-filter:var(--glass);">
+    <div class="fsec" style="margin-top:0;">Настройки страницы</div>
+    ${fg('Slug (ID)',`<input class="fi" id="pe-slug" value="${esc(_editingPageId)}" readonly style="opacity:.6;cursor:not-allowed;"/>`,'Идентификатор страницы (только для чтения)')}
+    ${fg('Заголовок',inp('pe-title',data.title))}
+    ${fg('Описание',ta('pe-desc',data.desc||'',2))}
+    ${fg('Метка раздела',inp('pe-label',data.label||''),'Подпись над заголовком')}
+    <div class="fg"><label class="flbl">Статус</label><select class="fi" id="pe-status"><option value="draft"${(data.status||'draft')==='draft'?' selected':''}>Черновик</option><option value="published"${data.status==='published'?' selected':''}>Опубликовано</option></select></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;backdrop-filter:var(--glass);">
+    <div class="fsec" style="margin-top:0;">Навигация</div>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Статус: ${navStatus}</p>
+    ${inNav||inSubOf?`<button class="xbtn red" onclick="peNavRemove()">✕ Убрать из меню</button>`:`
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <select class="fi" id="pe-nav-parent" style="max-width:280px;">${parentOpts}</select>
+      <button class="xbtn cyan" onclick="peNavAdd()">+ Добавить в меню</button>
+    </div>
+    <p style="font-size:.78rem;color:var(--muted);margin-top:8px;">Выберите куда добавить: как отдельный пункт или как подпункт существующего.</p>`}
+  </div>
+  <div class="fsec">Блоки контента</div>
+  <div class="leditor" id="pe-blocks">${blocksHtml}</div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:28px;">
+    <select class="fi" id="pe-add-type" style="max-width:200px;">
+      ${_blockTypes.map(bt=>'<option value="'+bt.type+'">'+bt.icon+' '+bt.label+'</option>').join('')}
+    </select>
+    <button class="xbtn cyan" onclick="peAddBlock()">+ Добавить блок</button>
+  </div>
+  <button class="xbtn save" onclick="pePageSave()" style="margin-top:8px;">💾 Сохранить страницу</button>
+  <span id="pe-save-msg" style="margin-left:14px;font-size:.85rem;"></span>`;
+}
+
+function _renderBlock(b,i){
+  const n=String(i+1).padStart(2,'0');
+  const typeInfo=_blockTypes.find(bt=>bt.type===b.type)||{icon:'?',label:b.type};
+  let fields='';
+  fields+=`<div class="fg"><label class="flbl">Тип блока</label><select class="fi" id="pb-type-${i}" onchange="peBlockTypeChanged(${i},this.value)">${_blockTypes.map(bt=>'<option value="'+bt.type+'"'+(bt.type===b.type?' selected':'')+'>'+bt.icon+' '+bt.label+'</option>').join('')}</select></div>`;
+  switch(b.type){
+    case 'text':
+      fields+=fg('Содержимое',ta(`pb-content-${i}`,b.content||'',4));
+      break;
+    case 'heading':
+      fields+=fg('Текст заголовка',inp(`pb-content-${i}`,b.content||''));
+      break;
+    case 'quote':
+      fields+=fg('Текст цитаты',ta(`pb-content-${i}`,b.content||'',3));
+      fields+=fg('Автор',inp(`pb-author-${i}`,b.author||''));
+      break;
+    case 'divider':
+      fields+='<p style="color:var(--muted);font-size:.85rem;padding:8px 0;">Горизонтальный разделитель — без дополнительных полей</p>';
+      break;
+    case 'list':
+      fields+=fg('Элементы (каждый с новой строки)',ta(`pb-items-${i}`,(b.items||[]).join('\n'),4));
+      break;
+    case 'stats':
+      fields+=fg('Статистика (формат: число | подпись, каждый с новой строки)',ta(`pb-items-${i}`,(b.items||[]).map(s=>(s.num||'')+'|'+(s.label||'')).join('\n'),4));
+      break;
+    case 'callout':
+      fields+=fg('Текст выноски',ta(`pb-content-${i}`,b.content||'',3));
+      break;
+    case 'image':
+      fields+=fg('URL изображения',inp(`pb-src-${i}`,b.src||''));
+      fields+=fg('Alt-текст',inp(`pb-alt-${i}`,b.alt||''));
+      fields+=fg('Подпись',inp(`pb-caption-${i}`,b.caption||''));
+      break;
+  }
+  return `<div class="li-item" data-idx="${i}">
+    <div class="li-hdr" onclick="toggleLI(this)">
+      <span class="drag-handle" title="Перетащить">⠿</span>
+      <span class="li-idx">${n}</span>
+      <span class="li-title">${typeInfo.icon} ${esc(typeInfo.label)}${b.content&&String(b.content).trim()?' — '+esc(String(b.content).substring(0,40)):''}</span>
+      <div class="li-acts">
+        <button class="lib del" onclick="event.stopPropagation();peDelBlock(this)" title="Удалить">✕</button>
+      </div>
+    </div>
+    <div class="li-body">${fields}</div>
+  </div>`;
+}
+
+function peBlockTypeChanged(idx,newType){
+  // Collect all blocks first, then change the type at correct position
+  const blocks=_peCollectBlocks();
+  // idx comes from the DOM element, find the actual position
+  const actualIdx=parseInt(idx,10);
+  if(actualIdx>=0&&actualIdx<blocks.length){
+    blocks[actualIdx]={type:newType};
+  }
+  _peRenderBlocks(blocks);
+}
+
+function _peCollectBlocks(){
+  const items=[...document.querySelectorAll('#pe-blocks .li-item')];
+  return items.map(function(li){
+    // Use data-idx to find the matching form fields
+    const i=li.dataset.idx;
+    // Fallback: try to find type select inside the li-body directly
+    const typeEl=li.querySelector('select[id^="pb-type-"]')||document.getElementById('pb-type-'+i);
+    const type=typeEl?typeEl.value:'text';
+    const block={type};
+    // Helper to get field value by id
+    function fv(prefix){ const el=document.getElementById(prefix+i); return el?el.value:''; }
+    switch(type){
+      case 'text': case 'heading': case 'callout':
+        block.content=fv('pb-content-');
+        break;
+      case 'quote':
+        block.content=fv('pb-content-');
+        block.author=fv('pb-author-');
+        break;
+      case 'divider': break;
+      case 'list':
+        block.items=fv('pb-items-').split('\n').filter(function(s){return s.trim();});
+        break;
+      case 'stats':
+        block.items=fv('pb-items-').split('\n').filter(function(s){return s.trim();}).map(function(line){
+          var parts=line.split('|');
+          return {num:(parts[0]||'').trim(), label:(parts[1]||'').trim()};
+        });
+        break;
+      case 'image':
+        block.src=fv('pb-src-');
+        block.alt=fv('pb-alt-');
+        block.caption=fv('pb-caption-');
+        break;
+    }
+    return block;
+  });
+}
+
+function _peRenderBlocks(blocks){
+  const container=document.getElementById('pe-blocks');
+  if(!container) return;
+  container.innerHTML=blocks.map((b,i)=>_renderBlock(b,i)).join('');
+  initSortables();
+}
+
+function peAddBlock(){
+  const type=document.getElementById('pe-add-type')?.value||'text';
+  const blocks=_peCollectBlocks();
+  const newBlock={type};
+  if(type==='list') newBlock.items=[];
+  if(type==='stats') newBlock.items=[];
+  blocks.push(newBlock);
+  _peRenderBlocks(blocks);
+  scrollToLast('pe-blocks');
+}
+
+function peDelBlock(btn){
+  if(!confirm('Удалить блок?')) return;
+  const li=btn.closest('.li-item');
+  const idx=parseInt(li?.dataset.idx,10);
+  const blocks=_peCollectBlocks();
+  if(!isNaN(idx)) blocks.splice(idx,1);
+  _peRenderBlocks(blocks);
+}
+
+async function pePageSave(){
+  const msg=document.getElementById('pe-save-msg');
+  if(!_editingPageId){ msg.innerHTML='<span style="color:var(--danger)">Нет ID страницы</span>'; return; }
+  const blocks=_peCollectBlocks();
+  const data={
+    title: v('pe-title'),
+    desc: v('pe-desc'),
+    label: v('pe-label'),
+    status: v('pe-status')||'draft',
+    blocks: blocks,
+    updatedAt: Date.now()
+  };
+  try {
+    // Use set without merge so arrays (blocks) are fully replaced
+    await db.collection('pages').doc(_editingPageId).set(data);
+    msg.innerHTML='<span style="color:var(--success)">✓ Сохранено</span>';
+    setTimeout(()=>{ if(msg) msg.innerHTML=''; },3000);
+    showToast('// Страница сохранена: '+_editingPageId);
+  } catch(e){
+    msg.innerHTML='<span style="color:var(--danger)">Ошибка: '+e.message+'</span>';
+  }
+}
+
+// ── PAGE ↔ NAV INTEGRATION ─────────────────
+async function peNavAdd(){
+  if(!_editingPageId) return;
+  let navData;
+  try { navData=await fsGet('content','ac_navigation'); }catch(e){}
+  if(!navData) navData={header:[]};
+  if(!navData.header) navData.header=[];
+  const pageHref='page.html?id='+_editingPageId;
+  const title=document.getElementById('pe-title')?.value||_editingPageId;
+  const parentSel=document.getElementById('pe-nav-parent');
+  const parentIdx=parentSel?.value;
+  if(parentIdx!==''&&parentIdx!=null&&navData.header[parseInt(parentIdx)]){
+    // Add as child
+    const pi=parseInt(parentIdx);
+    if(!navData.header[pi].children) navData.header[pi].children=[];
+    navData.header[pi].children.push({label:title,href:pageHref});
+  } else {
+    // Add as top-level
+    navData.header.push({label:title,href:pageHref,children:[]});
+  }
+  try {
+    await db.collection('content').doc('ac_navigation').set(navData);
+    showToast('// Страница добавлена в меню');
+    CT=''; _showTabDirect('page-edit');
+  }catch(e){ showToast('// Ошибка: '+e.message); }
+}
+
+async function peNavRemove(){
+  if(!_editingPageId) return;
+  let navData;
+  try { navData=await fsGet('content','ac_navigation'); }catch(e){}
+  if(!navData||!navData.header) return;
+  const pageHref='page.html?id='+_editingPageId;
+  // Remove from top-level
+  navData.header=navData.header.filter(h=>h.href!==pageHref);
+  // Remove from children
+  navData.header.forEach(h=>{
+    if(h.children) h.children=h.children.filter(ch=>ch.href!==pageHref);
+  });
+  try {
+    await db.collection('content').doc('ac_navigation').set(navData);
+    showToast('// Страница убрана из меню');
+    CT=''; _showTabDirect('page-edit');
+  }catch(e){ showToast('// Ошибка: '+e.message); }
+}
+
+// ── NAVIGATION BUILDER ──────────────────────
+async function edNavigation(){
+  try {
+    _navData = await fsGet('content','ac_navigation');
+  } catch(e){ _navData=null; }
+  if(!_navData) _navData={header:[]};
+  if(!_navData.header) _navData.header=[];
+  const items=_navData.header;
+  let itemsHtml='';
+  items.forEach((item,i)=>{
+    let childrenHtml='';
+    if(item.children&&item.children.length){
+      childrenHtml=item.children.map((ch,ci)=>`
+        <div class="nav-child" data-ci="${ci}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin-left:28px;background:var(--s3);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;">
+          <span style="color:var(--muted);font-size:.7rem;">↳</span>
+          ${fg('Текст',inp(`nav-ch-label-${i}-${ci}`,ch.label))}
+          ${fg('Ссылка',inp(`nav-ch-href-${i}-${ci}`,ch.href))}
+          <button class="xbtn red" style="flex-shrink:0;padding:6px 10px;" onclick="navDelChild(${i},${ci})">✕</button>
+        </div>`).join('');
+    }
+    itemsHtml+=`<div class="li-item" data-idx="${i}">
+      <div class="li-hdr" onclick="toggleLI(this)">
+        <span class="drag-handle" title="Перетащить">⠿</span>
+        <span class="li-idx">${String(i+1).padStart(2,'0')}</span>
+        <span class="li-title">🔗 ${esc(item.label||'(без названия)')}</span>
+        <div class="li-acts">
+          <button class="lib del" onclick="event.stopPropagation();navDelItem(${i})" title="Удалить">✕</button>
+        </div>
+      </div>
+      <div class="li-body">
+        ${fg('Текст меню',inp(`nav-label-${i}`,item.label))}
+        ${fg('Ссылка (href)',inp(`nav-href-${i}`,item.href))}
+        <div class="fsec" style="margin-top:16px;">Подпункты</div>
+        <div id="nav-children-${i}">${childrenHtml}</div>
+        <button class="xbtn cyan" style="margin-top:8px;" onclick="navAddChild(${i})">+ Подпункт</button>
+      </div>
+    </div>`;
+  });
+
+  return `<div class="ed-header"><div class="ed-tag">Настройки</div><h2>Навигация</h2><p>Структура меню сайта. Добавляйте пункты и подменю.</p></div>
+  <div class="leditor" id="nav-items">${itemsHtml}</div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:8px;">
+    <button class="xbtn cyan" onclick="navAddItem()">+ Добавить пункт меню</button>
+    <button class="xbtn cyan" onclick="navAddFromPages()">📄 Из страниц</button>
+  </div>
+  <button class="xbtn save" onclick="navSave()" style="margin-top:20px;">💾 Сохранить навигацию</button>
+  <span id="nav-save-msg" style="margin-left:14px;font-size:.85rem;"></span>`;
+}
+
+function _navCollectItems(){
+  const items=[];
+  document.querySelectorAll('#nav-items > .li-item').forEach(li=>{
+    const i=li.dataset.idx;
+    const labelEl=document.getElementById(`nav-label-${i}`);
+    const hrefEl=document.getElementById(`nav-href-${i}`);
+    const item={
+      label: labelEl?.value||'',
+      href: hrefEl?.value||'',
+      children: []
+    };
+    const childContainer=document.getElementById(`nav-children-${i}`);
+    if(childContainer){
+      childContainer.querySelectorAll('.nav-child').forEach(ch=>{
+        const ci=ch.dataset.ci;
+        const chLabel=document.getElementById(`nav-ch-label-${i}-${ci}`);
+        const chHref=document.getElementById(`nav-ch-href-${i}-${ci}`);
+        item.children.push({
+          label: chLabel?.value||'',
+          href: chHref?.value||''
+        });
+      });
+    }
+    items.push(item);
+  });
+  return items;
+}
+
+function navAddItem(){
+  _navData.header=_navCollectItems();
+  _navData.header.push({label:'Новый пункт',href:'#',children:[]});
+  CT=''; _showTabDirect('navigation');
+}
+
+function navDelItem(idx){
+  if(!confirm('Удалить пункт меню?')) return;
+  _navData.header=_navCollectItems();
+  _navData.header.splice(idx,1);
+  CT=''; _showTabDirect('navigation');
+}
+
+function navAddChild(idx){
+  _navData.header=_navCollectItems();
+  if(!_navData.header[idx].children) _navData.header[idx].children=[];
+  _navData.header[idx].children.push({label:'Подпункт',href:'#'});
+  CT=''; _showTabDirect('navigation');
+}
+
+function navDelChild(idx,ci){
+  _navData.header=_navCollectItems();
+  _navData.header[idx].children.splice(ci,1);
+  CT=''; _showTabDirect('navigation');
+}
+
+async function navAddFromPages(){
+  _navData.header=_navCollectItems();
+  try {
+    const pages=await fsListCollection('pages');
+    const published=pages.filter(p=>p.status==='published');
+    if(!published.length){ showToast('// Нет опубликованных страниц'); return; }
+    published.forEach(p=>{
+      // Don't add duplicates
+      if(!_navData.header.find(h=>h.href==='page.html?id='+p.id)){
+        _navData.header.push({label:p.title||p.id,href:'page.html?id='+p.id,children:[]});
+      }
+    });
+    CT=''; _showTabDirect('navigation');
+    showToast('// Добавлено страниц: '+published.length);
+  } catch(e){ showToast('// Ошибка загрузки страниц'); }
+}
+
+async function navSave(){
+  const msg=document.getElementById('nav-save-msg');
+  const items=_navCollectItems();
+  try {
+    // Full overwrite so removed items don't linger
+    await db.collection('content').doc('ac_navigation').set({header:items});
+    _navData={header:items};
+    msg.innerHTML='<span style="color:var(--success)">✓ Сохранено</span>';
+    setTimeout(()=>{ if(msg) msg.innerHTML=''; },3000);
+    showToast('// Навигация сохранена');
+  } catch(e){
+    msg.innerHTML='<span style="color:var(--danger)">Ошибка: '+e.message+'</span>';
+  }
+}
 
 // ── INIT (Firebase Auth state) ───────────────
 auth.onAuthStateChanged(async function(user){
