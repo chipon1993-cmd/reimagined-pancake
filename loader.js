@@ -731,6 +731,33 @@
 
   window.AC_RERENDER = renderPage;
 
+  // ── LIVE PREVIEW: accept updates from admin iframe parent ──
+  window.addEventListener('message', function(e){
+    if(!e.data || e.data.type !== 'ac_live_update') return;
+    var newData = e.data.data;
+    if(!newData) return;
+    // Store as preview data and re-render
+    localStorage.setItem('ac_preview', JSON.stringify(newData));
+    // Re-render all sections with new data
+    var pg = (window.location.pathname.split('/').pop() || 'index.html').replace(/\?.*/,'');
+    if(pg === 'index.html' || pg === '' || pg === '/') {
+      if(newData.index) renderIndex(newData.index, newData);
+      if(newData.global) renderFooter(newData.global);
+    } else if(pg === 'about.html' && newData.about) {
+      renderAbout(newData.about);
+    } else if(pg === 'journey.html' && newData.journey) {
+      renderJourney(newData.journey);
+    } else if(pg === 'interests.html' && newData.interests) {
+      renderInterests(newData.interests);
+    } else if(pg === 'contact.html' && newData.contact) {
+      renderContact(newData.contact);
+    } else if(pg === 'videos.html' && newData.videos) {
+      renderVideos(newData.videos);
+    }
+    if(newData.global) renderFooter(newData.global);
+    activateLucideIcons();
+  });
+
   // ── ANALYTICS INJECTION (GDPR-gated) ────────────────────
   function injectAnalytics(d) {
     if (new URLSearchParams(location.search).has('preview')) return;
