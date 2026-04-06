@@ -574,6 +574,7 @@
   // ── PREVIEW BANNER ─────────────────────────────
   function injectPreviewBanner() {
     if (!new URLSearchParams(location.search).has('preview')) return;
+    if (window !== window.top) return; // skip banner inside admin iframe
     if (document.getElementById('ac-preview-bar')) return;
     const bar = document.createElement('div');
     bar.id = 'ac-preview-bar';
