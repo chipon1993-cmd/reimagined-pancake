@@ -380,21 +380,35 @@
   }
 
   // ── DYNAMIC NAVIGATION ─────────────────────────
+  var _hiddenPages = {};
   async function renderDynamicNav() {
     var navConfig = await safeGet('content', 'ac_navigation');
     if (!navConfig || !navConfig.header || !navConfig.header.length) return;
     var ul = document.getElementById('navLinks');
     if (!ul) return;
+    // Map page keys to hrefs for visibility check
+    var visMap = {
+      'about.html': 'about', 'journey.html': 'journey',
+      'interests.html': 'interests', 'videos.html': 'videos',
+      'world.html': 'world', 'contact.html': 'contact'
+    };
+    function isHidden(href) {
+      var key = visMap[href];
+      return key && _hiddenPages[key] === false;
+    }
     // Build new nav HTML from Firestore config
     var html = '';
     navConfig.header.forEach(function(item) {
       var href = safeHref(item.href);
       if (!href) return;
+      if (isHidden(href)) return; // skip hidden pages
       if (item.children && item.children.length) {
-        var subHtml = item.children.map(function(ch) {
+        var subHtml = '';
+        item.children.forEach(function(ch) {
           var chHref = safeHref(ch.href);
-          return '<li><a href="' + chHref + '" onclick="closeMenu()">' + esc(ch.label) + '</a></li>';
-        }).join('');
+          if (isHidden(chHref)) return; // skip hidden children
+          subHtml += '<li><a href="' + chHref + '" onclick="closeMenu()">' + esc(ch.label) + '</a></li>';
+        });
         html += '<li class="nav-has-sub"><a href="' + href + '" onclick="closeMenu()">' + esc(item.label) + ' <span class="nav-sub-arrow">▼</span></a><ul class="nav-sub">' + subHtml + '</ul></li>';
       } else {
         html += '<li><a href="' + href + '" onclick="closeMenu()">' + esc(item.label) + '</a></li>';
@@ -551,7 +565,10 @@
   // Apply cached visibility immediately (before Firestore loads)
   try {
     var cachedVis = JSON.parse(localStorage.getItem('ac_page_vis') || '{}');
-    if (Object.keys(cachedVis).length) applyPageVisibility(cachedVis);
+    if (Object.keys(cachedVis).length) {
+      _hiddenPages = cachedVis;
+      applyPageVisibility(cachedVis);
+    }
   } catch(e) {}
 
   // ── PREVIEW BANNER ─────────────────────────────
@@ -638,8 +655,13 @@
 
     renderFooter(data.global);
 
+    // ── Load page visibility before building nav ──
+    if (data.appearance && data.appearance.pages) {
+      _hiddenPages = data.appearance.pages;
+    }
+
     // ── Dynamic Navigation from Firestore ──
-    renderDynamicNav();
+    await renderDynamicNav();
 
     switch (page) {
       case 'index':     renderIndex(data.index, data);    break;
