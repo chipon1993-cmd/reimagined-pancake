@@ -1904,6 +1904,7 @@ function loadPreviewForTab(tab){
   localStorage.setItem('ac_preview', JSON.stringify(D));
   const sep = file.includes('?') ? '&' : '?';
   const src = file + sep + 'preview=1&embed=1&t=' + Date.now();
+  iframe.onload = function(){ try { var b=iframe.contentDocument.getElementById('ac-preview-bar'); if(b)b.remove(); var s=iframe.contentDocument.getElementById('ac-preview-style'); if(s)s.remove(); } catch(e){} };
   iframe.src = src;
 }
 
