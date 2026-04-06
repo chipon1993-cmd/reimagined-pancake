@@ -60,11 +60,11 @@ window.AC_TRANSLATIONS = {
       quote:       '«Кожна людина може дати і поділитися тим, чим вона є всередині — незалежно від того, що вона декларує. Пережитий досвід, інтегровані моделі та патерни поведінки — це те, що будує наше життя.»',
       quoteAuthor: '— Andrii Chepelovskyi',
       navCards: [
-        { icon:'🪞', title:'Ти коли-небудь міняв усе з нуля?',             desc:'Не план. Серія точок, після яких назад уже не можна.',                              href:'journey.html'   },
-        { icon:'🧩', title:'Тобі казали, що ти занадто багато думаєш?',    desc:'Може, справа не в кількості думок — а в якості питань.',                             href:'interests.html' },
-        { icon:'🔬', title:'Ти знаєш, чому приймаєш свої рішення?',       desc:'Не ті, які пояснюєш іншим. Справжні.',                                               href:'about.html'     },
-        { icon:'📡', title:'Слова чи дії — чому ти довіряєш?',            desc:'Іноді краще дивитися, ніж слухати. Тут — без фільтрів.',                               href:'videos.html'    },
-        { icon:'💬', title:'Є думка, якій нікуди подітися?',              desc:'Не шукай відповідь. Іноді потрібна просто людина, яка зрозуміє питання.',              href:'contact.html'   }
+        { icon:'🪞', title:'Ти коли-небудь міняв усе з нуля?',             desc:'Не план. Серія точок, після яких назад уже не можна.',                              href:'reset.html'     },
+        { icon:'🧩', title:'Тобі казали, що ти занадто багато думаєш?',    desc:'Може, справа не в кількості думок — а в якості питань.',                             href:'overthink.html' },
+        { icon:'🔬', title:'Ти знаєш, чому приймаєш свої рішення?',       desc:'Не ті, які пояснюєш іншим. Справжні.',                                               href:'decisions.html' },
+        { icon:'📡', title:'Слова чи дії — чому ти довіряєш?',            desc:'Іноді краще дивитися, ніж слухати. Тут — без фільтрів.',                               href:'trust.html'     },
+        { icon:'💬', title:'Є думка, якій нікуди подітися?',              desc:'Не шукай відповідь. Іноді потрібна просто людина, яка зрозуміє питання.',              href:'thought.html'   }
       ]
     },
     about: {
@@ -161,11 +161,11 @@ window.AC_TRANSLATIONS = {
       quote:       '«Hvert menneske kan gi og dele det det er innenfra seg selv — uavhengig av hva det erklærer. Opplevd erfaring, integrerte modeller og atferdsmønstre — det er det som bygger livene våre.»',
       quoteAuthor: '— Andrii Chepelovskyi',
       navCards: [
-        { icon:'🪞', title:'Har du noen gang begynt helt på nytt?',        desc:'Ikke en plan. En serie punkter du ikke kan gå tilbake fra.',                          href:'journey.html'   },
-        { icon:'🧩', title:'Har noen sagt at du tenker for mye?',          desc:'Kanskje problemet ikke er mengden tanker — men kvaliteten på spørsmålene.',            href:'interests.html' },
-        { icon:'🔬', title:'Vet du hvorfor du tar dine egne valg?',        desc:'Ikke de du forklarer til andre. De virkelige.',                                        href:'about.html'     },
-        { icon:'📡', title:'Ord eller handlinger — hva stoler du på?',     desc:'Noen ganger er det bedre å se enn å lytte. Her — uten filtre.',                        href:'videos.html'    },
-        { icon:'💬', title:'Har du en tanke som ikke finner sin plass?',   desc:'Ikke let etter svar. Noen ganger trenger du bare en som forstår spørsmålet.',          href:'contact.html'   }
+        { icon:'🪞', title:'Har du noen gang begynt helt på nytt?',        desc:'Ikke en plan. En serie punkter du ikke kan gå tilbake fra.',                          href:'reset.html'     },
+        { icon:'🧩', title:'Har noen sagt at du tenker for mye?',          desc:'Kanskje problemet ikke er mengden tanker — men kvaliteten på spørsmålene.',            href:'overthink.html' },
+        { icon:'🔬', title:'Vet du hvorfor du tar dine egne valg?',        desc:'Ikke de du forklarer til andre. De virkelige.',                                        href:'decisions.html' },
+        { icon:'📡', title:'Ord eller handlinger — hva stoler du på?',     desc:'Noen ganger er det bedre å se enn å lytte. Her — uten filtre.',                        href:'trust.html'     },
+        { icon:'💬', title:'Har du en tanke som ikke finner sin plass?',   desc:'Ikke let etter svar. Noen ganger trenger du bare en som forstår spørsmålet.',          href:'thought.html'   }
       ]
     },
     about: {
