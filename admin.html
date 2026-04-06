@@ -4382,13 +4382,13 @@ async function edNavigation(){
 
   // Build "All site pages" map
   var staticPages=[
-    {name:'Главная',href:'index.html',icon:'🏠'},
-    {name:'О себе',href:'about.html',icon:'👤'},
-    {name:'Мой путь',href:'journey.html',icon:'🗺️'},
-    {name:'Интересы',href:'interests.html',icon:'🧠'},
-    {name:'Видео',href:'videos.html',icon:'🎬'},
-    {name:'Контакт',href:'contact.html',icon:'✉️'},
-    {name:'Мир',href:'world.html',icon:'🌌'}
+    {name:'Главная',href:'index.html',icon:'🏠',tab:'index'},
+    {name:'О себе',href:'about.html',icon:'👤',tab:'about'},
+    {name:'Мой путь',href:'journey.html',icon:'🗺️',tab:'journey'},
+    {name:'Интересы',href:'interests.html',icon:'🧠',tab:'interests'},
+    {name:'Видео',href:'videos.html',icon:'🎬',tab:'videos'},
+    {name:'Контакт',href:'contact.html',icon:'✉️',tab:'contact'},
+    {name:'Мир',href:'world.html',icon:'🌌',tab:'world'}
   ];
   // Load dynamic pages
   var dynPages=[];
@@ -4408,12 +4408,12 @@ async function edNavigation(){
   staticPages.forEach(function(sp){
     var inMenu=menuHrefs.indexOf(sp.href)>=0;
     var vis=D.appearance&&D.appearance.pages?D.appearance.pages[sp.href.replace('.html','')]!==false:true;
-    sitemapHtml+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);">
+    sitemapHtml+=`<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap;">
       <span style="font-size:1.1rem;">${sp.icon}</span>
-      <span style="flex:1;font-weight:600;font-size:.85rem;">${esc(sp.name)}</span>
-      <span style="font-size:.7rem;color:var(--muted);">${esc(sp.href)}</span>
+      <span style="flex:1;font-weight:600;font-size:.85rem;min-width:100px;">${esc(sp.name)}</span>
       ${!vis?'<span style="font-size:.7rem;color:var(--warning);font-weight:600;">СКРЫТА</span>':''}
-      ${inMenu?'<span style="font-size:.7rem;color:var(--success);">✓ в меню</span>':'<button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="navQuickAdd(\''+esc(sp.name)+'\',\''+esc(sp.href)+'\')">+ в меню</button>'}
+      ${inMenu?'<span style="font-size:.7rem;color:var(--success);">✓ меню</span>':'<button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="navQuickAdd(\''+esc(sp.name)+'\',\''+esc(sp.href)+'\')">+ меню</button>'}
+      <button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="_showTabDirect('${sp.tab}')">✎ Редакт.</button>
     </div>`;
   });
   // Dynamic pages
@@ -4429,6 +4429,7 @@ async function edNavigation(){
       ${dp.status!=='published'?'<span style="font-size:.7rem;color:var(--warning);font-weight:600;">черновик</span>':''}
       ${inMenu?'<span style="font-size:.7rem;color:var(--success);">✓ меню</span>':'<button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="navQuickAdd(\''+esc(dp.title||dp.id)+'\',\''+esc(href)+'\')">+ меню</button>'}
       ${onHome?'<span style="font-size:.7rem;color:var(--success);">✓ главная</span>':'<button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="navQuickCard(\''+esc(dp.title||dp.id)+'\',\''+esc(dp.desc||'')+'\',\''+esc(href)+'\')">+ главная</button>'}
+      <button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="pageEdit('${esc(dp.id)}')">✎ Редакт.</button>
     </div>`;
   });
 
