@@ -3678,8 +3678,9 @@ async function pageCreateSave(){
   };
   try {
     await fsSet('pages', id, data);
-    showToast('// Страница создана: '+id);
-    CT=''; showTab('pages');
+    showToast('// Страница создана — открываю редактор');
+    _editingPageId=id;
+    CT=''; _showTabDirect('page-edit');
   } catch(e){
     msg.innerHTML='<span style="color:var(--danger)">Ошибка: '+e.message+'</span>';
   }
@@ -3687,7 +3688,7 @@ async function pageCreateSave(){
 
 function pageEdit(id){
   _editingPageId=id;
-  CT=''; showTab('page-edit');
+  CT=''; _showTabDirect('page-edit');
 }
 
 async function pageDup(id){
@@ -3699,7 +3700,7 @@ async function pageDup(id){
   try {
     await fsSet('pages',newId,data);
     showToast('// Страница продублирована');
-    CT=''; showTab('pages');
+    CT=''; _showTabDirect('pages');
   } catch(e){ showToast('// Ошибка: '+e.message); }
 }
 
@@ -3708,7 +3709,7 @@ async function pageDel(id){
   try {
     await fsDelete('pages',id);
     showToast('// Страница удалена');
-    CT=''; showTab('pages');
+    CT=''; _showTabDirect('pages');
   } catch(e){ showToast('// Ошибка: '+e.message); }
 }
 
@@ -3953,7 +3954,7 @@ async function peNavAdd(){
   try {
     await db.collection('content').doc('ac_navigation').set(navData);
     showToast('// Страница добавлена в меню');
-    CT=''; showTab('page-edit');
+    CT=''; _showTabDirect('page-edit');
   }catch(e){ showToast('// Ошибка: '+e.message); }
 }
 
@@ -3972,7 +3973,7 @@ async function peNavRemove(){
   try {
     await db.collection('content').doc('ac_navigation').set(navData);
     showToast('// Страница убрана из меню');
-    CT=''; showTab('page-edit');
+    CT=''; _showTabDirect('page-edit');
   }catch(e){ showToast('// Ошибка: '+e.message); }
 }
 
@@ -4056,27 +4057,27 @@ function _navCollectItems(){
 function navAddItem(){
   _navData.header=_navCollectItems();
   _navData.header.push({label:'Новый пункт',href:'#',children:[]});
-  CT=''; showTab('navigation');
+  CT=''; _showTabDirect('navigation');
 }
 
 function navDelItem(idx){
   if(!confirm('Удалить пункт меню?')) return;
   _navData.header=_navCollectItems();
   _navData.header.splice(idx,1);
-  CT=''; showTab('navigation');
+  CT=''; _showTabDirect('navigation');
 }
 
 function navAddChild(idx){
   _navData.header=_navCollectItems();
   if(!_navData.header[idx].children) _navData.header[idx].children=[];
   _navData.header[idx].children.push({label:'Подпункт',href:'#'});
-  CT=''; showTab('navigation');
+  CT=''; _showTabDirect('navigation');
 }
 
 function navDelChild(idx,ci){
   _navData.header=_navCollectItems();
   _navData.header[idx].children.splice(ci,1);
-  CT=''; showTab('navigation');
+  CT=''; _showTabDirect('navigation');
 }
 
 async function navAddFromPages(){
@@ -4091,7 +4092,7 @@ async function navAddFromPages(){
         _navData.header.push({label:p.title||p.id,href:'page.html?id='+p.id,children:[]});
       }
     });
-    CT=''; showTab('navigation');
+    CT=''; _showTabDirect('navigation');
     showToast('// Добавлено страниц: '+published.length);
   } catch(e){ showToast('// Ошибка загрузки страниц'); }
 }
