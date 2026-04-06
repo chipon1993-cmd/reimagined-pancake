@@ -53,4 +53,25 @@
     if (!window.db) throw new Error('Firestore not initialized');
     await db.collection(collection).doc(docId).set(data, { merge: true });
   };
+
+  // Delete a document
+  window.fsDelete = async function (collection, docId) {
+    if (!window.db) throw new Error('Firestore not initialized');
+    await db.collection(collection).doc(docId).delete();
+  };
+
+  // List all documents in a collection
+  window.fsListCollection = async function (collection) {
+    if (!window.db) return [];
+    try {
+      var snap = await Promise.race([
+        db.collection(collection).get(),
+        new Promise(function(_, reject) { setTimeout(function() { reject(new Error('timeout')); }, 6000); })
+      ]);
+      return snap.docs.map(function(d) { return Object.assign({id: d.id}, d.data()); });
+    } catch(e) {
+      console.warn('Firestore list failed:', collection, e);
+      return [];
+    }
+  };
 })();

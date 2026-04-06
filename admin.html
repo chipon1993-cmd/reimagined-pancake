@@ -1282,17 +1282,23 @@
     <!-- Sidebar -->
     <div class="adm-sidebar" id="adm-sidebar">
       <button class="sb-toggle" onclick="toggleSidebar()" title="Свернуть/Развернуть">◀</button>
-      <div class="sb-label">Страницы</div>
+      <div class="sb-label">Основные</div>
       <div class="sb-item" data-tab="index"     data-tip="Главная"     onclick="showTab('index')">    <span class="sb-icon">🏠</span><span class="sb-item-text">Главная</span></div>
       <div class="sb-item" data-tab="about"     data-tip="О себе"      onclick="showTab('about')">    <span class="sb-icon">👤</span><span class="sb-item-text">О себе</span></div>
       <div class="sb-item" data-tab="journey"   data-tip="Мой путь"    onclick="showTab('journey')">  <span class="sb-icon">🗺️</span><span class="sb-item-text">Мой путь</span></div>
       <div class="sb-item" data-tab="interests" data-tip="Интересы"    onclick="showTab('interests')"><span class="sb-icon">🧠</span><span class="sb-item-text">Интересы</span></div>
-      <div class="sb-item" data-tab="boards"    data-tip="Доски"       onclick="showTab('boards')">   <span class="sb-icon">📋</span><span class="sb-item-text">Доски</span></div>
+      <div class="sb-item" data-tab="videos"    data-tip="Видео"       onclick="showTab('videos')">   <span class="sb-icon">🎬</span><span class="sb-item-text">Видео</span></div>
       <div class="sb-item" data-tab="contact"   data-tip="Контакт"     onclick="showTab('contact')">  <span class="sb-icon">✉️</span><span class="sb-item-text">Контакт</span></div>
-      <div class="sb-item" data-tab="videos"     data-tip="Видео"       onclick="showTab('videos')">     <span class="sb-icon">🎬</span><span class="sb-item-text">Видео</span></div>
-      <div class="sb-item" data-tab="world"     data-tip="Мир"         onclick="showTab('world')">      <span class="sb-icon">🌌</span><span class="sb-item-text">Мир</span></div>
+      <div class="sb-item" data-tab="world"     data-tip="Мир"         onclick="showTab('world')">    <span class="sb-icon">🌌</span><span class="sb-item-text">Мир</span></div>
+      <div class="sb-item" data-tab="boards"    data-tip="Доски"       onclick="showTab('boards')">   <span class="sb-icon">📋</span><span class="sb-item-text">Доски</span></div>
       <div class="sb-div"></div>
+
+      <div class="sb-label">Динамические</div>
+      <div class="sb-item" data-tab="pages"     data-tip="Страницы"    onclick="showTab('pages')">    <span class="sb-icon">📄</span><span class="sb-item-text">Страницы</span></div>
+      <div class="sb-div"></div>
+
       <div class="sb-label">Настройки</div>
+      <div class="sb-item" data-tab="navigation" data-tip="Навигация"   onclick="showTab('navigation')"><span class="sb-icon">🔗</span><span class="sb-item-text">Навигация</span></div>
       <div class="sb-item" data-tab="seo"        data-tip="SEO"         onclick="showTab('seo')">        <span class="sb-icon">🔎</span><span class="sb-item-text">SEO</span></div>
       <div class="sb-item" data-tab="appearance" data-tip="Внешний вид" onclick="showTab('appearance')"> <span class="sb-icon">🎨</span><span class="sb-item-text">Внешний вид</span></div>
       <div class="sb-item" data-tab="global"     data-tip="Общие"       onclick="showTab('global')">     <span class="sb-icon">⚙️</span><span class="sb-item-text">Общие</span></div>
@@ -2398,6 +2404,9 @@ async function _showTabDirect(tab){
     case 'media':      m.innerHTML=edMedia(); initMediaDrop(); break;
     case 'i18n':       m.innerHTML=await edTranslations(); break;
     case 'bookmarks':  m.innerHTML=await edBookmarks(); initBookmarksSearch(); break;
+    case 'pages':      m.innerHTML=await edPages(); break;
+    case 'navigation': m.innerHTML=await edNavigation(); break;
+    case 'page-edit':  m.innerHTML=await edPageEdit(); initSortables(); break;
   }
   initSortables();
 }
@@ -2441,6 +2450,9 @@ function collectCurrent(){
     case 'i18n':       colTranslations(); break;
     case 'security':   break; // own save button
     case 'media':      break; // no form data
+    case 'pages':      break; // own save buttons
+    case 'navigation': break; // own save button
+    case 'page-edit':  break; // own save button
   }
 }
 

@@ -11,7 +11,7 @@
   function safeHref(url) {
     if (!url) return '';
     var s = String(url).trim();
-    if (/^(https?:\/\/|mailto:|tel:|\/|[a-zA-Z0-9][\w.\-]*\.html)/i.test(s)) return esc(s);
+    if (/^(https?:\/\/|mailto:|tel:|\/|[a-zA-Z0-9][\w.\-]*\.html(\?[\w=&\-]*)?)/i.test(s)) return esc(s);
     return '';
   }
   // Allow limited safe HTML tags (b, i, br) for admin-authored rich text; strip everything else
@@ -361,6 +361,70 @@
     }
   }
 
+  // ── DYNAMIC PAGE (page.html?id=xxx) ────────────
+  function renderBlock(b) {
+    if (!b || !b.type) return '';
+    switch (b.type) {
+      case 'text':
+        return '<div class="block-text fade-in">' + safeParagraph(b.content || '') + '</div>';
+      case 'heading':
+        return '<h2 class="block-heading fade-in">' + esc(b.content || '') + '</h2>';
+      case 'quote':
+        return '<div class="block-quote fade-in"><p>' + esc(b.content || '') + '</p>' +
+          (b.author ? '<cite>' + esc(b.author) + '</cite>' : '') + '</div>';
+      case 'divider':
+        return '<div class="block-divider fade-in"></div>';
+      case 'list':
+        var items = b.items || [];
+        return '<ul class="block-list fade-in">' + items.map(function(it){ return '<li>' + esc(it) + '</li>'; }).join('') + '</ul>';
+      case 'stats':
+        var stats = b.items || [];
+        return '<div class="block-stats fade-in">' + stats.map(function(s){
+          return '<div class="stat-card"><div class="stat-num">' + esc(s.num) + '</div><div class="stat-lbl">' + esc(s.label) + '</div></div>';
+        }).join('') + '</div>';
+      case 'callout':
+        return '<div class="block-callout fade-in"><p>' + safeParagraph(b.content || '') + '</p></div>';
+      case 'image':
+        return '<figure class="block-image fade-in"><img src="' + esc(b.src || '') + '" alt="' + esc(b.alt || '') + '" loading="lazy" />' +
+          (b.caption ? '<figcaption>' + esc(b.caption) + '</figcaption>' : '') + '</figure>';
+      default:
+        return '';
+    }
+  }
+
+  async function renderDynamicPage() {
+    var pageId = new URLSearchParams(location.search).get('id');
+    if (!pageId) {
+      set('dyn-title', 'Страница не найдена');
+      set('dyn-desc', 'Укажите ?id= в адресной строке.');
+      return;
+    }
+    pageId = pageId.replace(/[^a-zA-Z0-9_-]/g, '');
+    var pageData = await safeGet('pages', pageId);
+    if (!pageData) {
+      set('dyn-title', 'Страница не найдена');
+      set('dyn-desc', 'Страница «' + esc(pageId) + '» не существует.');
+      return;
+    }
+    // Set hero
+    set('dyn-label', esc(pageData.label || ''));
+    set('dyn-title', esc(pageData.title || ''));
+    set('dyn-desc', esc(pageData.desc || ''));
+    // Update document title
+    if (pageData.title) document.title = pageData.title + ' · Andrii Chepelovskyi';
+    var md = document.querySelector('meta[name="description"]');
+    if (md && pageData.desc) md.content = pageData.desc;
+    // Render blocks
+    var blocksEl = document.getElementById('dyn-blocks');
+    if (blocksEl && pageData.blocks && pageData.blocks.length) {
+      blocksEl.innerHTML = pageData.blocks.map(renderBlock).join('');
+    } else if (blocksEl && pageData.status === 'draft') {
+      blocksEl.innerHTML = '<div class="page-empty">Черновик — контент пока не добавлен</div>';
+    } else if (blocksEl) {
+      blocksEl.innerHTML = '<div class="page-empty">Скоро здесь появится контент</div>';
+    }
+  }
+
   // ── PAGE VISIBILITY ────────────────────────────
   function applyPageVisibility(pages, save) {
     const map = {
@@ -481,6 +545,7 @@
       case 'contact':   renderContact(data.contact);      break;
       case 'videos':    renderVideos(data.videos || { items: [] }); break;
       case 'interest-board': break;
+      case 'dynamic':       renderDynamicPage();  break;
     }
 
     if (data.appearance && data.appearance.dateFormat) {
