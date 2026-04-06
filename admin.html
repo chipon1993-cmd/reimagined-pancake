@@ -3814,8 +3814,8 @@ function peBlockTypeChanged(idx,newType){
 
 function _peCollectBlocks(){
   const items=[...document.querySelectorAll('#pe-blocks .li-item')];
-  return items.map((li)=>{
-    const i=li.dataset.idx;
+  return items.map((li,_unused)=>{
+    const i=li.dataset.idx; // Use stored idx for field lookup
     const type=document.getElementById(`pb-type-${i}`)?.value||'text';
     const block={type};
     switch(type){
@@ -3867,13 +3867,10 @@ function peAddBlock(){
 function peDelBlock(btn){
   if(!confirm('Удалить блок?')) return;
   const li=btn.closest('.li-item');
-  if(li) li.remove();
-  // Re-index remaining blocks
-  document.querySelectorAll('#pe-blocks .li-item').forEach((item,i)=>{
-    item.dataset.idx=i;
-    const idx=item.querySelector('.li-idx');
-    if(idx) idx.textContent=String(i+1).padStart(2,'0');
-  });
+  const idx=parseInt(li?.dataset.idx,10);
+  const blocks=_peCollectBlocks();
+  if(!isNaN(idx)) blocks.splice(idx,1);
+  _peRenderBlocks(blocks);
 }
 
 async function pePageSave(){
@@ -3889,7 +3886,8 @@ async function pePageSave(){
     updatedAt: Date.now()
   };
   try {
-    await fsSet('pages',_editingPageId,data);
+    // Use set without merge so arrays (blocks) are fully replaced
+    await db.collection('pages').doc(_editingPageId).set(data);
     msg.innerHTML='<span style="color:var(--success)">✓ Сохранено</span>';
     setTimeout(()=>{ if(msg) msg.innerHTML=''; },3000);
     showToast('// Страница сохранена: '+_editingPageId);
@@ -3951,18 +3949,22 @@ function _navCollectItems(){
   const items=[];
   document.querySelectorAll('#nav-items > .li-item').forEach(li=>{
     const i=li.dataset.idx;
+    const labelEl=document.getElementById(`nav-label-${i}`);
+    const hrefEl=document.getElementById(`nav-href-${i}`);
     const item={
-      label: document.getElementById(`nav-label-${i}`)?.value||'',
-      href: document.getElementById(`nav-href-${i}`)?.value||'',
+      label: labelEl?.value||'',
+      href: hrefEl?.value||'',
       children: []
     };
     const childContainer=document.getElementById(`nav-children-${i}`);
     if(childContainer){
       childContainer.querySelectorAll('.nav-child').forEach(ch=>{
         const ci=ch.dataset.ci;
+        const chLabel=document.getElementById(`nav-ch-label-${i}-${ci}`);
+        const chHref=document.getElementById(`nav-ch-href-${i}-${ci}`);
         item.children.push({
-          label: document.getElementById(`nav-ch-label-${i}-${ci}`)?.value||'',
-          href: document.getElementById(`nav-ch-href-${i}-${ci}`)?.value||''
+          label: chLabel?.value||'',
+          href: chHref?.value||''
         });
       });
     }
@@ -4005,8 +4007,8 @@ async function navAddFromPages(){
     if(!published.length){ showToast('// Нет опубликованных страниц'); return; }
     published.forEach(p=>{
       // Don't add duplicates
-      if(!_navData.header.find(h=>h.href===p.id+'.html')){
-        _navData.header.push({label:p.title||p.id,href:p.id+'.html',children:[]});
+      if(!_navData.header.find(h=>h.href==='page.html?id='+p.id)){
+        _navData.header.push({label:p.title||p.id,href:'page.html?id='+p.id,children:[]});
       }
     });
     CT=''; showTab('navigation');
@@ -4018,7 +4020,8 @@ async function navSave(){
   const msg=document.getElementById('nav-save-msg');
   const items=_navCollectItems();
   try {
-    await fsSet('content','ac_navigation',{header:items});
+    // Full overwrite so removed items don't linger
+    await db.collection('content').doc('ac_navigation').set({header:items});
     _navData={header:items};
     msg.innerHTML='<span style="color:var(--success)">✓ Сохранено</span>';
     setTimeout(()=>{ if(msg) msg.innerHTML=''; },3000);

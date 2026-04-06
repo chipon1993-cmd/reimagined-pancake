@@ -545,7 +545,7 @@
       case 'contact':   renderContact(data.contact);      break;
       case 'videos':    renderVideos(data.videos || { items: [] }); break;
       case 'interest-board': break;
-      case 'dynamic':       renderDynamicPage();  break;
+      case 'dynamic':       await renderDynamicPage();  break;
     }
 
     if (data.appearance && data.appearance.dateFormat) {
