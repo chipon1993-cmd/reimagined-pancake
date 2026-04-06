@@ -1,14 +1,3 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://firestore.googleapis.com https://*.firebaseio.com https://www.googleapis.com https://www.gstatic.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://unpkg.com https://cdn.jsdelivr.net; frame-src 'none'; object-src 'none'; base-uri 'self';" />
-  <title>// ADMIN · AC</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
-  <style>
     /* ═══════ THEME VARIABLES — Apple-style ═══════ */
     :root, [data-admin-theme="dark"] {
       --bg:      #0a0e1a;
@@ -72,7 +61,7 @@
       color: var(--text);
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
       min-height: 100vh;
-      cursor: auto;
+      cursor: none;
       transition: background .5s var(--ease), color .5s var(--ease);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -105,7 +94,7 @@
     /* ═══════════════════ LOGIN ═══════════════════ */
     #login-screen {
       min-height: 100vh;
-      display: none; align-items: center; justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       animation: loginFadeIn .6s ease-out;
     }
     @keyframes loginFadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
@@ -287,88 +276,13 @@
       -webkit-backdrop-filter: var(--glass);
       backdrop-filter: var(--glass);
       display:flex; flex-direction:column;
-      transition: width .35s var(--ease), padding .35s var(--ease);
+      transition: all .4s var(--ease);
       overflow-y:auto;
-      overflow-x:hidden;
-      position:relative;
     }
-
-    /* Collapsed sidebar */
-    .adm-sidebar.collapsed { width:60px; padding:24px 0; }
-    .adm-sidebar.collapsed .sb-label { opacity:0; height:0; margin:0; padding:0; overflow:hidden; }
-    .adm-sidebar.collapsed .sb-item { justify-content:center; padding:10px 0; margin:2px 6px; gap:0; }
-    .adm-sidebar.collapsed .sb-item-text { display:none; }
-    .adm-sidebar.collapsed .sb-icon { width:auto; font-size:1.15rem; }
-    .adm-sidebar.collapsed .sb-div { margin:8px 10px; }
-    .adm-sidebar.collapsed .sb-status { display:none; }
-    .adm-sidebar.collapsed + .adm-main { margin-left:0; }
-
-    /* Collapse toggle button */
-    .sb-toggle {
-      display:flex; align-items:center; justify-content:center;
-      width:28px; height:28px;
-      background:var(--s2); border:1px solid var(--border);
-      border-radius:8px; cursor:pointer; color:var(--muted);
-      font-size:.7rem; margin:0 auto 12px;
-      transition:all .2s var(--ease);
-      flex-shrink:0;
-    }
-    .sb-toggle:hover { color:var(--accent); border-color:var(--accent); background:var(--accent-glow); }
-    .adm-sidebar.collapsed .sb-toggle { transform:rotate(180deg); }
-
-    /* Tooltip for collapsed sidebar */
-    .sb-tooltip {
-      position:fixed; z-index:9999;
-      background:var(--bg-solid); color:var(--text);
-      font-size:.75rem; font-weight:600; white-space:nowrap;
-      padding:7px 14px; border-radius:8px;
-      border:1px solid var(--border);
-      box-shadow:var(--shadow);
-      pointer-events:none;
-      opacity:0; transition:opacity .15s;
-      letter-spacing:.02em;
-    }
-    .sb-tooltip.show { opacity:1; }
-
-    /* ── Unsaved changes dialog ── */
-    .unsaved-overlay {
-      position:fixed; inset:0; z-index:6000;
-      background:rgba(0,0,0,0.7);
-      display:flex; align-items:center; justify-content:center;
-      opacity:0; pointer-events:none;
-      transition:opacity .2s var(--ease);
-    }
-    .unsaved-overlay.open { opacity:1; pointer-events:all; }
-    .unsaved-dialog {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--r); padding:32px;
-      max-width:380px; width:90%;
-      box-shadow:var(--shadow);
-      text-align:center;
-      transform:scale(0.95); transition:transform .25s var(--spring);
-    }
-    .unsaved-overlay.open .unsaved-dialog { transform:scale(1); }
-    .unsaved-dialog-icon { font-size:2.2rem; margin-bottom:14px; display:block; }
-    .unsaved-dialog h3 { font-size:1rem; font-weight:700; margin-bottom:8px; color:var(--text); }
-    .unsaved-dialog p { font-size:.85rem; color:var(--muted); margin-bottom:22px; line-height:1.5; }
-    .unsaved-dialog-btns { display:flex; gap:10px; justify-content:center; }
-    .unsaved-dialog-btns button {
-      padding:10px 20px; border-radius:10px; font-size:.82rem;
-      font-weight:600; cursor:pointer; font-family:inherit;
-      transition:all .2s var(--ease); border:1px solid var(--border);
-    }
-    .unsaved-btn-save { background:var(--accent); color:#000; border-color:var(--accent); }
-    .unsaved-btn-save:hover { box-shadow:0 4px 16px var(--accent-glow); transform:translateY(-1px); }
-    .unsaved-btn-discard { background:transparent; color:var(--muted); }
-    .unsaved-btn-discard:hover { color:var(--danger); border-color:var(--danger); }
-    .unsaved-btn-cancel { background:transparent; color:var(--muted); }
-    .unsaved-btn-cancel:hover { color:var(--text); border-color:var(--text); }
 
     .sb-label {
       font-size:.58rem; font-weight:700; letter-spacing:.24em; text-transform:uppercase;
       color:var(--muted); padding:0 20px; margin-bottom:8px; margin-top:4px;
-      transition: opacity .2s, height .2s, margin .2s, padding .2s;
-      white-space:nowrap; overflow:hidden;
     }
     .sb-label::before { content:'// '; color:var(--accent); opacity:.5; }
 
@@ -382,9 +296,7 @@
       text-transform:uppercase;
       position:relative;
       transition: all .3s var(--ease);
-      white-space:nowrap;
     }
-    .sb-item-text { transition:opacity .2s; }
     .sb-item:hover {
       color:var(--text);
       background:var(--sb-hover);
@@ -414,7 +326,6 @@
       background: rgba(0,255,136,0.04);
       border: 1px solid rgba(0,255,136,0.12);
       border-radius:var(--r);
-      transition: opacity .2s;
       font-size:.68rem; color:var(--success);
       letter-spacing:.08em;
       display:flex; align-items:center; gap:8px;
@@ -498,186 +409,6 @@
       padding-right:36px; cursor:pointer;
     }
     textarea.fi { resize:vertical; min-height:80px; line-height:1.6; }
-
-    /* ── MARKDOWN TOOLBAR (inline) ── */
-    .md-wrap { position:relative; }
-    .md-toolbar {
-      display:flex; flex-wrap:wrap; gap:2px; padding:6px 8px;
-      background:var(--s2); border:1px solid var(--border);
-      border-bottom:none; border-radius:12px 12px 0 0;
-      align-items:center;
-    }
-    .md-wrap textarea.fi { border-radius:0 0 12px 12px; }
-    .md-btn {
-      background:transparent; border:1px solid transparent;
-      color:var(--muted); border-radius:6px; width:32px; height:30px;
-      cursor:pointer; font-size:.82rem; display:flex; align-items:center; justify-content:center;
-      transition:all .2s var(--ease); font-family:inherit; font-weight:600;
-      position:relative;
-    }
-    .md-btn:hover { background:var(--accent-glow); color:var(--accent); border-color:rgba(0,212,255,0.15); }
-    .md-btn:active { transform:scale(0.92); }
-    .md-sep { width:1px; background:var(--border); margin:4px 4px; align-self:stretch; }
-
-    .md-toolbar-right { margin-left:auto; display:flex; gap:4px; align-items:center; }
-    .md-small-btn {
-      background:transparent; border:1px solid var(--border);
-      color:var(--muted); border-radius:6px; padding:3px 10px;
-      font-size:.72rem; cursor:pointer; font-family:inherit; font-weight:600;
-      transition:all .2s var(--ease);
-    }
-    .md-small-btn:hover { border-color:var(--accent); color:var(--accent); }
-    .md-small-btn.active { background:var(--accent); color:#000; border-color:var(--accent); }
-
-    .md-preview {
-      display:none; padding:14px 16px; min-height:80px;
-      background:var(--input-bg); border:1px solid var(--border);
-      border-top:none; border-radius:0 0 12px 12px;
-      font-size:.9rem; line-height:1.6; color:var(--text);
-    }
-    .md-preview.active { display:block; }
-
-    /* Shared markdown render styles */
-    .md-render h1,.md-render h2,.md-render h3 { margin:10px 0 6px; color:var(--text); }
-    .md-render h1 { font-size:1.3rem; } .md-render h2 { font-size:1.15rem; } .md-render h3 { font-size:1.05rem; }
-    .md-render p { margin:0 0 10px; }
-    .md-render p:last-child { margin-bottom:0; }
-    .md-render ul,.md-render ol { padding-left:22px; margin:8px 0; }
-    .md-render li { margin-bottom:4px; }
-    .md-render a { color:var(--accent); text-decoration:underline; text-underline-offset:2px; }
-    .md-render strong { color:var(--text); font-weight:700; }
-    .md-render em { font-style:italic; }
-    .md-render code { background:rgba(0,212,255,.08); color:var(--accent); padding:2px 6px; border-radius:4px; font-size:.85em; }
-    .md-render pre { background:rgba(0,0,0,.3); border:1px solid var(--border); border-radius:10px; padding:12px 14px; overflow-x:auto; margin:10px 0; font-size:.85rem; line-height:1.5; }
-    .md-render pre code { background:transparent; padding:0; color:var(--text); }
-    .md-render blockquote { border-left:3px solid var(--accent); padding-left:14px; font-style:italic; margin:10px 0; color:var(--text); }
-    .md-render img { max-width:100%; border-radius:8px; margin:8px 0; }
-    .md-render hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
-
-    /* ══════ FULLSCREEN EDITOR (Apple-style) ══════ */
-    .fs-editor {
-      position:fixed; inset:0; z-index:5000;
-      background:var(--bg-solid);
-      display:flex; flex-direction:column;
-      opacity:0; pointer-events:none;
-      transition:opacity .25s var(--ease);
-    }
-    .fs-editor.open { opacity:1; pointer-events:all; }
-
-    .fs-topbar {
-      display:flex; align-items:center; gap:12px;
-      padding:12px 20px;
-      background:var(--surface);
-      border-bottom:1px solid var(--border);
-      -webkit-backdrop-filter:var(--glass); backdrop-filter:var(--glass);
-      flex-shrink:0;
-    }
-    .fs-topbar-title {
-      font-size:.85rem; font-weight:700; color:var(--text);
-      flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-    .fs-topbar-title span { color:var(--muted); font-weight:400; }
-    .fs-close-btn {
-      background:rgba(255,255,255,0.06); border:1px solid var(--border);
-      color:var(--text); border-radius:8px; padding:6px 16px;
-      font-size:.8rem; font-weight:600; cursor:pointer; font-family:inherit;
-      transition:all .2s var(--ease);
-    }
-    .fs-close-btn:hover { border-color:var(--accent); color:var(--accent); }
-
-    .fs-toolbar {
-      display:flex; flex-wrap:wrap; gap:3px; align-items:center;
-      padding:8px 20px;
-      background:var(--s2);
-      border-bottom:1px solid var(--border);
-      flex-shrink:0;
-    }
-    .fs-toolbar .md-btn { width:36px; height:34px; font-size:.88rem; border-radius:8px; }
-    .fs-toolbar .md-sep { margin:4px 6px; }
-
-    .fs-mode-tabs {
-      margin-left:auto; display:flex; gap:2px;
-      background:var(--input-bg); border-radius:8px; padding:2px;
-    }
-    .fs-mode-tab {
-      background:transparent; border:none; color:var(--muted);
-      border-radius:6px; padding:5px 14px;
-      font-size:.75rem; font-weight:600; cursor:pointer; font-family:inherit;
-      transition:all .2s var(--ease);
-    }
-    .fs-mode-tab.active { background:var(--accent); color:#000; }
-    .fs-mode-tab:hover:not(.active) { color:var(--text); }
-
-    .fs-body {
-      flex:1; display:flex; overflow:hidden;
-      position:relative;
-    }
-    .fs-edit-pane {
-      flex:1; display:flex; flex-direction:column;
-      min-width:0;
-    }
-    .fs-edit-pane textarea {
-      flex:1; width:100%; border:none; outline:none; resize:none;
-      background:transparent; color:var(--text);
-      font-family:'SF Mono','Fira Code','JetBrains Mono',monospace;
-      font-size:.92rem; line-height:1.75; padding:24px 28px;
-      tab-size:2;
-    }
-    .fs-edit-pane textarea::placeholder { color:var(--muted); opacity:.5; }
-
-    .fs-preview-pane {
-      flex:1; overflow-y:auto; padding:24px 28px;
-      border-left:1px solid var(--border);
-      font-size:.95rem; line-height:1.75; color:var(--muted);
-    }
-    .fs-preview-pane:empty::before {
-      content:'Начните вводить текст...';
-      color:var(--muted); opacity:.4; font-style:italic;
-    }
-
-    .fs-divider {
-      width:1px; background:var(--border); cursor:col-resize;
-      position:relative; flex-shrink:0;
-    }
-
-    /* Word count bar */
-    .fs-statusbar {
-      display:flex; align-items:center; gap:16px;
-      padding:6px 20px;
-      background:var(--s2);
-      border-top:1px solid var(--border);
-      font-size:.7rem; color:var(--muted); flex-shrink:0;
-    }
-    .fs-stat { display:flex; align-items:center; gap:4px; }
-    .fs-stat b { color:var(--text); font-weight:600; }
-
-    /* Modes */
-    .fs-body[data-mode="edit"] .fs-preview-pane,
-    .fs-body[data-mode="edit"] .fs-divider { display:none; }
-    .fs-body[data-mode="edit"] .fs-edit-pane { flex:1; }
-
-    .fs-body[data-mode="preview"] .fs-edit-pane,
-    .fs-body[data-mode="preview"] .fs-divider { display:none; }
-    .fs-body[data-mode="preview"] .fs-preview-pane { flex:1; border-left:none; }
-
-    .fs-body[data-mode="split"] .fs-edit-pane { flex:1; }
-    .fs-body[data-mode="split"] .fs-preview-pane { flex:1; }
-
-    /* Mobile */
-    @media(max-width:768px) {
-      .fs-topbar { padding:10px 14px; }
-      .fs-toolbar { padding:6px 10px; gap:1px; }
-      .fs-toolbar .md-btn { width:34px; height:32px; font-size:.82rem; }
-      .fs-toolbar .md-sep { margin:2px 3px; }
-      .fs-mode-tabs { margin-left:auto; }
-      .fs-edit-pane textarea { padding:16px; font-size:.88rem; }
-      .fs-preview-pane { padding:16px; }
-      .fs-statusbar { padding:5px 14px; gap:10px; }
-      /* Force no split on mobile */
-      .fs-body[data-mode="split"] .fs-preview-pane,
-      .fs-body[data-mode="split"] .fs-divider { display:none; }
-      .fs-body[data-mode="split"] .fs-edit-pane { flex:1; }
-    }
     .frow { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
     .fsec {
       font-size:.65rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
@@ -793,15 +524,11 @@
       z-index:40;
       -webkit-backdrop-filter: var(--glass);
       backdrop-filter: var(--glass);
-      transition: all .35s var(--ease);
+      transition: all .4s var(--ease);
     }
-    .adm-sidebar.collapsed ~ .save-bar { left:60px; }
 
-    .save-status { font-size:.85rem; color:var(--muted); letter-spacing:.04em; transition:all .3s; font-weight:500; }
+    .save-status { font-size:.73rem; color:var(--muted); letter-spacing:.06em; transition:color .3s; }
     .save-status.ok { color:var(--success); }
-    .save-status.dirty { color:var(--warning); font-weight:600; }
-    .save-bar.has-changes { border-top:2px solid var(--warning); }
-    .save-bar.has-changes .save-status { color:var(--warning); }
 
     /* ═══════ TOAST — spring from bottom ═══════ */
     .toast {
@@ -968,10 +695,6 @@
       .sb-label { display: none; }
       .sb-div { display: none; }
       .sb-status { display: none; }
-      .sb-toggle { display: none; }
-      .adm-sidebar.collapsed { width:100%; }
-      .adm-sidebar.collapsed .sb-item-text { display:inline !important; }
-      .adm-sidebar.collapsed .sb-item { justify-content:flex-start; padding:8px 12px; gap:6px; }
       .sb-item {
         padding: 8px 12px;
         font-size: .68rem;
@@ -1213,258 +936,3 @@
     }
     .hist-badge.lang { background:var(--sb-active); color:var(--accent); }
     .hist-badge.user { background:rgba(168,85,247,.1); color:var(--accent2); }
-
-    /* ═══════ PAGES MANAGER ═══════ */
-    .pg-row {
-      display:flex; align-items:center; gap:14px;
-      padding:14px 18px; margin-bottom:8px;
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--r);
-      backdrop-filter:var(--glass);
-      transition:all .2s var(--ease);
-    }
-    .pg-row:hover { border-color:var(--border-h); box-shadow:var(--shadow-sm); }
-    .pg-dot {
-      width:8px; height:8px; border-radius:50%; flex-shrink:0;
-      box-shadow:0 0 6px currentColor;
-    }
-    .pg-info { flex:1; min-width:0; }
-    .pg-title { display:block; font-size:.9rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .pg-slug { display:block; font-size:.7rem; color:var(--muted); margin-top:2px; font-family:monospace; }
-    .pg-tpl { flex-shrink:0; }
-    .pg-acts { display:flex; gap:6px; flex-shrink:0; }
-
-    /* ═══════ NAV BUILDER ═══════ */
-    .nav-child .fg { margin-bottom:8px; flex:1; }
-  </style>
-</head>
-<body>
-
-<!-- CURSOR -->
-<div class="cdot" id="cdot"></div>
-<div class="cring" id="cring"></div>
-
-<!-- ═════════════════════ LOGIN ═════════════════════ -->
-<div id="login-screen">
-  <div class="login-wrap">
-    <div class="login-corner tl"></div>
-    <div class="login-corner tr"></div>
-    <div class="login-corner bl"></div>
-    <div class="login-corner br"></div>
-    <div class="login-card">
-      <div class="login-tag">System Access</div>
-      <div class="login-title">A<span>.</span>C Admin</div>
-      <div class="login-sub">Панель управления сайтом</div>
-      <div class="login-err" id="login-err">Неверный email или пароль</div>
-      <div class="field">
-        <label>Идентификатор</label>
-        <input type="email" id="inp-email" placeholder="user@domain.com" autocomplete="username" />
-      </div>
-      <div class="field">
-        <label>Код доступа</label>
-        <input type="password" id="inp-pass" placeholder="••••••••••"
-               autocomplete="current-password"
-               onkeydown="if(event.key==='Enter')doLogin()" />
-      </div>
-      <button class="login-btn" onclick="doLogin()"><span>→ Войти в систему</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- ═════════════════════ ADMIN ═════════════════════ -->
-<div id="admin-panel">
-
-  <div class="adm-header">
-    <div class="adm-hdr-l">
-      <div class="adm-logo">A<span>.</span>C</div>
-      <div class="adm-subtitle">Control Panel</div>
-    </div>
-    <div class="adm-hdr-r">
-      <button class="xbtn cyan" onclick="toggleAllItems('open')"  title="Раскрыть все блоки">▾ Развернуть</button>
-      <button class="xbtn cyan" onclick="toggleAllItems('close')" title="Свернуть все блоки">▴ Свернуть</button>
-      <div class="adm-lang-sw" title="Язык редактирования">
-        <button class="alb active" data-alang="ru" onclick="switchAdminLang('ru')">RU</button>
-        <button class="alb"        data-alang="uk" onclick="switchAdminLang('uk')">UK</button>
-        <button class="alb"        data-alang="no" onclick="switchAdminLang('no')">NO</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;" title="Тема оформления">
-        <span class="theme-toggle-label">☀</span>
-        <div class="theme-toggle" id="theme-toggle" onclick="toggleAdminTheme()"></div>
-        <span class="theme-toggle-label">🌙</span>
-      </div>
-      <button class="xbtn cyan" onclick="syncFromCode()" title="Записать данные из site-data.js в Firestore и обновить сайт">🔄 Обновить данные</button>
-      <button class="xbtn cyan" onclick="previewSite()" title="Предпросмотр">👁 Превью</button>
-      <a href="index.html" target="_blank" rel="noopener noreferrer" class="xbtn cyan">↗ Сайт</a>
-      <button class="xbtn red" onclick="doLogout()">✕ Выйти</button>
-    </div>
-  </div>
-
-  <div class="adm-layout">
-
-    <!-- Sidebar -->
-    <div class="adm-sidebar" id="adm-sidebar">
-      <button class="sb-toggle" onclick="toggleSidebar()" title="Свернуть/Развернуть">◀</button>
-      <div class="sb-item" data-tab="help" data-tip="Инструкция" onclick="showTab('help')" style="margin-bottom:8px;opacity:.7;"><span class="sb-icon">?</span><span class="sb-item-text">Инструкция</span></div>
-      <div class="sb-label">Основные</div>
-      <div class="sb-item" data-tab="index"     data-tip="Главная"     onclick="showTab('index')">    <span class="sb-icon">🏠</span><span class="sb-item-text">Главная</span></div>
-      <div class="sb-item" data-tab="about"     data-tip="О себе"      onclick="showTab('about')">    <span class="sb-icon">👤</span><span class="sb-item-text">О себе</span></div>
-      <div class="sb-item" data-tab="journey"   data-tip="Мой путь"    onclick="showTab('journey')">  <span class="sb-icon">🗺️</span><span class="sb-item-text">Мой путь</span></div>
-      <div class="sb-item" data-tab="interests" data-tip="Интересы"    onclick="showTab('interests')"><span class="sb-icon">🧠</span><span class="sb-item-text">Интересы</span></div>
-      <div class="sb-item" data-tab="videos"    data-tip="Видео"       onclick="showTab('videos')">   <span class="sb-icon">🎬</span><span class="sb-item-text">Видео</span></div>
-      <div class="sb-item" data-tab="contact"   data-tip="Контакт"     onclick="showTab('contact')">  <span class="sb-icon">✉️</span><span class="sb-item-text">Контакт</span></div>
-      <div class="sb-item" data-tab="world"     data-tip="Мир"         onclick="showTab('world')">    <span class="sb-icon">🌌</span><span class="sb-item-text">Мир</span></div>
-      <div class="sb-item" data-tab="boards"    data-tip="Доски"       onclick="showTab('boards')">   <span class="sb-icon">📋</span><span class="sb-item-text">Доски</span></div>
-      <div class="sb-div"></div>
-
-      <div class="sb-label">Динамические</div>
-      <div class="sb-item" data-tab="pages"     data-tip="Страницы"    onclick="showTab('pages')">    <span class="sb-icon">📄</span><span class="sb-item-text">Страницы</span></div>
-      <div class="sb-div"></div>
-
-      <div class="sb-label">Настройки</div>
-      <div class="sb-item" data-tab="seo"        data-tip="SEO"         onclick="showTab('seo')">        <span class="sb-icon">🔎</span><span class="sb-item-text">SEO</span></div>
-      <div class="sb-item" data-tab="appearance" data-tip="Внешний вид" onclick="showTab('appearance')"> <span class="sb-icon">🎨</span><span class="sb-item-text">Внешний вид</span></div>
-      <div class="sb-item" data-tab="global"     data-tip="Общие"       onclick="showTab('global')">     <span class="sb-icon">⚙️</span><span class="sb-item-text">Общие</span></div>
-      <div class="sb-item" data-tab="security"   data-tip="Безопасность" onclick="showTab('security')">  <span class="sb-icon">🔐</span><span class="sb-item-text">Безопасность</span></div>
-      <div class="sb-item" data-tab="media"      data-tip="Медиа"       onclick="showTab('media')">      <span class="sb-icon">🖼️</span><span class="sb-item-text">Медиа</span></div>
-      <div class="sb-item" data-tab="bookmarks"  data-tip="Закладки"    onclick="showTab('bookmarks')">  <span class="sb-icon">🔖</span><span class="sb-item-text">Закладки</span></div>
-      <div class="sb-item" data-tab="i18n"       data-tip="Переводы"    onclick="showTab('i18n')">       <span class="sb-icon">🌐</span><span class="sb-item-text">Переводы</span></div>
-      <div class="sb-status">Система активна</div>
-    </div>
-    <div class="sb-tooltip" id="sb-tooltip"></div>
-
-    <!-- Main -->
-    <div class="adm-main" id="adm-main"></div>
-  </div>
-
-  <!-- Unsaved changes dialog (outside layout to avoid flex issues) -->
-  <div class="unsaved-overlay" id="unsaved-overlay">
-    <div class="unsaved-dialog">
-      <span class="unsaved-dialog-icon">⚠️</span>
-      <h3>Несохранённые изменения</h3>
-      <p>У вас есть изменения, которые ещё не сохранены. Что сделать?</p>
-      <div class="unsaved-dialog-btns">
-        <button class="unsaved-btn-save" onclick="unsavedAction('save')">💾 Сохранить</button>
-        <button class="unsaved-btn-discard" onclick="unsavedAction('discard')">Не сохранять</button>
-        <button class="unsaved-btn-cancel" onclick="unsavedAction('cancel')">Отмена</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="save-bar">
-    <div class="save-bar-l">
-      <span class="save-status" id="save-st">Изменения не сохранены</span>
-      <span class="save-auto"   id="save-auto"></span>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <span style="font-size:.7rem;color:var(--muted);">Язык: <strong id="save-lang" style="color:var(--accent)">RU</strong></span>
-      <button class="xbtn save" onclick="saveAll()">💾 Сохранить <span style="opacity:.5;font-size:.7em">или Ctrl+S</span></button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<!-- ═══ FULLSCREEN EDITOR ═══ -->
-<div class="fs-editor" id="fs-editor">
-  <div class="fs-topbar">
-    <div class="fs-topbar-title" id="fs-title">Редактор</div>
-    <button class="fs-close-btn" onclick="fsEditorClose()">Готово ✓</button>
-  </div>
-  <div class="fs-toolbar" id="fs-toolbar"></div>
-  <div class="fs-body" id="fs-body" data-mode="split">
-    <div class="fs-edit-pane">
-      <textarea id="fs-textarea" placeholder="Начните писать текст..." oninput="fsEditorInput()"></textarea>
-    </div>
-    <div class="fs-divider"></div>
-    <div class="fs-preview-pane md-render" id="fs-preview"></div>
-  </div>
-  <div class="fs-statusbar">
-    <div class="fs-stat">Символов: <b id="fs-chars">0</b></div>
-    <div class="fs-stat">Слов: <b id="fs-words">0</b></div>
-    <div class="fs-stat">Строк: <b id="fs-lines">0</b></div>
-  </div>
-</div>
-
-<!-- ═══ ICON PICKER MODAL ═══ -->
-<div id="icon-picker-overlay" class="ip-overlay" style="display:none" onclick="if(event.target===this)closeIconPicker()">
-  <div class="ip-modal">
-    <div class="ip-header">
-      <h3>Выбери иконку</h3>
-      <div class="ip-tabs">
-        <button class="ip-tab active" data-tab="lucide" onclick="switchIPTab('lucide')">Lucide SVG</button>
-        <button class="ip-tab" data-tab="emoji" onclick="switchIPTab('emoji')">Emoji</button>
-      </div>
-      <button class="ip-close" onclick="closeIconPicker()">&times;</button>
-    </div>
-    <input class="ip-search" id="ip-search" placeholder="Поиск иконок..." oninput="filterIcons()"/>
-    <div class="ip-grid" id="ip-grid"></div>
-    <div class="ip-footer">
-      <span class="ip-current" id="ip-current"></span>
-      <button class="xbtn cyan ip-confirm" onclick="confirmIconPicker()">Выбрать</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ── THEME TOGGLE ────────────────────────────
-function toggleAdminTheme(){
-  const cur = document.documentElement.getAttribute('data-admin-theme') || 'dark';
-  const next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-admin-theme', next);
-  localStorage.setItem('ac_admin_theme', next);
-}
-function toggleSidebar(){
-  const sb = document.getElementById('adm-sidebar');
-  if(!sb) return;
-  sb.classList.toggle('collapsed');
-  const collapsed = sb.classList.contains('collapsed');
-  localStorage.setItem('ac_sidebar_collapsed', collapsed ? '1' : '');
-  const saveBar = document.querySelector('.save-bar');
-  if(saveBar && window.innerWidth > 900) saveBar.style.left = collapsed ? '60px' : '250px';
-}
-// Sidebar tooltip on hover (collapsed mode)
-(function(){
-  const tip = document.getElementById('sb-tooltip');
-  if(!tip) return;
-  document.addEventListener('mouseover', function(e){
-    const item = e.target.closest('.sb-item');
-    const sb = document.getElementById('adm-sidebar');
-    if(!item || !sb || !sb.classList.contains('collapsed')) { tip.classList.remove('show'); return; }
-    const text = item.getAttribute('data-tip');
-    if(!text) { tip.classList.remove('show'); return; }
-    const rect = item.getBoundingClientRect();
-    tip.textContent = text;
-    tip.style.left = (rect.right + 10) + 'px';
-    tip.style.top = (rect.top + rect.height/2) + 'px';
-    tip.style.transform = 'translateY(-50%)';
-    tip.classList.add('show');
-  });
-  document.addEventListener('mouseout', function(e){
-    const item = e.target.closest('.sb-item');
-    if(item) tip.classList.remove('show');
-  });
-})();
-(function(){
-  const saved = localStorage.getItem('ac_admin_theme') || 'dark';
-  document.documentElement.setAttribute('data-admin-theme', saved);
-  // Restore sidebar state
-  if(localStorage.getItem('ac_sidebar_collapsed') === '1'){
-    const sb = document.getElementById('adm-sidebar');
-    if(sb) sb.classList.add('collapsed');
-  }
-})();
-</script>
-
-<script src="https://unpkg.com/lucide@0.469.0"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="site-data.js"></script>
-<script src="translations.js"></script>
-<script src="admin-core.js"></script>
-<script src="admin-editors.js"></script>
-</body>
-</html>
