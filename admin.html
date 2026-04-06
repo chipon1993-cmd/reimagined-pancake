@@ -4259,12 +4259,24 @@ var _defaultNav=[
 
 async function _ensureNav(){
   let navData;
-  try { navData=await fsGet('content','ac_navigation'); }catch(e){}
+  try { navData=await fsGet('content','ac_navigation'); }catch(e){ console.warn('Nav read failed',e); }
   if(!navData||!navData.header||!navData.header.length){
     navData={header:JSON.parse(JSON.stringify(_defaultNav))};
-    try { await db.collection('content').doc('ac_navigation').set(navData); }catch(e){}
+    // Try to save defaults, but don't fail if permissions missing
+    try { await db.collection('content').doc('ac_navigation').set(navData); }catch(e){ console.warn('Nav init write failed (check Firestore rules)',e); }
   }
   return navData;
+}
+
+async function _saveNav(navData){
+  try {
+    await db.collection('content').doc('ac_navigation').set(navData);
+    return true;
+  }catch(e){
+    showToast('// Ошибка сохранения меню: '+e.message,'error');
+    console.error('Nav save failed',e);
+    return false;
+  }
 }
 
 async function peNavAdd(){
@@ -4283,28 +4295,25 @@ async function peNavAdd(){
       navData.header[pi].children.push({label:title,href:pageHref});
     }
   }
-  try {
-    await db.collection('content').doc('ac_navigation').set(navData);
+  if(await _saveNav(navData)){
     showToast('// Добавлено в меню');
     CT=''; _showTabDirect('page-edit');
-  }catch(e){ showToast('// Ошибка: '+e.message); }
+  }
 }
 
 async function peNavRemove(){
   if(!_editingPageId) return;
-  let navData;
-  try { navData=await fsGet('content','ac_navigation'); }catch(e){}
+  let navData=await _ensureNav();
   if(!navData||!navData.header) return;
   const pageHref='page.html?id='+_editingPageId;
   navData.header=navData.header.filter(h=>h.href!==pageHref);
   navData.header.forEach(h=>{
     if(h.children) h.children=h.children.filter(ch=>ch.href!==pageHref);
   });
-  try {
-    await db.collection('content').doc('ac_navigation').set(navData);
+  if(await _saveNav(navData)){
     showToast('// Убрано из меню');
     CT=''; _showTabDirect('page-edit');
-  }catch(e){ showToast('// Ошибка: '+e.message); }
+  }
 }
 
 async function peCardAdd(){
@@ -4456,15 +4465,14 @@ async function navAddFromPages(){
 async function navSave(){
   const msg=document.getElementById('nav-save-msg');
   const items=_navCollectItems();
-  try {
-    // Full overwrite so removed items don't linger
-    await db.collection('content').doc('ac_navigation').set({header:items});
-    _navData={header:items};
+  const navData={header:items};
+  if(await _saveNav(navData)){
+    _navData=navData;
     msg.innerHTML='<span style="color:var(--success)">✓ Сохранено</span>';
     setTimeout(()=>{ if(msg) msg.innerHTML=''; },3000);
     showToast('// Навигация сохранена');
-  } catch(e){
-    msg.innerHTML='<span style="color:var(--danger)">Ошибка: '+e.message+'</span>';
+  } else {
+    msg.innerHTML='<span style="color:var(--danger)">Ошибка сохранения. Проверьте Firestore Rules.</span>';
   }
 }
 
