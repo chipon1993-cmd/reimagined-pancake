@@ -1873,7 +1873,8 @@ function showValidationWarnings(warns){
 // ── PREVIEW ──────────────────────────────────
 const TAB_PAGE_MAP={
   index:'index.html', about:'about.html', journey:'journey.html',
-  interests:'interests.html', videos:'videos.html', contact:'contact.html'
+  interests:'interests.html', videos:'videos.html', contact:'contact.html',
+  navigation:'index.html', global:'index.html'
 };
 
 function previewSite(){
@@ -1902,7 +1903,7 @@ function loadPreviewForTab(tab){
   collectCurrent();
   localStorage.setItem('ac_preview', JSON.stringify(D));
   const sep = file.includes('?') ? '&' : '?';
-  const src = file + sep + 'preview=1&t=' + Date.now();
+  const src = file + sep + 'preview=1&embed=1&t=' + Date.now();
   iframe.src = src;
 }
 
@@ -2543,7 +2544,9 @@ async function showTab(tab) {
 }
 
 async function _showTabDirect(tab){
-  collectCurrent(); CT=tab;
+  collectCurrent();
+  if(CT==='navigation' && tab!=='navigation') _navData=null;
+  CT=tab;
   localStorage.setItem('ac_admin_tab', tab);
   const sbTab = tab==='page-edit'?'pages':tab;
   document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===sbTab));
@@ -4483,7 +4486,7 @@ async function peCardRemove(){
 
 // ── NAVIGATION BUILDER ──────────────────────
 async function edNavigation(){
-  _navData = await _ensureNav();
+  if(!_navData || !_navData.header) _navData = await _ensureNav();
   const items=_navData.header;
   let itemsHtml='';
   items.forEach((item,i)=>{
