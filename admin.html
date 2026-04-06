@@ -333,8 +333,7 @@
     /* ── Unsaved changes dialog ── */
     .unsaved-overlay {
       position:fixed; inset:0; z-index:6000;
-      background:rgba(0,0,0,0.6);
-      -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+      background:rgba(0,0,0,0.7);
       display:flex; align-items:center; justify-content:center;
       opacity:0; pointer-events:none;
       transition:opacity .2s var(--ease);
@@ -1333,22 +1332,22 @@
     </div>
     <div class="sb-tooltip" id="sb-tooltip"></div>
 
-    <!-- Unsaved changes dialog -->
-    <div class="unsaved-overlay" id="unsaved-overlay">
-      <div class="unsaved-dialog">
-        <span class="unsaved-dialog-icon">⚠️</span>
-        <h3>Несохранённые изменения</h3>
-        <p>У вас есть изменения, которые ещё не сохранены. Что сделать?</p>
-        <div class="unsaved-dialog-btns">
-          <button class="unsaved-btn-save" onclick="unsavedAction('save')">💾 Сохранить</button>
-          <button class="unsaved-btn-discard" onclick="unsavedAction('discard')">Не сохранять</button>
-          <button class="unsaved-btn-cancel" onclick="unsavedAction('cancel')">Отмена</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Main -->
     <div class="adm-main" id="adm-main"></div>
+  </div>
+
+  <!-- Unsaved changes dialog (outside layout to avoid flex issues) -->
+  <div class="unsaved-overlay" id="unsaved-overlay">
+    <div class="unsaved-dialog">
+      <span class="unsaved-dialog-icon">⚠️</span>
+      <h3>Несохранённые изменения</h3>
+      <p>У вас есть изменения, которые ещё не сохранены. Что сделать?</p>
+      <div class="unsaved-dialog-btns">
+        <button class="unsaved-btn-save" onclick="unsavedAction('save')">💾 Сохранить</button>
+        <button class="unsaved-btn-discard" onclick="unsavedAction('discard')">Не сохранять</button>
+        <button class="unsaved-btn-cancel" onclick="unsavedAction('cancel')">Отмена</button>
+      </div>
+    </div>
   </div>
 
   <div class="save-bar">
