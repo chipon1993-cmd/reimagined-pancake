@@ -125,6 +125,24 @@
     return r;
   }
 
+  // Sanitize rich-text HTML: allow only safe formatting tags
+  function safeParagraph(html) {
+    if (!html) return '';
+    if (typeof DOMPurify !== 'undefined') {
+      return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['b','i','br','strong','em','a','u','span'], ALLOWED_ATTR: ['href','target','rel','class'] });
+    }
+    // Fallback: strip all tags except safe ones
+    return html.replace(/<(?!\/?(?:b|i|br|strong|em|a|u|span)\b)[^>]*>/gi, '');
+  }
+
+  // Sanitize plain text for safe insertion
+  function esc(str) {
+    if (!str) return '';
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
   function set(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
   function attr(id, a, v) { const el = document.getElementById(id); if (el) el.setAttribute(a, v); }
   function i18n(key, fallback) {
@@ -214,7 +232,7 @@
     set('journey-page-title', esc(d.pageTitle));
     set('journey-page-desc', esc(d.pageDesc));
     set('now-title', esc(d.nowTitle));
-    set('now-text', esc(d.nowText));
+    set('now-text', safeParagraph(d.nowText));
     const tl = document.getElementById('timeline');
     if (tl && d.items) tl.innerHTML = d.items.map(item => `
       <div class="timeline-item fade-in">
@@ -223,7 +241,7 @@
           <span class="timeline-title">${esc(item.title)}</span>
         </div>
         <div class="timeline-location">${esc(item.location)}</div>
-        <p class="timeline-desc">${esc(item.desc)}</p>
+        <p class="timeline-desc">${safeParagraph(item.desc)}</p>
         <div class="timeline-tags">${(item.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
       </div>`).join('');
   }
