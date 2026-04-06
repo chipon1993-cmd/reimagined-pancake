@@ -4400,6 +4400,8 @@ async function edNavigation(){
     menuHrefs.push(h.href);
     if(h.children) h.children.forEach(function(ch){ menuHrefs.push(ch.href); });
   });
+  // Collect homepage card hrefs
+  var cardHrefs=(D.index&&D.index.navCards||[]).map(function(c){return c.href;});
 
   var sitemapHtml='';
   // Static pages
@@ -4418,13 +4420,15 @@ async function edNavigation(){
   dynPages.forEach(function(dp){
     var href='page.html?id='+dp.id;
     var inMenu=menuHrefs.indexOf(href)>=0;
+    var onHome=cardHrefs.indexOf(href)>=0;
     var st=dp.status==='published'?'var(--success)':'var(--warning)';
-    sitemapHtml+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);">
+    sitemapHtml+=`<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap;">
       <span style="width:8px;height:8px;border-radius:50%;background:${st};flex-shrink:0;"></span>
-      <span style="flex:1;font-weight:600;font-size:.85rem;">${esc(dp.title||dp.id)}</span>
+      <span style="flex:1;font-weight:600;font-size:.85rem;min-width:120px;">${esc(dp.title||dp.id)}</span>
       <span style="font-size:.7rem;color:var(--muted);">page.html?id=${esc(dp.id)}</span>
       ${dp.status!=='published'?'<span style="font-size:.7rem;color:var(--warning);font-weight:600;">черновик</span>':''}
-      ${inMenu?'<span style="font-size:.7rem;color:var(--success);">✓ в меню</span>':'<button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="navQuickAdd(\''+esc(dp.title||dp.id)+'\',\''+esc(href)+'\')">+ в меню</button>'}
+      ${inMenu?'<span style="font-size:.7rem;color:var(--success);">✓ меню</span>':'<button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="navQuickAdd(\''+esc(dp.title||dp.id)+'\',\''+esc(href)+'\')">+ меню</button>'}
+      ${onHome?'<span style="font-size:.7rem;color:var(--success);">✓ главная</span>':'<button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="navQuickCard(\''+esc(dp.title||dp.id)+'\',\''+esc(dp.desc||'')+'\',\''+esc(href)+'\')">+ главная</button>'}
     </div>`;
   });
 
@@ -4438,6 +4442,23 @@ async function edNavigation(){
     <div style="display:flex;align-items:center;gap:10px;margin-top:16px;">
       <button class="xbtn cyan" onclick="navAddItem()">+ Пустой пункт</button>
     </div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;">
+    <div class="fsec" style="margin-top:0;">Карточки на главной странице</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">Карточки-вопросы на главной. Перетаскивай для сортировки. Редактируй текст, иконку и ссылку.</p>
+    <div class="leditor" id="nav-cards-list">${(function(){
+      var cards=D.index&&D.index.navCards?D.index.navCards:[];
+      if(!cards.length) return '<p style="color:var(--muted);font-size:.85rem;padding:12px 0;">Нет карточек</p>';
+      return cards.map(function(c,i){
+        return '<div class="li-item" data-idx="'+i+'"><div class="li-hdr" onclick="toggleLI(this)"><span class="drag-handle" title="Перетащить">⠿</span><span class="li-idx">'+String(i+1).padStart(2,'0')+'</span><span class="li-title">'+esc(c.icon||'')+' '+esc(c.title||'(без названия)')+'</span><div class="li-acts"><button class="lib del" onclick="event.stopPropagation();navCardDel('+i+')" title="Удалить">✕</button></div></div><div class="li-body">'+fg('Иконка (emoji)',inp('nci-'+i,c.icon||''))+fg('Заголовок',inp('nct-'+i,c.title||''))+fg('Описание',inp('ncd-'+i,c.desc||''))+fg('Ссылка',inp('nch-'+i,c.href||''))+'</div></div>';
+      }).join('');
+    })()}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
+      <button class="xbtn cyan" onclick="navCardAdd()">+ Добавить карточку</button>
+    </div>
+    <button class="xbtn save" onclick="navCardsSave()" style="margin-top:16px;">💾 Сохранить карточки</button>
+    <span id="nav-cards-msg" style="margin-left:14px;font-size:.85rem;"></span>
   </div>
 
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;">
@@ -4476,6 +4497,59 @@ function _navCollectItems(){
     items.push(item);
   });
   return items;
+}
+
+function _navCardsCollect(){
+  var cards=[];
+  document.querySelectorAll('#nav-cards-list .li-item').forEach(function(li){
+    var i=li.dataset.idx;
+    cards.push({
+      icon:document.getElementById('nci-'+i)?.value||'',
+      title:document.getElementById('nct-'+i)?.value||'',
+      desc:document.getElementById('ncd-'+i)?.value||'',
+      href:document.getElementById('nch-'+i)?.value||''
+    });
+  });
+  return cards;
+}
+function navCardAdd(){
+  if(!D.index) D.index={};
+  D.index.navCards=_navCardsCollect();
+  D.index.navCards.push({icon:'🔗',title:'Новая карточка',desc:'Описание',href:'#'});
+  CT=''; _showTabDirect('navigation');
+}
+function navCardDel(idx){
+  if(!confirm('Удалить карточку?')) return;
+  D.index.navCards=_navCardsCollect();
+  D.index.navCards.splice(idx,1);
+  CT=''; _showTabDirect('navigation');
+}
+async function navCardsSave(){
+  var msg=document.getElementById('nav-cards-msg');
+  D.index.navCards=_navCardsCollect();
+  try {
+    await saveAll();
+    msg.innerHTML='<span style="color:var(--success)">✓ Сохранено</span>';
+    setTimeout(function(){ if(msg) msg.innerHTML=''; },3000);
+    showToast('// Карточки на главной сохранены');
+  }catch(e){
+    msg.innerHTML='<span style="color:var(--danger)">Ошибка: '+e.message+'</span>';
+  }
+}
+
+async function navQuickCard(title,desc,href){
+  if(!D.index) D.index={};
+  if(!D.index.navCards) D.index.navCards=[];
+  if(D.index.navCards.some(function(c){return c.href===href;})){ showToast('// Уже на главной'); return; }
+  // Collect current cards from form if on nav page
+  var listEl=document.getElementById('nav-cards-list');
+  if(listEl&&listEl.querySelector('.li-item')) D.index.navCards=_navCardsCollect();
+  D.index.navCards.push({icon:'🔗',title:title,desc:desc,href:href});
+  try {
+    await saveAll();
+    showToast('// Добавлено на главную');
+    CT=''; _showTabDirect('navigation');
+  }catch(e){ showToast('// Ошибка: '+e.message); }
 }
 
 function navQuickAdd(label,href){
