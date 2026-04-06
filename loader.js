@@ -423,6 +423,26 @@
       case 'image':
         return '<figure class="block-image fade-in"><img src="' + esc(b.src || '') + '" alt="' + esc(b.alt || '') + '" loading="lazy" />' +
           (b.caption ? '<figcaption>' + esc(b.caption) + '</figcaption>' : '') + '</figure>';
+      case 'video':
+        var src = b.src || '';
+        var yt = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+        if (yt) {
+          return '<div class="block-video fade-in"><div class="video-wrapper"><iframe src="https://www.youtube.com/embed/' + esc(yt[1]) + '" frameborder="0" allowfullscreen loading="lazy"></iframe></div>' +
+            (b.caption ? '<p class="video-caption">' + esc(b.caption) + '</p>' : '') + '</div>';
+        }
+        return '<div class="block-video fade-in"><div class="video-wrapper"><video src="' + esc(src) + '" controls preload="metadata"></video></div>' +
+          (b.caption ? '<p class="video-caption">' + esc(b.caption) + '</p>' : '') + '</div>';
+      case 'file':
+        var fname = b.content || b.src.split('/').pop().split('?')[0] || 'Файл';
+        var ext = fname.split('.').pop().toLowerCase();
+        var icon = '📎';
+        if (ext === 'pdf') icon = '📄';
+        else if (['doc','docx','odt','rtf','txt'].indexOf(ext) >= 0) icon = '📝';
+        else if (['xls','xlsx','csv'].indexOf(ext) >= 0) icon = '📊';
+        else if (['zip','rar','7z'].indexOf(ext) >= 0) icon = '📦';
+        return '<div class="block-file fade-in"><a href="' + esc(b.src || '') + '" target="_blank" rel="noopener" class="file-download">' +
+          '<span class="file-icon">' + icon + '</span><div class="file-info"><span class="file-name">' + esc(fname) + '</span>' +
+          (b.caption ? '<span class="file-desc">' + esc(b.caption) + '</span>' : '') + '</div><span class="file-action">Скачать ↓</span></a></div>';
       default:
         return '';
     }

@@ -3500,16 +3500,23 @@ function colTranslations(){
 }
 
 // ── MEDIA MANAGER ───────────────────────────
+var _mediaFilter='all';
 function edMedia(){
   return `<div class="ed-header"><div class="ed-tag">Медиафайлы</div><h2>Менеджер медиа</h2>
-    <p>Загружай картинки в Firebase Storage. Нажми на карточку чтобы скопировать URL.</p></div>
+    <p>Загружай файлы в Firebase Storage — фото, видео, документы. Нажми на карточку чтобы скопировать URL.</p></div>
   <div class="media-drop" id="media-drop">
     <div class="media-drop-icon">📁</div>
-    <div class="media-drop-text"><b>Перетащи файлы</b> или нажми для выбора<br>PNG, JPG, GIF, WebP, SVG — до 5 MB</div>
-    <input type="file" multiple accept="image/*" id="media-file-input" onchange="handleMediaFiles(this.files)">
+    <div class="media-drop-text"><b>Перетащи файлы</b> или нажми для выбора<br>Фото, видео, PDF, документы — до 50 MB</div>
+    <input type="file" multiple id="media-file-input" onchange="handleMediaFiles(this.files)">
     <div class="media-upload-progress" id="media-progress"><div class="bar" id="media-progress-bar"></div></div>
   </div>
   <div class="fsec">Загруженные файлы</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+    <button class="xbtn ${_mediaFilter==='all'?'save':'cyan'}" onclick="_mediaFilter='all';loadMediaList()">Все</button>
+    <button class="xbtn ${_mediaFilter==='image'?'save':'cyan'}" onclick="_mediaFilter='image';loadMediaList()">Фото</button>
+    <button class="xbtn ${_mediaFilter==='video'?'save':'cyan'}" onclick="_mediaFilter='video';loadMediaList()">Видео</button>
+    <button class="xbtn ${_mediaFilter==='doc'?'save':'cyan'}" onclick="_mediaFilter='doc';loadMediaList()">Документы</button>
+  </div>
   <div id="media-list"><p style="color:var(--muted);font-size:.85rem;">Загрузка...</p></div>`;
 }
 
@@ -3522,6 +3529,25 @@ function initMediaDrop(){
   loadMediaList();
 }
 
+function _mediaType(name){
+  var ext=(name||'').split('.').pop().toLowerCase();
+  if(['jpg','jpeg','png','gif','webp','svg','bmp','ico','avif'].includes(ext)) return 'image';
+  if(['mp4','webm','mov','avi','mkv','m4v','ogg'].includes(ext)) return 'video';
+  return 'doc';
+}
+function _mediaIcon(name){
+  var t=_mediaType(name);
+  if(t==='image') return '🖼️';
+  if(t==='video') return '🎬';
+  var ext=(name||'').split('.').pop().toLowerCase();
+  if(ext==='pdf') return '📄';
+  if(['doc','docx','odt','rtf','txt'].includes(ext)) return '📝';
+  if(['xls','xlsx','csv'].includes(ext)) return '📊';
+  if(['zip','rar','7z','tar','gz'].includes(ext)) return '📦';
+  return '📎';
+}
+var _maxFileSize=50*1024*1024; // 50 MB
+
 async function handleMediaFiles(files){
   if(!files||!files.length) return;
   const prog=document.getElementById('media-progress');
@@ -3529,10 +3555,12 @@ async function handleMediaFiles(files){
   prog.style.display='block';
   for(let i=0;i<files.length;i++){
     const file=files[i];
-    if(file.size>5*1024*1024){ showToast('// Файл '+file.name+' > 5 MB, пропущен','error'); continue; }
-    if(!file.type.startsWith('image/')){ showToast('// '+file.name+' — не изображение, пропущен','error'); continue; }
+    if(file.size>_maxFileSize){ showToast('// Файл '+file.name+' > 50 MB, пропущен','error'); continue; }
+    // Determine folder by type
+    const fType=_mediaType(file.name);
+    const folder=fType==='video'?'videos':fType==='image'?'media':'docs';
     const name=Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'');
-    const ref=storage.ref('media/'+name);
+    const ref=storage.ref(folder+'/'+name);
     try{
       const task=ref.put(file,{contentType:file.type});
       task.on('state_changed',snap=>{
@@ -3551,29 +3579,52 @@ let _mediaItems=[]; // cache for click handlers
 async function loadMediaList(){
   const container=document.getElementById('media-list');
   if(!container) return;
+  container.innerHTML='<p style="color:var(--muted);font-size:.85rem;">Загрузка файлов...</p>';
   try{
-    const res=await storage.ref('media').listAll();
-    if(!res.items.length){
+    // Load from all three folders
+    const [imgRes,vidRes,docRes] = await Promise.all([
+      storage.ref('media').listAll().catch(()=>({items:[]})),
+      storage.ref('videos').listAll().catch(()=>({items:[]})),
+      storage.ref('docs').listAll().catch(()=>({items:[]}))
+    ]);
+    const allItems=[...imgRes.items,...vidRes.items,...docRes.items];
+    if(!allItems.length){
       _mediaItems=[];
       container.innerHTML='<p style="color:var(--muted);font-size:.85rem;">Пока нет загруженных файлов</p>';
       return;
     }
     _mediaItems=[];
     const cards=[];
-    for(let idx=0;idx<res.items.length;idx++){
-      const item=res.items[idx];
+    for(let idx=0;idx<allItems.length;idx++){
+      const item=allItems[idx];
       const url=await item.getDownloadURL();
-      _mediaItems.push({url:url, path:item.fullPath, name:item.name});
+      const ft=_mediaType(item.name);
+      // Apply filter
+      if(_mediaFilter!=='all'&&ft!==_mediaFilter) continue;
+      const realIdx=_mediaItems.length;
+      _mediaItems.push({url:url, path:item.fullPath, name:item.name, type:ft});
+      const icon=_mediaIcon(item.name);
+      let preview='';
+      if(ft==='image'){
+        preview=`<img src="${esc(url)}" alt="${esc(item.name)}" loading="lazy">`;
+      } else if(ft==='video'){
+        preview=`<div style="display:flex;align-items:center;justify-content:center;height:100%;background:var(--s2);"><span style="font-size:2.5rem;">🎬</span></div>`;
+      } else {
+        preview=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--s2);gap:4px;"><span style="font-size:2rem;">${icon}</span><span style="font-size:.65rem;color:var(--muted);text-transform:uppercase;">${esc(item.name.split('.').pop())}</span></div>`;
+      }
+      const size=item.fullPath.startsWith('videos')?'🎬':'';
       cards.push(`<div class="media-card" title="${esc(item.name)}">
-        <img src="${esc(url)}" alt="${esc(item.name)}" loading="lazy">
-        <div class="media-card-name">${esc(item.name)}</div>
+        ${preview}
+        <div class="media-card-name">${icon} ${esc(item.name.replace(/^\d+_/,''))}</div>
         <div class="media-card-overlay">
-          <button class="media-card-btn copy" onclick="event.stopPropagation();copyMediaUrl(${idx})">📋 URL</button>
-          <button class="media-card-btn del" onclick="event.stopPropagation();deleteMedia(${idx})">🗑 Удалить</button>
+          <button class="media-card-btn copy" onclick="event.stopPropagation();copyMediaUrl(${realIdx})">📋 URL</button>
+          <button class="media-card-btn del" onclick="event.stopPropagation();deleteMedia(${realIdx})">🗑</button>
         </div>
       </div>`);
     }
-    container.innerHTML='<div class="media-grid">'+cards.join('')+'</div>';
+    container.innerHTML=cards.length?'<div class="media-grid">'+cards.join('')+'</div>':'<p style="color:var(--muted);font-size:.85rem;">Нет файлов в этой категории</p>';
+    // Update filter buttons
+    document.querySelectorAll('#media-list').forEach(()=>{});
   }catch(e){
     container.innerHTML='<p style="color:var(--danger);font-size:.85rem;">Ошибка загрузки: '+esc(e.message)+'</p>';
   }
@@ -3877,7 +3928,9 @@ const _blockTypes=[
   {type:'list',label:'Список',icon:'•'},
   {type:'stats',label:'Статистика',icon:'📊'},
   {type:'callout',label:'Выноска',icon:'💡'},
-  {type:'image',label:'Изображение',icon:'🖼️'}
+  {type:'image',label:'Изображение',icon:'🖼️'},
+  {type:'video',label:'Видео',icon:'🎬'},
+  {type:'file',label:'Файл / документ',icon:'📎'}
 ];
 
 async function edPageEdit(){
@@ -4033,9 +4086,18 @@ function _renderBlock(b,i){
       fields+=fg('Текст выноски',ta(`pb-content-${i}`,b.content||'',3));
       break;
     case 'image':
-      fields+=fg('URL изображения',inp(`pb-src-${i}`,b.src||''));
+      fields+=fg('URL изображения',inp(`pb-src-${i}`,b.src||'')+'<button class="xbtn cyan" style="margin-top:6px;font-size:.75rem;padding:4px 12px;" onclick="peUploadFor(\'pb-src-'+i+'\',\'image\')">📁 Загрузить</button>');
       fields+=fg('Alt-текст',inp(`pb-alt-${i}`,b.alt||''));
       fields+=fg('Подпись',inp(`pb-caption-${i}`,b.caption||''));
+      break;
+    case 'video':
+      fields+=fg('URL видео',inp(`pb-src-${i}`,b.src||'')+'<button class="xbtn cyan" style="margin-top:6px;font-size:.75rem;padding:4px 12px;" onclick="peUploadFor(\'pb-src-'+i+'\',\'video\')">📁 Загрузить</button>','Ссылка на .mp4 / .webm файл или YouTube');
+      fields+=fg('Подпись',inp(`pb-caption-${i}`,b.caption||''));
+      break;
+    case 'file':
+      fields+=fg('URL файла',inp(`pb-src-${i}`,b.src||'')+'<button class="xbtn cyan" style="margin-top:6px;font-size:.75rem;padding:4px 12px;" onclick="peUploadFor(\'pb-src-'+i+'\',\'doc\')">📁 Загрузить</button>');
+      fields+=fg('Название файла',inp(`pb-content-${i}`,b.content||''),'Отображаемое имя для скачивания');
+      fields+=fg('Описание',inp(`pb-caption-${i}`,b.caption||''));
       break;
   }
   return `<div class="li-item" data-idx="${i}">
@@ -4049,6 +4111,30 @@ function _renderBlock(b,i){
     </div>
     <div class="li-body">${fields}</div>
   </div>`;
+}
+
+function peUploadFor(fieldId,fileType){
+  var inp=document.createElement('input');
+  inp.type='file';
+  if(fileType==='image') inp.accept='image/*';
+  else if(fileType==='video') inp.accept='video/*';
+  inp.onchange=async function(){
+    if(!inp.files||!inp.files[0]) return;
+    var file=inp.files[0];
+    if(file.size>_maxFileSize){ showToast('// Файл > 50 MB','error'); return; }
+    var folder=fileType==='video'?'videos':fileType==='image'?'media':'docs';
+    var name=Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'');
+    var ref=storage.ref(folder+'/'+name);
+    try{
+      showToast('// Загрузка...');
+      await ref.put(file,{contentType:file.type});
+      var url=await ref.getDownloadURL();
+      var target=document.getElementById(fieldId);
+      if(target){ target.value=url; markDirty(); }
+      showToast('// Загружено!','success');
+    }catch(e){ showToast('// Ошибка: '+e.message,'error'); }
+  };
+  inp.click();
 }
 
 function peBlockTypeChanged(idx,newType){
@@ -4094,6 +4180,15 @@ function _peCollectBlocks(){
       case 'image':
         block.src=fv('pb-src-');
         block.alt=fv('pb-alt-');
+        block.caption=fv('pb-caption-');
+        break;
+      case 'video':
+        block.src=fv('pb-src-');
+        block.caption=fv('pb-caption-');
+        break;
+      case 'file':
+        block.src=fv('pb-src-');
+        block.content=fv('pb-content-');
         block.caption=fv('pb-caption-');
         break;
     }
