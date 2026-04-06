@@ -1648,7 +1648,8 @@ async function grantAccess(){
   document.getElementById('admin-panel').style.display='flex';
   updateAdminLangBtns();
   const lastTab = localStorage.getItem('ac_admin_tab') || 'index';
-  await showTab(lastTab);
+  isDirty=false;
+  await _showTabDirect(lastTab);
   // If we just reloaded for a sync, run it now
   await runPendingSync();
 }
@@ -2013,8 +2014,9 @@ async function runPendingSync(){
     }
     // Reload admin state
     D=await getDataForLang(adminLang);
+    isDirty=false;
     const savedCT=CT; CT='';
-    showTab(savedCT);
+    _showTabDirect(savedCT);
     isDirty=false;
     showToast('// Данные обновлены из кода — сайт синхронизирован');
   }catch(e){
