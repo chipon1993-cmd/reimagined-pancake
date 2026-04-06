@@ -59,6 +59,20 @@
       text-align:center; padding:80px 0;
       color:var(--muted); font-size:.9rem; opacity:.5;
     }
+    .sub-pages { margin-top:48px; padding-top:32px; border-top:1px solid var(--border); }
+    .sub-pages-title { font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:16px; font-weight:600; }
+    .sub-pages-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+    .sub-page-card {
+      display:flex; flex-direction:column; gap:6px;
+      padding:18px 20px; border-radius:12px;
+      background:var(--card-bg,rgba(255,255,255,0.03));
+      border:1px solid var(--border);
+      text-decoration:none; color:var(--text);
+      transition:all .2s;
+    }
+    .sub-page-card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.2); }
+    .sub-page-name { font-weight:600; font-size:.95rem; }
+    .sub-page-desc { font-size:.8rem; color:var(--muted); line-height:1.4; }
   </style>
 </head>
 <body data-page="dynamic">

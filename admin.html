@@ -3709,25 +3709,42 @@ function _bmRenderTree(nodes,allOpen){
 async function edPages(){
   try { _pagesCache = await fsListCollection('pages'); } catch(e){ _pagesCache=[]; }
   let rows='';
+  function _pgRow(p,depth){
+    const st=p.status||'draft';
+    const dotColor=st==='published'?'var(--success)':'var(--warning)';
+    const stLabel=st==='published'?'Опубликовано':'Черновик';
+    const indent=depth>0?'margin-left:'+(depth*28)+'px;':'';
+    const arrow=depth>0?'<span style="color:var(--muted);margin-right:6px;font-size:.7rem;">↳</span>':'';
+    return `<div class="pg-row" style="${indent}">
+      <span class="pg-dot" style="background:${dotColor}" title="${stLabel}"></span>
+      <div class="pg-info">
+        ${arrow}<span class="pg-title">${esc(p.title||p.id)}</span>
+        <span class="pg-slug">${esc(p.id)}</span>
+      </div>
+      <span class="pg-tpl" style="color:var(--muted);font-size:.72rem;">${depth>0?'подстраница':esc(p.label||'—')}</span>
+      <div class="pg-acts">
+        <button class="xbtn cyan" onclick="pageEdit('${esc(p.id)}')">✎ Редакт.</button>
+        <button class="xbtn cyan" onclick="pageCreateChild('${esc(p.id)}')" title="Создать подстраницу">+↳</button>
+        <button class="xbtn cyan" onclick="pageDup('${esc(p.id)}')">⧉</button>
+        <button class="xbtn red" onclick="pageDel('${esc(p.id)}')">✕</button>
+      </div>
+    </div>`;
+  }
   if(_pagesCache.length){
-    rows=_pagesCache.map(p=>{
-      const st=p.status||'draft';
-      const dotColor=st==='published'?'var(--success)':'var(--warning)';
-      const stLabel=st==='published'?'Опубликовано':'Черновик';
-      return `<div class="pg-row">
-        <span class="pg-dot" style="background:${dotColor}" title="${stLabel}"></span>
-        <div class="pg-info">
-          <span class="pg-title">${esc(p.title||p.id)}</span>
-          <span class="pg-slug">${esc(p.id)}</span>
-        </div>
-        <span class="pg-tpl" style="color:var(--muted);font-size:.72rem;">${esc(p.label||'—')}</span>
-        <div class="pg-acts">
-          <button class="xbtn cyan" onclick="pageEdit('${esc(p.id)}')">✎ Редакт.</button>
-          <button class="xbtn cyan" onclick="pageDup('${esc(p.id)}')">⧉</button>
-          <button class="xbtn red" onclick="pageDel('${esc(p.id)}')">✕</button>
-        </div>
-      </div>`;
-    }).join('');
+    // Build tree: root pages first, then children under each
+    const roots=_pagesCache.filter(p=>!p.parentId);
+    const children=_pagesCache.filter(p=>p.parentId);
+    roots.forEach(p=>{
+      rows+=_pgRow(p,0);
+      children.filter(ch=>ch.parentId===p.id).forEach(ch=>{
+        rows+=_pgRow(ch,1);
+        // grandchildren
+        children.filter(gc=>gc.parentId===ch.id).forEach(gc=>{ rows+=_pgRow(gc,2); });
+      });
+    });
+    // Orphans (parentId set but parent not found)
+    const allIds=_pagesCache.map(p=>p.id);
+    children.filter(ch=>!allIds.includes(ch.parentId)).forEach(ch=>{ rows+=_pgRow(ch,0); });
   } else {
     rows='<p style="color:var(--muted);text-align:center;padding:40px 0;">Нет созданных страниц</p>';
   }
@@ -3750,6 +3767,7 @@ async function edPages(){
       </div>
       ${fg('Описание',ta('pg-new-desc','',2),'Краткое описание')}
       ${fg('Метка раздела',inp('pg-new-label',''),'Подпись над заголовком, напр. «Проект»')}
+      <div class="fg"><label class="flbl">Родительская страница</label><select class="fi" id="pg-new-parent"><option value="">— Нет (корневая) —</option>${_pagesCache.filter(p=>!p.parentId).map(p=>'<option value="'+esc(p.id)+'">↳ '+esc(p.title||p.id)+'</option>').join('')}</select><span class="fhint">Если это подстраница — выберите родителя</span></div>
       <div class="fg"><label class="flbl">Статус</label><select class="fi" id="pg-new-status"><option value="draft">Черновик</option><option value="published">Опубликовано</option></select></div>
       <div style="display:flex;gap:10px;margin-top:16px;">
         <button class="xbtn save" onclick="pageCreateSave()">Создать</button>
@@ -3765,6 +3783,11 @@ function pageCreateShow(){
   const f=document.getElementById('pg-create-form');
   if(f) f.style.display=f.style.display==='none'?'block':'none';
   _pgSlugManual=false;
+}
+function pageCreateChild(parentId){
+  pageCreateShow();
+  const sel=document.getElementById('pg-new-parent');
+  if(sel) sel.value=parentId;
 }
 
 function slugify(str){
@@ -3797,11 +3820,13 @@ async function pageCreateSave(){
   if(_pagesCache.find(p=>p.id===id)){
     msg.innerHTML='<span style="color:var(--danger)">Страница с таким ID уже существует</span>'; return;
   }
+  const parentId=v('pg-new-parent')||'';
   const data={
     title: title,
     desc: v('pg-new-desc').trim(),
     label: v('pg-new-label').trim(),
     status: v('pg-new-status')||'draft',
+    parentId: parentId,
     blocks: [],
     createdAt: Date.now(),
     updatedAt: Date.now()
@@ -3857,6 +3882,8 @@ const _blockTypes=[
 
 async function edPageEdit(){
   if(!_editingPageId) return '<p style="color:var(--danger);padding:40px;">Страница не выбрана. <a href="#" onclick="showTab(\'pages\');return false;" style="color:var(--accent)">← Назад к списку</a></p>';
+  // Ensure pages cache is loaded for parent selector and sub-pages list
+  if(!_pagesCache.length){ try { _pagesCache = await fsListCollection('pages'); } catch(e){} }
   const data=await fsGet('pages',_editingPageId);
   if(!data) return '<p style="color:var(--danger);padding:40px;">Страница не найдена. <a href="#" onclick="showTab(\'pages\');return false;" style="color:var(--accent)">← Назад к списку</a></p>';
   const blocks=data.blocks||[];
@@ -3865,8 +3892,7 @@ async function edPageEdit(){
     blocksHtml+=_renderBlock(b,i);
   });
   // Check if page is in nav
-  let navData=null;
-  try { navData=await fsGet('content','ac_navigation'); }catch(e){}
+  let navData=await _ensureNav();
   const pageHref='page.html?id='+_editingPageId;
   const inNav=navData&&navData.header?navData.header.findIndex(h=>h.href===pageHref):-1;
   // Find which parent it could be a child of
@@ -3943,11 +3969,29 @@ async function edPageEdit(){
     ${fg('Заголовок',inp('pe-title',data.title))}
     ${fg('Описание',ta('pe-desc',data.desc||'',2))}
     ${fg('Метка раздела',inp('pe-label',data.label||''),'Подпись над заголовком')}
+    <div class="fg"><label class="flbl">Родительская страница</label><select class="fi" id="pe-parent"><option value="">— Нет (корневая) —</option>${_pagesCache.filter(p=>p.id!==_editingPageId&&!p.parentId).map(p=>'<option value="'+esc(p.id)+'"'+(data.parentId===p.id?' selected':'')+'>↳ '+esc(p.title||p.id)+'</option>').join('')}</select><span class="fhint">Сделать подстраницей другой страницы</span></div>
     <div class="fg"><label class="flbl">Статус</label><select class="fi" id="pe-status"><option value="draft"${(data.status||'draft')==='draft'?' selected':''}>Черновик</option><option value="published"${data.status==='published'?' selected':''}>Опубликовано</option></select></div>
   </div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;backdrop-filter:var(--glass);">
     ${navSectionHtml}
   </div>
+  ${(function(){
+    var subs=_pagesCache.filter(function(p){return p.parentId===_editingPageId;});
+    if(!subs.length) return '';
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;backdrop-filter:var(--glass);">'
+      +'<div class="fsec" style="margin-top:0;">Подстраницы ('+subs.length+')</div>'
+      +subs.map(function(s){
+        var dot=s.status==='published'?'var(--success)':'var(--warning)';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">'
+          +'<span style="width:8px;height:8px;border-radius:50%;background:'+dot+';flex-shrink:0;"></span>'
+          +'<span style="flex:1;">'+esc(s.title||s.id)+'</span>'
+          +'<span style="color:var(--muted);font-size:.75rem;">'+esc(s.id)+'</span>'
+          +'<button class="xbtn cyan" style="padding:4px 10px;font-size:.75rem;" onclick="pageEdit(\''+esc(s.id)+'\')">Открыть</button>'
+          +'</div>';
+      }).join('')
+      +'<button class="xbtn cyan" style="margin-top:12px;" onclick="pageCreateChild(\''+esc(_editingPageId)+'\');showTab(\'pages\');">+ Добавить подстраницу</button>'
+      +'</div>';
+  })()}
   <div class="fsec">Блоки контента</div>
   <div class="leditor" id="pe-blocks">${blocksHtml}</div>
   <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:28px;">
@@ -4092,6 +4136,7 @@ async function pePageSave(){
     title: v('pe-title'),
     desc: v('pe-desc'),
     label: v('pe-label'),
+    parentId: v('pe-parent')||'',
     status: v('pe-status')||'draft',
     blocks: blocks,
     updatedAt: Date.now()
@@ -4108,12 +4153,27 @@ async function pePageSave(){
 }
 
 // ── PAGE ↔ NAV / CARDS INTEGRATION ─────────
-async function peNavAdd(){
-  if(!_editingPageId) return;
+var _defaultNav=[
+  {label:'Главная',href:'index.html',children:[]},
+  {label:'О себе',href:'about.html',children:[{label:'Мой путь',href:'journey.html'}]},
+  {label:'Интересы',href:'interests.html',children:[{label:'Видео',href:'videos.html'}]},
+  {label:'Мир',href:'world.html',children:[]},
+  {label:'Контакт',href:'contact.html',children:[]}
+];
+
+async function _ensureNav(){
   let navData;
   try { navData=await fsGet('content','ac_navigation'); }catch(e){}
-  if(!navData) navData={header:[]};
-  if(!navData.header) navData.header=[];
+  if(!navData||!navData.header||!navData.header.length){
+    navData={header:JSON.parse(JSON.stringify(_defaultNav))};
+    try { await db.collection('content').doc('ac_navigation').set(navData); }catch(e){}
+  }
+  return navData;
+}
+
+async function peNavAdd(){
+  if(!_editingPageId) return;
+  let navData=await _ensureNav();
   const pageHref='page.html?id='+_editingPageId;
   const title=document.getElementById('pe-title')?.value||_editingPageId;
   const parentSel=document.getElementById('pe-nav-parent');
@@ -4181,11 +4241,7 @@ async function peCardRemove(){
 
 // ── NAVIGATION BUILDER ──────────────────────
 async function edNavigation(){
-  try {
-    _navData = await fsGet('content','ac_navigation');
-  } catch(e){ _navData=null; }
-  if(!_navData) _navData={header:[]};
-  if(!_navData.header) _navData.header=[];
+  _navData = await _ensureNav();
   const items=_navData.header;
   let itemsHtml='';
   items.forEach((item,i)=>{

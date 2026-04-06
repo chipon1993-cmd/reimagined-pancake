@@ -459,6 +459,32 @@
     } else if (blocksEl) {
       blocksEl.innerHTML = '<div class="page-empty">Скоро здесь появится контент</div>';
     }
+    // Render sub-pages links
+    if (blocksEl) {
+      try {
+        var allPages = await window.fsListCollection('pages');
+        var children = allPages.filter(function(p) { return p.parentId === pageId && p.status === 'published'; });
+        if (children.length) {
+          var subHtml = '<div class="sub-pages fade-in"><div class="sub-pages-title">Подстраницы</div><div class="sub-pages-grid">';
+          children.forEach(function(ch) {
+            subHtml += '<a href="page.html?id=' + esc(ch.id) + '" class="sub-page-card">';
+            subHtml += '<span class="sub-page-name">' + esc(ch.title || ch.id) + '</span>';
+            if (ch.desc) subHtml += '<span class="sub-page-desc">' + esc(ch.desc) + '</span>';
+            subHtml += '</a>';
+          });
+          subHtml += '</div></div>';
+          blocksEl.innerHTML += subHtml;
+        }
+        // Show breadcrumb if this is a sub-page
+        if (pageData.parentId) {
+          var parent = allPages.find(function(p) { return p.id === pageData.parentId; });
+          if (parent) {
+            var bcEl = document.getElementById('dyn-label');
+            if (bcEl) bcEl.innerHTML = '<a href="page.html?id=' + esc(parent.id) + '" style="color:var(--accent);text-decoration:none;">' + esc(parent.title || parent.id) + '</a> / ' + esc(pageData.label || '');
+          }
+        }
+      } catch(e) {}
+    }
   }
 
   // ── PAGE VISIBILITY ────────────────────────────
