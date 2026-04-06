@@ -1270,6 +1270,7 @@
         <div class="theme-toggle" id="theme-toggle" onclick="toggleAdminTheme()"></div>
         <span class="theme-toggle-label">🌙</span>
       </div>
+      <button class="xbtn cyan" onclick="resetToDefaults()" title="Сбросить данные Firestore и применить дефолты из site-data.js">🔄 Обновить данные</button>
       <button class="xbtn cyan" onclick="previewSite()" title="Предпросмотр">👁 Превью</button>
       <a href="index.html" target="_blank" rel="noopener noreferrer" class="xbtn cyan">↗ Сайт</a>
       <button class="xbtn red" onclick="doLogout()">✕ Выйти</button>
@@ -1936,6 +1937,32 @@ async function saveAll(){
     isDirty=true; // Ensure auto-save retries
     st.textContent='✕ Ошибка сохранения'; st.className='save-status';
     showToast('// Ошибка: '+e.message);
+  }
+}
+
+async function resetToDefaults(){
+  if(!confirm('Сбросить все данные к дефолтам из site-data.js?\n\nДанные в Firestore будут удалены. Сайт загрузит свежие значения из кода.\n\nЭто действие необратимо.')){
+    return;
+  }
+  try{
+    // Clear Firestore content documents
+    const keys=['ac_content','ac_content_uk','ac_content_no'];
+    for(const k of keys){
+      if(typeof window.fsSet==='function'){
+        try{ await fsSet('content',k,{}); }catch(e){}
+      }
+    }
+    // Clear localStorage caches
+    keys.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+    try{ localStorage.removeItem('ac_preview'); }catch(e){}
+    // Reload admin with fresh defaults
+    D=JSON.parse(JSON.stringify(window.AC_DEFAULTS));
+    const savedCT=CT; CT='';
+    showTab(savedCT);
+    isDirty=false;
+    showToast('// Данные сброшены к дефолтам из site-data.js');
+  }catch(e){
+    showToast('// Ошибка сброса: '+e.message);
   }
 }
 
