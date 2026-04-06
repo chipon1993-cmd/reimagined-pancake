@@ -1318,6 +1318,7 @@
 
       <div class="sb-label">Динамические</div>
       <div class="sb-item" data-tab="pages"     data-tip="Страницы"    onclick="showTab('pages')">    <span class="sb-icon">📄</span><span class="sb-item-text">Страницы</span></div>
+      <div class="sb-item" data-tab="navigation" data-tip="Навигация"  onclick="showTab('navigation')"><span class="sb-icon">🔗</span><span class="sb-item-text">Навигация</span></div>
       <div class="sb-div"></div>
 
       <div class="sb-label">Настройки</div>
@@ -2412,7 +2413,7 @@ async function showTab(tab) {
 async function _showTabDirect(tab){
   collectCurrent(); CT=tab;
   localStorage.setItem('ac_admin_tab', tab);
-  const sbTab = (tab==='page-edit'||tab==='navigation')?'pages':tab;
+  const sbTab = tab==='page-edit'?'pages':tab;
   document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===sbTab));
   const m=document.getElementById('adm-main');
   m.style.animation='none'; m.offsetHeight; m.style.animation='';
@@ -4379,15 +4380,73 @@ async function edNavigation(){
     </div>`;
   });
 
+  // Build "All site pages" map
+  var staticPages=[
+    {name:'Главная',href:'index.html',icon:'🏠'},
+    {name:'О себе',href:'about.html',icon:'👤'},
+    {name:'Мой путь',href:'journey.html',icon:'🗺️'},
+    {name:'Интересы',href:'interests.html',icon:'🧠'},
+    {name:'Видео',href:'videos.html',icon:'🎬'},
+    {name:'Контакт',href:'contact.html',icon:'✉️'},
+    {name:'Мир',href:'world.html',icon:'🌌'}
+  ];
+  // Load dynamic pages
+  var dynPages=[];
+  try { dynPages=await fsListCollection('pages'); }catch(e){}
+
+  // Collect all hrefs that are already in menu (top-level + children)
+  var menuHrefs=[];
+  items.forEach(function(h){
+    menuHrefs.push(h.href);
+    if(h.children) h.children.forEach(function(ch){ menuHrefs.push(ch.href); });
+  });
+
+  var sitemapHtml='';
+  // Static pages
+  staticPages.forEach(function(sp){
+    var inMenu=menuHrefs.indexOf(sp.href)>=0;
+    var vis=D.appearance&&D.appearance.pages?D.appearance.pages[sp.href.replace('.html','')]!==false:true;
+    sitemapHtml+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);">
+      <span style="font-size:1.1rem;">${sp.icon}</span>
+      <span style="flex:1;font-weight:600;font-size:.85rem;">${esc(sp.name)}</span>
+      <span style="font-size:.7rem;color:var(--muted);">${esc(sp.href)}</span>
+      ${!vis?'<span style="font-size:.7rem;color:var(--warning);font-weight:600;">СКРЫТА</span>':''}
+      ${inMenu?'<span style="font-size:.7rem;color:var(--success);">✓ в меню</span>':'<button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="navQuickAdd(\''+esc(sp.name)+'\',\''+esc(sp.href)+'\')">+ в меню</button>'}
+    </div>`;
+  });
+  // Dynamic pages
+  dynPages.forEach(function(dp){
+    var href='page.html?id='+dp.id;
+    var inMenu=menuHrefs.indexOf(href)>=0;
+    var st=dp.status==='published'?'var(--success)':'var(--warning)';
+    sitemapHtml+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);">
+      <span style="width:8px;height:8px;border-radius:50%;background:${st};flex-shrink:0;"></span>
+      <span style="flex:1;font-weight:600;font-size:.85rem;">${esc(dp.title||dp.id)}</span>
+      <span style="font-size:.7rem;color:var(--muted);">page.html?id=${esc(dp.id)}</span>
+      ${dp.status!=='published'?'<span style="font-size:.7rem;color:var(--warning);font-weight:600;">черновик</span>':''}
+      ${inMenu?'<span style="font-size:.7rem;color:var(--success);">✓ в меню</span>':'<button class="xbtn cyan" style="padding:3px 10px;font-size:.7rem;" onclick="navQuickAdd(\''+esc(dp.title||dp.id)+'\',\''+esc(href)+'\')">+ в меню</button>'}
+    </div>`;
+  });
+
   return `<div class="ed-header"><div class="ed-tag">Меню сайта</div><h2>Навигация</h2>
     <p><a href="#" onclick="_showTabDirect('pages');return false;" style="color:var(--accent);text-decoration:none;">← Назад к страницам</a>
-    &nbsp;&nbsp;·&nbsp;&nbsp;Структура верхнего меню сайта</p></div>
-  <div class="leditor" id="nav-items">${itemsHtml}</div>
-  <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:8px;">
-    <button class="xbtn cyan" onclick="navAddItem()">+ Добавить пункт меню</button>
-    <button class="xbtn cyan" onclick="navAddFromPages()">📄 Из страниц</button>
+    &nbsp;&nbsp;·&nbsp;&nbsp;Управление меню и всеми страницами сайта</p></div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;">
+    <div class="fsec" style="margin-top:0;">Меню сайта (перетаскивай для сортировки)</div>
+    <div class="leditor" id="nav-items">${itemsHtml}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:16px;">
+      <button class="xbtn cyan" onclick="navAddItem()">+ Пустой пункт</button>
+    </div>
   </div>
-  <button class="xbtn save" onclick="navSave()" style="margin-top:20px;">💾 Сохранить навигацию</button>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;">
+    <div class="fsec" style="margin-top:0;">Все страницы сайта</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">Все существующие страницы. Нажми «+ в меню» чтобы добавить в навигацию.</p>
+    ${sitemapHtml}
+  </div>
+
+  <button class="xbtn save" onclick="navSave()" style="margin-top:8px;">💾 Сохранить навигацию</button>
   <span id="nav-save-msg" style="margin-left:14px;font-size:.85rem;"></span>`;
 }
 
@@ -4417,6 +4476,19 @@ function _navCollectItems(){
     items.push(item);
   });
   return items;
+}
+
+function navQuickAdd(label,href){
+  _navData.header=_navCollectItems();
+  // Don't add duplicates
+  var exists=_navData.header.some(function(h){
+    if(h.href===href) return true;
+    return h.children&&h.children.some(function(ch){return ch.href===href;});
+  });
+  if(exists){ showToast('// Уже в меню'); return; }
+  _navData.header.push({label:label,href:href,children:[]});
+  CT=''; _showTabDirect('navigation');
+  showToast('// Добавлено в меню. Не забудь сохранить!');
 }
 
 function navAddItem(){
