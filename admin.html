@@ -1214,6 +1214,29 @@
     }
     .hist-badge.lang { background:var(--sb-active); color:var(--accent); }
     .hist-badge.user { background:rgba(168,85,247,.1); color:var(--accent2); }
+
+    /* ═══════ PAGES MANAGER ═══════ */
+    .pg-row {
+      display:flex; align-items:center; gap:14px;
+      padding:14px 18px; margin-bottom:8px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--r);
+      backdrop-filter:var(--glass);
+      transition:all .2s var(--ease);
+    }
+    .pg-row:hover { border-color:var(--border-h); box-shadow:var(--shadow-sm); }
+    .pg-dot {
+      width:8px; height:8px; border-radius:50%; flex-shrink:0;
+      box-shadow:0 0 6px currentColor;
+    }
+    .pg-info { flex:1; min-width:0; }
+    .pg-title { display:block; font-size:.9rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pg-slug { display:block; font-size:.7rem; color:var(--muted); margin-top:2px; font-family:monospace; }
+    .pg-tpl { flex-shrink:0; }
+    .pg-acts { display:flex; gap:6px; flex-shrink:0; }
+
+    /* ═══════ NAV BUILDER ═══════ */
+    .nav-child .fg { margin-bottom:8px; flex:1; }
   </style>
 </head>
 <body>
@@ -2361,6 +2384,9 @@ function scrollToLast(leditorId){
 // ── TABS ─────────────────────────────────────
 let CT='index';
 let _pendingTab = null;
+let _editingPageId = null;
+let _pagesCache = [];
+let _navData = null;
 
 function unsavedAction(action) {
   document.getElementById('unsaved-overlay').classList.remove('open');
@@ -2385,7 +2411,8 @@ async function showTab(tab) {
 async function _showTabDirect(tab){
   collectCurrent(); CT=tab;
   localStorage.setItem('ac_admin_tab', tab);
-  document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
+  const sbTab = tab==='page-edit'?'pages':tab;
+  document.querySelectorAll('.sb-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===sbTab));
   const m=document.getElementById('adm-main');
   m.style.animation='none'; m.offsetHeight; m.style.animation='';
   switch(tab){
@@ -3578,6 +3605,428 @@ function _bmRenderTree(nodes,allOpen){
   s.textContent='._bop > span:first-child { transform:rotate(90deg)!important } div._bop { display:block!important }';
   document.head.appendChild(s);
 })();
+
+// ── PAGES MANAGER ───────────────────────────
+async function edPages(){
+  try { _pagesCache = await fsListCollection('pages'); } catch(e){ _pagesCache=[]; }
+  let rows='';
+  if(_pagesCache.length){
+    rows=_pagesCache.map(p=>{
+      const st=p.status||'draft';
+      const dotColor=st==='published'?'var(--success)':'var(--warning)';
+      const stLabel=st==='published'?'Опубликовано':'Черновик';
+      return `<div class="pg-row">
+        <span class="pg-dot" style="background:${dotColor}" title="${stLabel}"></span>
+        <div class="pg-info">
+          <span class="pg-title">${esc(p.title||p.id)}</span>
+          <span class="pg-slug">${esc(p.id)}</span>
+        </div>
+        <span class="pg-tpl" style="color:var(--muted);font-size:.72rem;">${esc(p.label||'—')}</span>
+        <div class="pg-acts">
+          <button class="xbtn cyan" onclick="pageEdit('${esc(p.id)}')">✎ Редакт.</button>
+          <button class="xbtn cyan" onclick="pageDup('${esc(p.id)}')">⧉</button>
+          <button class="xbtn red" onclick="pageDel('${esc(p.id)}')">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    rows='<p style="color:var(--muted);text-align:center;padding:40px 0;">Нет созданных страниц</p>';
+  }
+  return `<div class="ed-header"><div class="ed-tag">Динамические</div><h2>Страницы</h2><p>Создание и управление дополнительными страницами сайта</p></div>
+  <button class="xbtn save" onclick="pageCreateShow()" style="margin-bottom:24px;">+ Создать страницу</button>
+  <div id="pg-create-form" style="display:none;margin-bottom:24px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;backdrop-filter:var(--glass);">
+      <div class="fsec" style="margin-top:0;">Новая страница</div>
+      ${fg('ID (slug)',inp('pg-new-id',''),'Латиница, дефисы. Будет частью URL, напр. my-page')}
+      ${fg('Заголовок',inp('pg-new-title',''),'Название страницы')}
+      ${fg('Описание',ta('pg-new-desc','',2),'Краткое описание')}
+      ${fg('Метка раздела',inp('pg-new-label',''),'Подпись над заголовком, напр. «Проект»')}
+      <div class="fg"><label class="flbl">Статус</label><select class="fi" id="pg-new-status"><option value="draft">Черновик</option><option value="published">Опубликовано</option></select></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="xbtn save" onclick="pageCreateSave()">Создать</button>
+        <button class="xbtn cyan" onclick="document.getElementById('pg-create-form').style.display='none'">Отмена</button>
+      </div>
+      <div id="pg-create-msg" style="margin-top:10px;font-size:.85rem;"></div>
+    </div>
+  </div>
+  <div id="pg-list">${rows}</div>`;
+}
+
+function pageCreateShow(){
+  const f=document.getElementById('pg-create-form');
+  if(f) f.style.display=f.style.display==='none'?'block':'none';
+}
+
+async function pageCreateSave(){
+  const id=v('pg-new-id').trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
+  const title=v('pg-new-title').trim();
+  const msg=document.getElementById('pg-create-msg');
+  if(!id){ msg.innerHTML='<span style="color:var(--danger)">Введите ID (slug)</span>'; return; }
+  if(!title){ msg.innerHTML='<span style="color:var(--danger)">Введите заголовок</span>'; return; }
+  // Check for duplicate
+  if(_pagesCache.find(p=>p.id===id)){
+    msg.innerHTML='<span style="color:var(--danger)">Страница с таким ID уже существует</span>'; return;
+  }
+  const data={
+    title: title,
+    desc: v('pg-new-desc').trim(),
+    label: v('pg-new-label').trim(),
+    status: v('pg-new-status')||'draft',
+    blocks: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  try {
+    await fsSet('pages', id, data);
+    showToast('// Страница создана: '+id);
+    CT=''; showTab('pages');
+  } catch(e){
+    msg.innerHTML='<span style="color:var(--danger)">Ошибка: '+e.message+'</span>';
+  }
+}
+
+function pageEdit(id){
+  _editingPageId=id;
+  CT=''; showTab('page-edit');
+}
+
+async function pageDup(id){
+  const src=_pagesCache.find(p=>p.id===id);
+  if(!src) return;
+  const newId=id+'-copy-'+Date.now().toString(36).slice(-4);
+  const data=Object.assign({},src,{title:src.title+' (копия)',createdAt:Date.now(),updatedAt:Date.now()});
+  delete data.id;
+  try {
+    await fsSet('pages',newId,data);
+    showToast('// Страница продублирована');
+    CT=''; showTab('pages');
+  } catch(e){ showToast('// Ошибка: '+e.message); }
+}
+
+async function pageDel(id){
+  if(!confirm('Удалить страницу «'+id+'»? Это действие необратимо.')) return;
+  try {
+    await fsDelete('pages',id);
+    showToast('// Страница удалена');
+    CT=''; showTab('pages');
+  } catch(e){ showToast('// Ошибка: '+e.message); }
+}
+
+// ── PAGE BLOCK EDITOR ───────────────────────
+const _blockTypes=[
+  {type:'text',label:'Текст',icon:'📝'},
+  {type:'heading',label:'Заголовок',icon:'🔤'},
+  {type:'quote',label:'Цитата',icon:'❝'},
+  {type:'divider',label:'Разделитель',icon:'―'},
+  {type:'list',label:'Список',icon:'•'},
+  {type:'stats',label:'Статистика',icon:'📊'},
+  {type:'callout',label:'Выноска',icon:'💡'},
+  {type:'image',label:'Изображение',icon:'🖼️'}
+];
+
+async function edPageEdit(){
+  if(!_editingPageId) return '<p style="color:var(--danger);padding:40px;">Страница не выбрана. <a href="#" onclick="showTab(\'pages\');return false;" style="color:var(--accent)">← Назад к списку</a></p>';
+  const data=await fsGet('pages',_editingPageId);
+  if(!data) return '<p style="color:var(--danger);padding:40px;">Страница не найдена. <a href="#" onclick="showTab(\'pages\');return false;" style="color:var(--accent)">← Назад к списку</a></p>';
+  const blocks=data.blocks||[];
+  let blocksHtml='';
+  blocks.forEach((b,i)=>{
+    blocksHtml+=_renderBlock(b,i);
+  });
+  return `<div class="ed-header">
+    <div class="ed-tag">Редактор страницы</div>
+    <h2>${esc(data.title||_editingPageId)}</h2>
+    <p><a href="#" onclick="showTab('pages');return false;" style="color:var(--accent);text-decoration:none;">← Назад к списку страниц</a></p>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;backdrop-filter:var(--glass);">
+    <div class="fsec" style="margin-top:0;">Настройки страницы</div>
+    ${fg('Slug (ID)',`<input class="fi" id="pe-slug" value="${esc(_editingPageId)}" readonly style="opacity:.6;cursor:not-allowed;"/>`,'Идентификатор страницы (только для чтения)')}
+    ${fg('Заголовок',inp('pe-title',data.title))}
+    ${fg('Описание',ta('pe-desc',data.desc||'',2))}
+    ${fg('Метка раздела',inp('pe-label',data.label||''),'Подпись над заголовком')}
+    <div class="fg"><label class="flbl">Статус</label><select class="fi" id="pe-status"><option value="draft"${(data.status||'draft')==='draft'?' selected':''}>Черновик</option><option value="published"${data.status==='published'?' selected':''}>Опубликовано</option></select></div>
+  </div>
+  <div class="fsec">Блоки контента</div>
+  <div class="leditor" id="pe-blocks">${blocksHtml}</div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:28px;">
+    <select class="fi" id="pe-add-type" style="max-width:200px;">
+      ${_blockTypes.map(bt=>'<option value="'+bt.type+'">'+bt.icon+' '+bt.label+'</option>').join('')}
+    </select>
+    <button class="xbtn cyan" onclick="peAddBlock()">+ Добавить блок</button>
+  </div>
+  <button class="xbtn save" onclick="pePageSave()" style="margin-top:8px;">💾 Сохранить страницу</button>
+  <span id="pe-save-msg" style="margin-left:14px;font-size:.85rem;"></span>`;
+}
+
+function _renderBlock(b,i){
+  const n=String(i+1).padStart(2,'0');
+  const typeInfo=_blockTypes.find(bt=>bt.type===b.type)||{icon:'?',label:b.type};
+  let fields='';
+  fields+=`<div class="fg"><label class="flbl">Тип блока</label><select class="fi" id="pb-type-${i}" onchange="peBlockTypeChanged(${i},this.value)">${_blockTypes.map(bt=>'<option value="'+bt.type+'"'+(bt.type===b.type?' selected':'')+'>'+bt.icon+' '+bt.label+'</option>').join('')}</select></div>`;
+  switch(b.type){
+    case 'text':
+      fields+=fg('Содержимое',ta(`pb-content-${i}`,b.content||'',4));
+      break;
+    case 'heading':
+      fields+=fg('Текст заголовка',inp(`pb-content-${i}`,b.content||''));
+      break;
+    case 'quote':
+      fields+=fg('Текст цитаты',ta(`pb-content-${i}`,b.content||'',3));
+      fields+=fg('Автор',inp(`pb-author-${i}`,b.author||''));
+      break;
+    case 'divider':
+      fields+='<p style="color:var(--muted);font-size:.85rem;padding:8px 0;">Горизонтальный разделитель — без дополнительных полей</p>';
+      break;
+    case 'list':
+      fields+=fg('Элементы (каждый с новой строки)',ta(`pb-items-${i}`,(b.items||[]).join('\n'),4));
+      break;
+    case 'stats':
+      fields+=fg('Статистика (формат: число | подпись, каждый с новой строки)',ta(`pb-items-${i}`,(b.items||[]).map(s=>(s.num||'')+'|'+(s.label||'')).join('\n'),4));
+      break;
+    case 'callout':
+      fields+=fg('Текст выноски',ta(`pb-content-${i}`,b.content||'',3));
+      break;
+    case 'image':
+      fields+=fg('URL изображения',inp(`pb-src-${i}`,b.src||''));
+      fields+=fg('Alt-текст',inp(`pb-alt-${i}`,b.alt||''));
+      fields+=fg('Подпись',inp(`pb-caption-${i}`,b.caption||''));
+      break;
+  }
+  return `<div class="li-item" data-idx="${i}">
+    <div class="li-hdr" onclick="toggleLI(this)">
+      <span class="drag-handle" title="Перетащить">⠿</span>
+      <span class="li-idx">${n}</span>
+      <span class="li-title">${typeInfo.icon} ${esc(typeInfo.label)}${b.content?' — '+esc(String(b.content).substring(0,40))+'…':''}</span>
+      <div class="li-acts">
+        <button class="lib del" onclick="event.stopPropagation();peDelBlock(this)" title="Удалить">✕</button>
+      </div>
+    </div>
+    <div class="li-body">${fields}</div>
+  </div>`;
+}
+
+function peBlockTypeChanged(idx,newType){
+  // Collect current blocks, change type, re-render
+  const blocks=_peCollectBlocks();
+  blocks[idx]={type:newType};
+  _peRenderBlocks(blocks);
+}
+
+function _peCollectBlocks(){
+  const items=[...document.querySelectorAll('#pe-blocks .li-item')];
+  return items.map((li)=>{
+    const i=li.dataset.idx;
+    const type=document.getElementById(`pb-type-${i}`)?.value||'text';
+    const block={type};
+    switch(type){
+      case 'text': case 'heading': case 'callout':
+        block.content=document.getElementById(`pb-content-${i}`)?.value||'';
+        break;
+      case 'quote':
+        block.content=document.getElementById(`pb-content-${i}`)?.value||'';
+        block.author=document.getElementById(`pb-author-${i}`)?.value||'';
+        break;
+      case 'divider': break;
+      case 'list':
+        block.items=(document.getElementById(`pb-items-${i}`)?.value||'').split('\n').filter(s=>s.trim());
+        break;
+      case 'stats':
+        block.items=(document.getElementById(`pb-items-${i}`)?.value||'').split('\n').filter(s=>s.trim()).map(line=>{
+          const parts=line.split('|');
+          return {num:(parts[0]||'').trim(), label:(parts[1]||'').trim()};
+        });
+        break;
+      case 'image':
+        block.src=document.getElementById(`pb-src-${i}`)?.value||'';
+        block.alt=document.getElementById(`pb-alt-${i}`)?.value||'';
+        block.caption=document.getElementById(`pb-caption-${i}`)?.value||'';
+        break;
+    }
+    return block;
+  });
+}
+
+function _peRenderBlocks(blocks){
+  const container=document.getElementById('pe-blocks');
+  if(!container) return;
+  container.innerHTML=blocks.map((b,i)=>_renderBlock(b,i)).join('');
+  initSortables();
+}
+
+function peAddBlock(){
+  const type=document.getElementById('pe-add-type')?.value||'text';
+  const blocks=_peCollectBlocks();
+  const newBlock={type};
+  if(type==='list') newBlock.items=[];
+  if(type==='stats') newBlock.items=[];
+  blocks.push(newBlock);
+  _peRenderBlocks(blocks);
+  scrollToLast('pe-blocks');
+}
+
+function peDelBlock(btn){
+  if(!confirm('Удалить блок?')) return;
+  const li=btn.closest('.li-item');
+  if(li) li.remove();
+  // Re-index remaining blocks
+  document.querySelectorAll('#pe-blocks .li-item').forEach((item,i)=>{
+    item.dataset.idx=i;
+    const idx=item.querySelector('.li-idx');
+    if(idx) idx.textContent=String(i+1).padStart(2,'0');
+  });
+}
+
+async function pePageSave(){
+  const msg=document.getElementById('pe-save-msg');
+  if(!_editingPageId){ msg.innerHTML='<span style="color:var(--danger)">Нет ID страницы</span>'; return; }
+  const blocks=_peCollectBlocks();
+  const data={
+    title: v('pe-title'),
+    desc: v('pe-desc'),
+    label: v('pe-label'),
+    status: v('pe-status')||'draft',
+    blocks: blocks,
+    updatedAt: Date.now()
+  };
+  try {
+    await fsSet('pages',_editingPageId,data);
+    msg.innerHTML='<span style="color:var(--success)">✓ Сохранено</span>';
+    setTimeout(()=>{ if(msg) msg.innerHTML=''; },3000);
+    showToast('// Страница сохранена: '+_editingPageId);
+  } catch(e){
+    msg.innerHTML='<span style="color:var(--danger)">Ошибка: '+e.message+'</span>';
+  }
+}
+
+// ── NAVIGATION BUILDER ──────────────────────
+async function edNavigation(){
+  try {
+    _navData = await fsGet('content','ac_navigation');
+  } catch(e){ _navData=null; }
+  if(!_navData) _navData={header:[]};
+  if(!_navData.header) _navData.header=[];
+  const items=_navData.header;
+  let itemsHtml='';
+  items.forEach((item,i)=>{
+    let childrenHtml='';
+    if(item.children&&item.children.length){
+      childrenHtml=item.children.map((ch,ci)=>`
+        <div class="nav-child" data-ci="${ci}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin-left:28px;background:var(--s3);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;">
+          <span style="color:var(--muted);font-size:.7rem;">↳</span>
+          ${fg('Текст',inp(`nav-ch-label-${i}-${ci}`,ch.label))}
+          ${fg('Ссылка',inp(`nav-ch-href-${i}-${ci}`,ch.href))}
+          <button class="xbtn red" style="flex-shrink:0;padding:6px 10px;" onclick="navDelChild(${i},${ci})">✕</button>
+        </div>`).join('');
+    }
+    itemsHtml+=`<div class="li-item" data-idx="${i}">
+      <div class="li-hdr" onclick="toggleLI(this)">
+        <span class="drag-handle" title="Перетащить">⠿</span>
+        <span class="li-idx">${String(i+1).padStart(2,'0')}</span>
+        <span class="li-title">🔗 ${esc(item.label||'(без названия)')}</span>
+        <div class="li-acts">
+          <button class="lib del" onclick="event.stopPropagation();navDelItem(${i})" title="Удалить">✕</button>
+        </div>
+      </div>
+      <div class="li-body">
+        ${fg('Текст меню',inp(`nav-label-${i}`,item.label))}
+        ${fg('Ссылка (href)',inp(`nav-href-${i}`,item.href))}
+        <div class="fsec" style="margin-top:16px;">Подпункты</div>
+        <div id="nav-children-${i}">${childrenHtml}</div>
+        <button class="xbtn cyan" style="margin-top:8px;" onclick="navAddChild(${i})">+ Подпункт</button>
+      </div>
+    </div>`;
+  });
+
+  return `<div class="ed-header"><div class="ed-tag">Настройки</div><h2>Навигация</h2><p>Структура меню сайта. Добавляйте пункты и подменю.</p></div>
+  <div class="leditor" id="nav-items">${itemsHtml}</div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:8px;">
+    <button class="xbtn cyan" onclick="navAddItem()">+ Добавить пункт меню</button>
+    <button class="xbtn cyan" onclick="navAddFromPages()">📄 Из страниц</button>
+  </div>
+  <button class="xbtn save" onclick="navSave()" style="margin-top:20px;">💾 Сохранить навигацию</button>
+  <span id="nav-save-msg" style="margin-left:14px;font-size:.85rem;"></span>`;
+}
+
+function _navCollectItems(){
+  const items=[];
+  document.querySelectorAll('#nav-items > .li-item').forEach(li=>{
+    const i=li.dataset.idx;
+    const item={
+      label: document.getElementById(`nav-label-${i}`)?.value||'',
+      href: document.getElementById(`nav-href-${i}`)?.value||'',
+      children: []
+    };
+    const childContainer=document.getElementById(`nav-children-${i}`);
+    if(childContainer){
+      childContainer.querySelectorAll('.nav-child').forEach(ch=>{
+        const ci=ch.dataset.ci;
+        item.children.push({
+          label: document.getElementById(`nav-ch-label-${i}-${ci}`)?.value||'',
+          href: document.getElementById(`nav-ch-href-${i}-${ci}`)?.value||''
+        });
+      });
+    }
+    items.push(item);
+  });
+  return items;
+}
+
+function navAddItem(){
+  _navData.header=_navCollectItems();
+  _navData.header.push({label:'Новый пункт',href:'#',children:[]});
+  CT=''; showTab('navigation');
+}
+
+function navDelItem(idx){
+  if(!confirm('Удалить пункт меню?')) return;
+  _navData.header=_navCollectItems();
+  _navData.header.splice(idx,1);
+  CT=''; showTab('navigation');
+}
+
+function navAddChild(idx){
+  _navData.header=_navCollectItems();
+  if(!_navData.header[idx].children) _navData.header[idx].children=[];
+  _navData.header[idx].children.push({label:'Подпункт',href:'#'});
+  CT=''; showTab('navigation');
+}
+
+function navDelChild(idx,ci){
+  _navData.header=_navCollectItems();
+  _navData.header[idx].children.splice(ci,1);
+  CT=''; showTab('navigation');
+}
+
+async function navAddFromPages(){
+  _navData.header=_navCollectItems();
+  try {
+    const pages=await fsListCollection('pages');
+    const published=pages.filter(p=>p.status==='published');
+    if(!published.length){ showToast('// Нет опубликованных страниц'); return; }
+    published.forEach(p=>{
+      // Don't add duplicates
+      if(!_navData.header.find(h=>h.href===p.id+'.html')){
+        _navData.header.push({label:p.title||p.id,href:p.id+'.html',children:[]});
+      }
+    });
+    CT=''; showTab('navigation');
+    showToast('// Добавлено страниц: '+published.length);
+  } catch(e){ showToast('// Ошибка загрузки страниц'); }
+}
+
+async function navSave(){
+  const msg=document.getElementById('nav-save-msg');
+  const items=_navCollectItems();
+  try {
+    await fsSet('content','ac_navigation',{header:items});
+    _navData={header:items};
+    msg.innerHTML='<span style="color:var(--success)">✓ Сохранено</span>';
+    setTimeout(()=>{ if(msg) msg.innerHTML=''; },3000);
+    showToast('// Навигация сохранена');
+  } catch(e){
+    msg.innerHTML='<span style="color:var(--danger)">Ошибка: '+e.message+'</span>';
+  }
+}
 
 // ── INIT (Firebase Auth state) ───────────────
 auth.onAuthStateChanged(async function(user){
