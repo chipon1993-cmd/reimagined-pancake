@@ -3733,10 +3733,34 @@ async function edPageEdit(){
   blocks.forEach((b,i)=>{
     blocksHtml+=_renderBlock(b,i);
   });
+  // Check if page is in nav
+  let navData=null;
+  try { navData=await fsGet('content','ac_navigation'); }catch(e){}
+  const pageHref='page.html?id='+_editingPageId;
+  const inNav=navData&&navData.header&&navData.header.some(h=>h.href===pageHref);
+  // Find which parent it could be a child of
+  let inSubOf=null;
+  if(navData&&navData.header){
+    navData.header.forEach(h=>{
+      if(h.children&&h.children.some(ch=>ch.href===pageHref)) inSubOf=h.label;
+    });
+  }
+  // Build parent options for "add as submenu"
+  let parentOpts='<option value="">— Как основной пункт —</option>';
+  if(navData&&navData.header){
+    navData.header.forEach((h,i)=>{
+      if(h.children&&h.children.length||h.href!==pageHref){
+        parentOpts+='<option value="'+i+'">↳ Подпункт: '+esc(h.label)+'</option>';
+      }
+    });
+  }
+  const navStatus=inNav?'<span style="color:var(--success);">✓ В меню</span>':(inSubOf?'<span style="color:var(--success);">✓ Подпункт «'+esc(inSubOf)+'»</span>':'<span style="color:var(--muted);">Не в меню</span>');
+
   return `<div class="ed-header">
     <div class="ed-tag">Редактор страницы</div>
     <h2>${esc(data.title||_editingPageId)}</h2>
-    <p><a href="#" onclick="showTab('pages');return false;" style="color:var(--accent);text-decoration:none;">← Назад к списку страниц</a></p>
+    <p><a href="#" onclick="showTab('pages');return false;" style="color:var(--accent);text-decoration:none;">← Назад к списку страниц</a>
+    &nbsp;&nbsp;·&nbsp;&nbsp;<a href="page.html?id=${esc(_editingPageId)}" target="_blank" style="color:var(--muted);text-decoration:none;">Открыть страницу ↗</a></p>
   </div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;backdrop-filter:var(--glass);">
     <div class="fsec" style="margin-top:0;">Настройки страницы</div>
@@ -3745,6 +3769,16 @@ async function edPageEdit(){
     ${fg('Описание',ta('pe-desc',data.desc||'',2))}
     ${fg('Метка раздела',inp('pe-label',data.label||''),'Подпись над заголовком')}
     <div class="fg"><label class="flbl">Статус</label><select class="fi" id="pe-status"><option value="draft"${(data.status||'draft')==='draft'?' selected':''}>Черновик</option><option value="published"${data.status==='published'?' selected':''}>Опубликовано</option></select></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;backdrop-filter:var(--glass);">
+    <div class="fsec" style="margin-top:0;">Навигация</div>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Статус: ${navStatus}</p>
+    ${inNav||inSubOf?`<button class="xbtn red" onclick="peNavRemove()">✕ Убрать из меню</button>`:`
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <select class="fi" id="pe-nav-parent" style="max-width:280px;">${parentOpts}</select>
+      <button class="xbtn cyan" onclick="peNavAdd()">+ Добавить в меню</button>
+    </div>
+    <p style="font-size:.78rem;color:var(--muted);margin-top:8px;">Выберите куда добавить: как отдельный пункт или как подпункт существующего.</p>`}
   </div>
   <div class="fsec">Блоки контента</div>
   <div class="leditor" id="pe-blocks">${blocksHtml}</div>
@@ -3894,6 +3928,52 @@ async function pePageSave(){
   } catch(e){
     msg.innerHTML='<span style="color:var(--danger)">Ошибка: '+e.message+'</span>';
   }
+}
+
+// ── PAGE ↔ NAV INTEGRATION ─────────────────
+async function peNavAdd(){
+  if(!_editingPageId) return;
+  let navData;
+  try { navData=await fsGet('content','ac_navigation'); }catch(e){}
+  if(!navData) navData={header:[]};
+  if(!navData.header) navData.header=[];
+  const pageHref='page.html?id='+_editingPageId;
+  const title=document.getElementById('pe-title')?.value||_editingPageId;
+  const parentSel=document.getElementById('pe-nav-parent');
+  const parentIdx=parentSel?.value;
+  if(parentIdx!==''&&parentIdx!=null&&navData.header[parseInt(parentIdx)]){
+    // Add as child
+    const pi=parseInt(parentIdx);
+    if(!navData.header[pi].children) navData.header[pi].children=[];
+    navData.header[pi].children.push({label:title,href:pageHref});
+  } else {
+    // Add as top-level
+    navData.header.push({label:title,href:pageHref,children:[]});
+  }
+  try {
+    await db.collection('content').doc('ac_navigation').set(navData);
+    showToast('// Страница добавлена в меню');
+    CT=''; showTab('page-edit');
+  }catch(e){ showToast('// Ошибка: '+e.message); }
+}
+
+async function peNavRemove(){
+  if(!_editingPageId) return;
+  let navData;
+  try { navData=await fsGet('content','ac_navigation'); }catch(e){}
+  if(!navData||!navData.header) return;
+  const pageHref='page.html?id='+_editingPageId;
+  // Remove from top-level
+  navData.header=navData.header.filter(h=>h.href!==pageHref);
+  // Remove from children
+  navData.header.forEach(h=>{
+    if(h.children) h.children=h.children.filter(ch=>ch.href!==pageHref);
+  });
+  try {
+    await db.collection('content').doc('ac_navigation').set(navData);
+    showToast('// Страница убрана из меню');
+    CT=''; showTab('page-edit');
+  }catch(e){ showToast('// Ошибка: '+e.message); }
 }
 
 // ── NAVIGATION BUILDER ──────────────────────

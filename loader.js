@@ -361,6 +361,42 @@
     }
   }
 
+  // ── DYNAMIC NAVIGATION ─────────────────────────
+  async function renderDynamicNav() {
+    var navConfig = await safeGet('content', 'ac_navigation');
+    if (!navConfig || !navConfig.header || !navConfig.header.length) return;
+    var ul = document.getElementById('navLinks');
+    if (!ul) return;
+    // Build new nav HTML from Firestore config
+    var html = '';
+    navConfig.header.forEach(function(item) {
+      var href = safeHref(item.href);
+      if (!href) return;
+      if (item.children && item.children.length) {
+        var subHtml = item.children.map(function(ch) {
+          var chHref = safeHref(ch.href);
+          return '<li><a href="' + chHref + '" onclick="closeMenu()">' + esc(ch.label) + '</a></li>';
+        }).join('');
+        html += '<li class="nav-has-sub"><a href="' + href + '" onclick="closeMenu()">' + esc(item.label) + ' <span class="nav-sub-arrow">▼</span></a><ul class="nav-sub">' + subHtml + '</ul></li>';
+      } else {
+        html += '<li><a href="' + href + '" onclick="closeMenu()">' + esc(item.label) + '</a></li>';
+      }
+    });
+    ul.innerHTML = html;
+    // Re-highlight active link
+    var cur = (window.location.pathname.split('/').pop() || 'index.html');
+    // For page.html?id=x also match with query
+    if (window.location.search) cur += window.location.search;
+    ul.querySelectorAll('a').forEach(function(a) {
+      var h = a.getAttribute('href');
+      if (h === cur || h === cur.split('?')[0]) {
+        a.classList.add('active');
+        var parent = a.closest('.nav-has-sub');
+        if (parent) { var pa = parent.querySelector(':scope > a'); if (pa) pa.classList.add('active'); }
+      }
+    });
+  }
+
   // ── DYNAMIC PAGE (page.html?id=xxx) ────────────
   function renderBlock(b) {
     if (!b || !b.type) return '';
@@ -537,6 +573,10 @@
     }
 
     renderFooter(data.global);
+
+    // ── Dynamic Navigation from Firestore ──
+    renderDynamicNav();
+
     switch (page) {
       case 'index':     renderIndex(data.index, data);    break;
       case 'about':     renderAbout(data.about);          break;
