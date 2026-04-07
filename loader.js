@@ -152,7 +152,7 @@
 
   function renderFooter(g) {
     const f = document.querySelector('footer');
-    if (f) f.innerHTML = `<span>${esc(g.footerLeft)}</span><span>${esc(g.footerRight)}</span><a href="admin.html" class="admin-link" title="Админ-панель">⚙</a>`;
+    if (f) f.innerHTML = `<span>${esc(g.footerLeft)}</span><span>${esc(g.footerRight)}</span><a href="index.html" class="admin-link" title="Консоль навигации">◈</a><a href="admin.html" class="admin-link" title="Админ-панель">⚙</a>`;
   }
 
   // ── INDEX ──────────────────────────────────────────
