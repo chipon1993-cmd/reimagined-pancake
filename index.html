@@ -721,6 +721,62 @@
       }
     }
 
+    /* ── RADAR NODE ACTIVITY STATES ── */
+    .radar-node-dot {
+      transition: all 0.6s ease;
+    }
+    .radar-node.activity-hot .radar-node-dot {
+      width: 14px; height: 14px;
+      box-shadow: 0 0 16px var(--accent), 0 0 32px rgba(10, 208, 255, 0.4);
+    }
+    .radar-node.activity-warm .radar-node-dot {
+      width: 12px; height: 12px;
+      box-shadow: 0 0 12px var(--accent);
+      opacity: 0.85;
+    }
+    .radar-node.activity-cold .radar-node-dot {
+      width: 8px; height: 8px;
+      opacity: 0.4;
+      box-shadow: 0 0 6px var(--accent);
+    }
+    .radar-node.activity-hot .radar-node-label { opacity: 1; font-weight: 700; }
+    .radar-node.activity-cold .radar-node-label { opacity: 0.4; }
+
+    /* Radar sweep flash on nodes */
+    .radar-node-dot.swept {
+      animation: radarFlash 0.8s ease-out;
+    }
+    @keyframes radarFlash {
+      0% { box-shadow: 0 0 24px var(--accent), 0 0 48px rgba(10, 208, 255, 0.6); transform: scale(1.5); }
+      100% { box-shadow: 0 0 10px var(--accent); transform: scale(1); }
+    }
+
+    /* Module NEW badge */
+    .module-badge-new {
+      font-family: 'Courier New', monospace;
+      font-size: 0.52rem;
+      letter-spacing: 0.1em;
+      color: #34d399;
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      border-radius: 5px;
+      padding: 2px 6px;
+      margin-left: 8px;
+      animation: badgePulse 2s ease-in-out infinite;
+    }
+    @keyframes badgePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Module visit count */
+    .module-visits {
+      font-family: 'Courier New', monospace;
+      font-size: 0.56rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
     /* ── THEME OVERRIDES for console accents ── */
     [data-theme="purple"] .radar-sweep::after { background: linear-gradient(90deg, rgba(191,90,242,0.5), transparent); }
     [data-theme="purple"] .radar-bg { border-color: rgba(191,90,242,0.12); }
@@ -801,6 +857,14 @@
       <div class="sys-indicator">
         <div class="sys-dot" id="sysFirebase"></div>
         <span id="sysFirebaseLabel">FIREBASE</span>
+      </div>
+      <div class="sys-indicator" id="sysNetWrap">
+        <div class="sys-dot" id="sysNet"></div>
+        <span id="sysNetLabel">NETWORK</span>
+      </div>
+      <div class="sys-indicator">
+        <div class="sys-dot ok"></div>
+        <span id="sysLang">LANG: RU</span>
       </div>
     </div>
     <div class="sys-bar-group">
@@ -1165,20 +1229,249 @@
   (function() {
     'use strict';
 
-    // ── SYSTEM CLOCK ──
+    // ════════════════════════════════════════════════
+    // HELPERS
+    // ════════════════════════════════════════════════
+    var theme = localStorage.getItem('ac_theme') || 'cyan';
+    var lang = localStorage.getItem('ac_lang') || 'ru';
+
+    function fmt(d) {
+      return String(d.getHours()).padStart(2,'0') + ':' +
+             String(d.getMinutes()).padStart(2,'0') + ':' +
+             String(d.getSeconds()).padStart(2,'0');
+    }
+    function fmtFull(d) {
+      return d.getFullYear() + '.' +
+             String(d.getMonth()+1).padStart(2,'0') + '.' +
+             String(d.getDate()).padStart(2,'0') + ' ' + fmt(d);
+    }
+
+    // ════════════════════════════════════════════════
+    // 1. REAL SHIP LOG — localStorage event history
+    // ════════════════════════════════════════════════
+    var LOG_KEY = 'ac_ship_log';
+    var MAX_LOG = 50;
+
+    function getLog() {
+      try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; }
+      catch(e) { return []; }
+    }
+    function saveLog(log) {
+      localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(-MAX_LOG)));
+    }
+    function addLog(msg, type) {
+      var log = getLog();
+      log.push({ ts: Date.now(), msg: msg, type: type || 'sys' });
+      saveLog(log);
+    }
+
+    // Record this console visit
+    addLog('Console opened', 'nav');
+
+    // Render ship log
+    var logEl = document.getElementById('shiplog');
+    if (logEl) {
+      var log = getLog();
+      var recent = log.slice(-10).reverse();
+      if (recent.length === 0) {
+        recent = [{ ts: Date.now(), msg: 'First launch — welcome aboard', type: 'sys' }];
+      }
+      recent.forEach(function(entry) {
+        var d = new Date(entry.ts);
+        var div = document.createElement('div');
+        div.className = 'shiplog-entry';
+        var t = entry.type || 'sys';
+        div.innerHTML =
+          '<span class="shiplog-time">' + fmt(d) + '</span>' +
+          '<span class="shiplog-msg">' + entry.msg + '</span>' +
+          '<span class="shiplog-type ' + t + '">' + t.toUpperCase() + '</span>';
+        logEl.appendChild(div);
+      });
+    }
+
+    // ════════════════════════════════════════════════
+    // 2. VISIT TRACKING — page view counters
+    // ════════════════════════════════════════════════
+    var VISITS_KEY = 'ac_page_visits';
+    var LAST_VISIT_KEY = 'ac_page_last_visit';
+
+    function getVisits() {
+      try { return JSON.parse(localStorage.getItem(VISITS_KEY)) || {}; }
+      catch(e) { return {}; }
+    }
+    function getLastVisits() {
+      try { return JSON.parse(localStorage.getItem(LAST_VISIT_KEY)) || {}; }
+      catch(e) { return {}; }
+    }
+
+    var visits = getVisits();
+    var lastVisits = getLastVisits();
+
+    // Track console visit
+    visits['console'] = (visits['console'] || 0) + 1;
+    lastVisits['console'] = Date.now();
+    localStorage.setItem(VISITS_KEY, JSON.stringify(visits));
+    localStorage.setItem(LAST_VISIT_KEY, JSON.stringify(lastVisits));
+
+    // Show visit counts on module cards
+    var modulePages = {
+      'home.html': 'home', 'about.html': 'about', 'journey.html': 'journey',
+      'interests.html': 'interests', 'videos.html': 'videos', 'contact.html': 'contact',
+      'admin.html': 'admin'
+    };
+    document.querySelectorAll('.module-card').forEach(function(card) {
+      var href = card.getAttribute('href');
+      var pageKey = modulePages[href];
+      if (!pageKey) return;
+      var count = visits[pageKey] || 0;
+      var footer = card.querySelector('.module-footer');
+      if (footer && count > 0) {
+        var span = document.createElement('span');
+        span.className = 'module-visits';
+        span.textContent = count + ' visits';
+        var arrow = footer.querySelector('.module-arrow');
+        if (arrow) footer.insertBefore(span, arrow);
+      }
+    });
+
+    // ════════════════════════════════════════════════
+    // 3. MODULE "NEW" BADGES — content change detection
+    // ════════════════════════════════════════════════
+    var SEEN_KEY = 'ac_content_seen';
+    function getSeenState() {
+      try { return JSON.parse(localStorage.getItem(SEEN_KEY)) || {}; }
+      catch(e) { return {}; }
+    }
+    var seen = getSeenState();
+
+    // Check if site-data has been updated (compare hash of sections)
+    if (window.AC_DEFAULTS) {
+      var defaults = window.AC_DEFAULTS;
+      var sections = { about: defaults.about, journey: defaults.journey, interests: defaults.interests };
+      Object.keys(sections).forEach(function(key) {
+        var content = JSON.stringify(sections[key] || '');
+        var hash = content.length + '_' + content.charCodeAt(0) + content.charCodeAt(Math.floor(content.length/2));
+        if (seen[key] && seen[key] !== hash) {
+          // Content changed since last seen — show NEW badge
+          var card = document.querySelector('.module-card[href="' + key + '.html"]');
+          if (card) {
+            var status = card.querySelector('.module-status');
+            if (status) {
+              var badge = document.createElement('span');
+              badge.className = 'module-badge-new';
+              badge.textContent = 'NEW';
+              status.appendChild(badge);
+            }
+          }
+        }
+        seen[key] = hash;
+      });
+      localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
+    }
+
+    // ════════════════════════════════════════════════
+    // 4. LIVE RADAR NODES — activity-based glow
+    // ════════════════════════════════════════════════
+    var nodeMap = {
+      'n-about': 'about', 'n-journey': 'journey', 'n-interests': 'interests',
+      'n-videos': 'videos', 'n-contact': 'contact'
+    };
+    var now = Date.now();
+    var HOUR = 3600000;
+
+    document.querySelectorAll('.radar-node').forEach(function(node) {
+      var cls = node.className.match(/n-(\w+)/);
+      if (!cls) return;
+      var pageKey = nodeMap['n-' + cls[1]];
+      if (!pageKey) return;
+
+      var lastVisit = lastVisits[pageKey];
+      if (!lastVisit) {
+        node.classList.add('activity-cold');
+      } else {
+        var age = now - lastVisit;
+        if (age < HOUR) node.classList.add('activity-hot');
+        else if (age < HOUR * 24) node.classList.add('activity-warm');
+        else node.classList.add('activity-cold');
+      }
+    });
+
+    // Radar sweep flash — detect when sweep passes each node
+    var sweepStart = Date.now();
+    var SWEEP_DURATION = 6000; // matches CSS animation
+    var nodeAngles = { 'n-about': 0, 'n-journey': 72, 'n-interests': 144, 'n-videos': 216, 'n-contact': 288 };
+
+    setInterval(function() {
+      var elapsed = (Date.now() - sweepStart) % SWEEP_DURATION;
+      var sweepAngle = (elapsed / SWEEP_DURATION) * 360;
+
+      Object.keys(nodeAngles).forEach(function(nodeClass) {
+        var angle = nodeAngles[nodeClass];
+        var diff = Math.abs(sweepAngle - angle);
+        if (diff < 8 || diff > 352) {
+          var dot = document.querySelector('.' + nodeClass + ' .radar-node-dot');
+          if (dot && !dot.classList.contains('swept')) {
+            dot.classList.add('swept');
+            setTimeout(function() { dot.classList.remove('swept'); }, 800);
+          }
+        }
+      });
+    }, 100);
+
+    // ════════════════════════════════════════════════
+    // 5. ONLINE/OFFLINE INDICATOR
+    // ════════════════════════════════════════════════
+    function updateNetStatus() {
+      var dot = document.getElementById('sysNet');
+      var label = document.getElementById('sysNetLabel');
+      if (!dot || !label) return;
+      if (navigator.onLine) {
+        dot.className = 'sys-dot ok';
+        label.textContent = 'ONLINE';
+      } else {
+        dot.className = 'sys-dot warn';
+        label.textContent = 'OFFLINE';
+        addLog('Network connection lost', 'sys');
+      }
+    }
+    updateNetStatus();
+    window.addEventListener('online', function() { updateNetStatus(); addLog('Network restored', 'sys'); });
+    window.addEventListener('offline', function() { updateNetStatus(); });
+
+    // ════════════════════════════════════════════════
+    // 6. REAL PROGRESS BARS — actual load status
+    // ════════════════════════════════════════════════
+    setTimeout(function() {
+      var b1 = document.getElementById('barContent');
+      var b2 = document.getElementById('barTranslations');
+      var b3 = document.getElementById('barEffects');
+
+      // Content: check if site-data loaded
+      if (b1) b1.style.width = window.AC_DEFAULTS ? '100%' : '0%';
+
+      // Translations: check if translations loaded
+      setTimeout(function() {
+        if (b2) b2.style.width = window.AC_TRANSLATIONS ? '100%' : '30%';
+      }, 300);
+
+      // Effects: check scripts
+      setTimeout(function() {
+        var effectsOk = !!document.querySelector('.cursor-dot') || /Mobi|Android/i.test(navigator.userAgent);
+        if (b3) b3.style.width = effectsOk ? '100%' : '60%';
+      }, 800);
+    }, 500);
+
+    // ════════════════════════════════════════════════
+    // SYSTEM CLOCK
+    // ════════════════════════════════════════════════
     function updateClock() {
       var now = new Date();
-      var h = String(now.getHours()).padStart(2, '0');
-      var m = String(now.getMinutes()).padStart(2, '0');
-      var s = String(now.getSeconds()).padStart(2, '0');
       var el = document.getElementById('sysTime');
-      if (el) el.textContent = h + ':' + m + ':' + s;
-
-      var y = now.getFullYear();
-      var mo = String(now.getMonth() + 1).padStart(2, '0');
-      var d = String(now.getDate()).padStart(2, '0');
+      if (el) el.textContent = fmt(now);
       var de = document.getElementById('sysDate');
-      if (de) de.textContent = y + '.' + mo + '.' + d;
+      if (de) de.textContent = now.getFullYear() + '.' +
+        String(now.getMonth()+1).padStart(2,'0') + '.' +
+        String(now.getDate()).padStart(2,'0');
     }
     updateClock();
     setInterval(updateClock, 1000);
@@ -1201,9 +1494,11 @@
       if (typeof window.fsGet === 'function') {
         dot.classList.add('ok');
         label.textContent = 'FIREBASE OK';
+        addLog('Firebase connection established', 'sys');
       } else {
         dot.classList.add('warn');
         label.textContent = 'FIREBASE OFFLINE';
+        addLog('Firebase unavailable — using cache', 'sys');
       }
     }, 2000);
 
@@ -1214,60 +1509,34 @@
         if (el) el.textContent = reg ? 'Installed' : 'Available';
       });
     } else {
-      var el = document.getElementById('statusPwa');
-      if (el) el.textContent = 'N/A';
+      var pwEl = document.getElementById('statusPwa');
+      if (pwEl) pwEl.textContent = 'N/A';
     }
 
-    // ── THEME STATUS ──
-    var theme = localStorage.getItem('ac_theme') || 'cyan';
+    // ── THEME & LANG STATUS ──
     var ts = document.getElementById('statusTheme');
     if (ts) ts.textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
+
+    var langEl = document.getElementById('sysLang');
+    if (langEl) langEl.textContent = 'LANG: ' + lang.toUpperCase();
 
     // ── LAST PAGE VISITED ──
     var lastPage = localStorage.getItem('ac_last_page');
     var lpEl = document.getElementById('statusLastPage');
     if (lpEl && lastPage) lpEl.textContent = lastPage.toUpperCase();
-    // Track current page
     localStorage.setItem('ac_last_page', 'console');
 
-    // ── ANIMATED PROGRESS BARS ──
-    setTimeout(function() {
-      var b1 = document.getElementById('barContent');
-      var b2 = document.getElementById('barTranslations');
-      var b3 = document.getElementById('barEffects');
-      if (b1) b1.style.width = '100%';
-      setTimeout(function() { if (b2) b2.style.width = '100%'; }, 300);
-      setTimeout(function() { if (b3) b3.style.width = '100%'; }, 600);
-    }, 800);
+    // ── TOTAL VISITS STAT ──
+    var totalVisits = 0;
+    Object.keys(visits).forEach(function(k) { totalVisits += visits[k]; });
+    var cfPages = document.getElementById('cfPages');
+    if (cfPages) cfPages.textContent = totalVisits;
+    var cfLabel = cfPages && cfPages.nextElementSibling;
+    if (cfLabel) cfLabel.textContent = 'Total Visits';
 
-    // ── SHIP LOG ──
-    var logEl = document.getElementById('shiplog');
-    if (logEl) {
-      var now = new Date();
-      var fmt = function(d) {
-        return String(d.getHours()).padStart(2,'0') + ':' +
-               String(d.getMinutes()).padStart(2,'0') + ':' +
-               String(d.getSeconds()).padStart(2,'0');
-      };
-      var logs = [
-        { time: fmt(new Date(now - 0)),     msg: 'Navigation console initialized',          type: 'sys'  },
-        { time: fmt(new Date(now - 1200)),   msg: 'All modules loaded and verified',          type: 'sys'  },
-        { time: fmt(new Date(now - 3400)),   msg: 'Theme engine: ' + theme + ' active',       type: 'info' },
-        { time: fmt(new Date(now - 5600)),   msg: 'Language subsystem: ' + (localStorage.getItem('ac_lang') || 'ru').toUpperCase(), type: 'info' },
-        { time: fmt(new Date(now - 12000)),  msg: 'Awaiting navigation command...',            type: 'nav'  }
-      ];
-      logs.forEach(function(l) {
-        var div = document.createElement('div');
-        div.className = 'shiplog-entry';
-        div.innerHTML =
-          '<span class="shiplog-time">' + l.time + '</span>' +
-          '<span class="shiplog-msg">' + l.msg + '</span>' +
-          '<span class="shiplog-type ' + l.type + '">' + l.type.toUpperCase() + '</span>';
-        logEl.appendChild(div);
-      });
-    }
-
-    // ── KEYBOARD NAVIGATION ──
+    // ════════════════════════════════════════════════
+    // KEYBOARD NAVIGATION
+    // ════════════════════════════════════════════════
     var keyMap = {
       'h': 'home.html',
       '1': 'about.html',
@@ -1277,17 +1546,11 @@
       '5': 'contact.html'
     };
     document.addEventListener('keydown', function(e) {
-      // Don't intercept if user is typing in an input
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       if (e.ctrlKey || e.altKey || e.metaKey) return;
-
       var key = e.key.toLowerCase();
-      if (key === 'escape') {
-        window.location.href = 'home.html';
-        return;
-      }
+      if (key === 'escape') { window.location.href = 'home.html'; return; }
       if (keyMap[key]) {
-        // Trigger page transition
         var overlay = document.getElementById('page-overlay');
         if (overlay) {
           overlay.classList.remove('hidden');
@@ -1298,12 +1561,12 @@
       }
     });
 
-    // ── FOOTER RENDER ──
+    // ── FOOTER ──
     var footer = document.querySelector('footer');
     if (footer) {
       footer.innerHTML =
-        '<span>© ' + new Date().getFullYear() + ' Andrii Chepelovskyi</span>' +
-        '<span>Navigation Console · <a href="admin.html" class="admin-link" title="Admin">⚙</a></span>';
+        '<span>\u00A9 ' + new Date().getFullYear() + ' Andrii Chepelovskyi</span>' +
+        '<span>Navigation Console \u00B7 <a href="admin.html" class="admin-link" title="Admin">\u2699</a></span>';
     }
 
   })();

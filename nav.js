@@ -77,6 +77,12 @@ function switchLang(lang) {
   if (window.AC_RERENDER) window.AC_RERENDER();
   translateNav();
   updateLangButtons();
+  try {
+    var log = JSON.parse(localStorage.getItem('ac_ship_log') || '[]');
+    log.push({ ts: Date.now(), msg: 'Language switched to ' + lang.toUpperCase(), type: 'info' });
+    if (log.length > 50) log = log.slice(-50);
+    localStorage.setItem('ac_ship_log', JSON.stringify(log));
+  } catch(e) {}
 }
 
 function translateNav() {
@@ -115,6 +121,12 @@ function switchTheme(theme) {
   localStorage.setItem('ac_theme', theme);
   applyTheme(theme);
   updateThemeDots(theme);
+  try {
+    var log = JSON.parse(localStorage.getItem('ac_ship_log') || '[]');
+    log.push({ ts: Date.now(), msg: 'Theme changed to ' + theme, type: 'info' });
+    if (log.length > 50) log = log.slice(-50);
+    localStorage.setItem('ac_ship_log', JSON.stringify(log));
+  } catch(e) {}
 }
 
 function applyTheme(theme) {
@@ -141,6 +153,38 @@ function updateThemeDots(theme) {
     dot.classList.toggle('active', dot.dataset.theme === theme);
   });
 }
+
+// ── PAGE TRACKING (for console dashboard) ───────────
+(function trackPageVisit() {
+  var page = document.body && document.body.dataset.page;
+  if (!page || page === 'console') return; // console tracks itself
+
+  // Map data-page to page key
+  var pageKey = page === 'interest-board' ? 'interests' : page;
+
+  // Increment visit count
+  try {
+    var visits = JSON.parse(localStorage.getItem('ac_page_visits') || '{}');
+    visits[pageKey] = (visits[pageKey] || 0) + 1;
+    localStorage.setItem('ac_page_visits', JSON.stringify(visits));
+
+    var lastVisits = JSON.parse(localStorage.getItem('ac_page_last_visit') || '{}');
+    lastVisits[pageKey] = Date.now();
+    localStorage.setItem('ac_page_last_visit', JSON.stringify(lastVisits));
+  } catch(e) {}
+
+  // Add to ship log
+  try {
+    var LOG_KEY = 'ac_ship_log';
+    var log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+    var names = { index:'Home', about:'About', journey:'Journey', interests:'Interests', videos:'Videos', contact:'Contact' };
+    log.push({ ts: Date.now(), msg: 'Navigated to ' + (names[pageKey] || pageKey), type: 'nav' });
+    if (log.length > 50) log = log.slice(-50);
+    localStorage.setItem(LOG_KEY, JSON.stringify(log));
+  } catch(e) {}
+
+  localStorage.setItem('ac_last_page', pageKey);
+})();
 
 // ── INIT ─────────────────────────────────────────────
 function initLangTheme() {
