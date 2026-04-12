@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Админка — A. Chepelovskyi</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#3B82F6" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <!-- LOGIN VIEW -->
+  <section class="admin-login" id="view-login" hidden>
+    <div class="admin-login-box">
+      <h1 class="admin-login-title">Админка</h1>
+      <p class="admin-login-sub">Вход только для владельца сайта.</p>
+
+      <form class="admin-login-form" id="login-form">
+        <div class="form-row">
+          <label class="form-label" for="login-email">Email</label>
+          <input class="form-input" type="email" id="login-email" name="email" required autocomplete="username" />
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="login-password">Пароль</label>
+          <input class="form-input" type="password" id="login-password" name="password" required autocomplete="current-password" />
+        </div>
+        <button class="btn admin-login-submit" type="submit">Войти</button>
+        <div class="admin-login-error" id="login-error" hidden></div>
+      </form>
+
+      <a class="admin-login-back" href="/">← На сайт</a>
+    </div>
+  </section>
+
+  <!-- ADMIN VIEW -->
+  <section class="admin-app" id="view-app" hidden>
+
+    <header class="admin-header">
+      <div class="admin-header-inner">
+        <div class="admin-brand">
+          <a href="/" class="admin-brand-link">A. Chepelovskyi</a>
+          <span class="admin-brand-tag">админка</span>
+        </div>
+        <div class="admin-header-right">
+          <span class="admin-user" id="admin-user"></span>
+          <button class="admin-btn-ghost" id="btn-logout" type="button">Выйти</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-layout">
+
+      <aside class="admin-sidebar">
+        <nav class="admin-nav" aria-label="Разделы">
+          <button class="admin-tab active" data-tab="hero" type="button">Главная</button>
+          <button class="admin-tab" data-tab="path" type="button">Путь</button>
+          <button class="admin-tab" data-tab="notes" type="button">Записки</button>
+          <button class="admin-tab" data-tab="poems" type="button">Стихи</button>
+          <button class="admin-tab" data-tab="youtube" type="button">YouTube</button>
+          <button class="admin-tab" data-tab="contact" type="button">Контакт</button>
+          <button class="admin-tab" data-tab="history" type="button">История</button>
+        </nav>
+      </aside>
+
+      <main class="admin-main">
+
+        <!-- HERO tab -->
+        <section class="admin-panel active" data-panel="hero">
+          <div class="admin-panel-head">
+            <h2 class="admin-panel-title">Главная — герой-блок</h2>
+            <a class="admin-preview-link" href="/" target="_blank" rel="noopener">Открыть страницу →</a>
+          </div>
+
+          <form class="admin-form" id="form-hero">
+            <div class="form-row">
+              <label class="form-label" for="hero-quote">Цитата</label>
+              <textarea class="form-textarea" id="hero-quote" rows="2"></textarea>
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="hero-attr">Автор цитаты</label>
+              <input class="form-input" type="text" id="hero-attr" />
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="hero-tagline">Подпись</label>
+              <textarea class="form-textarea" id="hero-tagline" rows="2"></textarea>
+            </div>
+            <div class="form-row-grid">
+              <div class="form-row">
+                <label class="form-label" for="hero-cta-text">Текст кнопки</label>
+                <input class="form-input" type="text" id="hero-cta-text" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="hero-cta-url">Ссылка кнопки</label>
+                <input class="form-input" type="text" id="hero-cta-url" />
+              </div>
+            </div>
+            <div class="admin-form-actions">
+              <button class="btn" type="submit">Сохранить</button>
+              <span class="admin-save-status" id="hero-status"></span>
+            </div>
+          </form>
+        </section>
+
+        <!-- PATH tab -->
+        <section class="admin-panel" data-panel="path">
+          <div class="admin-panel-head">
+            <h2 class="admin-panel-title">Путь</h2>
+            <a class="admin-preview-link" href="/path.html" target="_blank" rel="noopener">Открыть страницу →</a>
+          </div>
+
+          <form class="admin-form" id="form-path">
+            <div class="form-row">
+              <label class="form-label" for="path-title">Заголовок</label>
+              <input class="form-input" type="text" id="path-title" />
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="path-epigraph">Эпиграф</label>
+              <input class="form-input" type="text" id="path-epigraph" />
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="path-body">
+                Текст
+                <span class="form-help">
+                  Поддерживается простая разметка:
+                  <code>## Заголовок</code> — подзаголовок раздела,
+                  <code>&gt; текст</code> — цитата,
+                  пустая строка — новый абзац.
+                </span>
+              </label>
+              <textarea class="form-textarea form-textarea-long" id="path-body" rows="20"></textarea>
+            </div>
+            <div class="admin-form-actions">
+              <button class="btn" type="submit">Сохранить</button>
+              <span class="admin-save-status" id="path-status"></span>
+            </div>
+          </form>
+        </section>
+
+        <!-- NOTES tab -->
+        <section class="admin-panel" data-panel="notes">
+          <div class="admin-panel-head">
+            <h2 class="admin-panel-title">Записки</h2>
+            <a class="admin-preview-link" href="/notes.html" target="_blank" rel="noopener">Открыть страницу →</a>
+          </div>
+
+          <div class="admin-list-wrap">
+            <div class="admin-list-head">
+              <h3 class="admin-list-title">Все записки</h3>
+              <button class="btn" id="btn-new-note" type="button">+ Новая записка</button>
+            </div>
+            <div class="admin-list" id="list-notes">
+              <p class="admin-list-empty">Загружаю…</p>
+            </div>
+          </div>
+
+          <form class="admin-form admin-editor" id="form-note" hidden>
+            <div class="admin-editor-head">
+              <h3 class="admin-editor-title" id="note-editor-title">Новая записка</h3>
+              <button class="admin-btn-ghost" id="btn-close-note" type="button">Закрыть</button>
+            </div>
+
+            <input type="hidden" id="note-id" />
+
+            <div class="form-row-grid">
+              <div class="form-row">
+                <label class="form-label" for="note-title">Заголовок</label>
+                <input class="form-input" type="text" id="note-title" required />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="note-slug">
+                  Slug (адрес)
+                  <span class="form-help">Если пусто — создастся из даты+заголовка.</span>
+                </label>
+                <input class="form-input" type="text" id="note-slug" pattern="[a-z0-9\-]+" />
+              </div>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="form-row">
+                <label class="form-label" for="note-date-label">Дата (как показывать)</label>
+                <input class="form-input" type="text" id="note-date-label" placeholder="12 апреля 2026" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="note-date">Дата (для сортировки)</label>
+                <input class="form-input" type="date" id="note-date" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="note-lang">Язык</label>
+                <select class="form-input" id="note-lang">
+                  <option value="Рус">Рус</option>
+                  <option value="Укр">Укр</option>
+                  <option value="Eng">Eng</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="note-excerpt">Короткий отрывок</label>
+              <textarea class="form-textarea" id="note-excerpt" rows="2"></textarea>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="note-body">
+                Текст
+                <span class="form-help">Пустая строка — новый абзац.</span>
+              </label>
+              <textarea class="form-textarea form-textarea-long" id="note-body" rows="16"></textarea>
+            </div>
+
+            <div class="form-row-grid">
+              <label class="admin-checkbox">
+                <input type="checkbox" id="note-published" checked />
+                <span>Опубликовать</span>
+              </label>
+            </div>
+
+            <div class="admin-form-actions">
+              <button class="btn" type="submit">Сохранить</button>
+              <button class="admin-btn-danger" type="button" id="btn-delete-note">Удалить</button>
+              <span class="admin-save-status" id="note-status"></span>
+            </div>
+          </form>
+        </section>
+
+        <!-- POEMS tab -->
+        <section class="admin-panel" data-panel="poems">
+          <div class="admin-panel-head">
+            <h2 class="admin-panel-title">Стихи</h2>
+            <a class="admin-preview-link" href="/poetry.html" target="_blank" rel="noopener">Открыть страницу →</a>
+          </div>
+
+          <div class="admin-list-wrap">
+            <div class="admin-list-head">
+              <h3 class="admin-list-title">Все стихи</h3>
+              <button class="btn" id="btn-new-poem" type="button">+ Новое стихотворение</button>
+            </div>
+            <div class="admin-list" id="list-poems">
+              <p class="admin-list-empty">Загружаю…</p>
+            </div>
+          </div>
+
+          <form class="admin-form admin-editor" id="form-poem" hidden>
+            <div class="admin-editor-head">
+              <h3 class="admin-editor-title" id="poem-editor-title">Новое стихотворение</h3>
+              <button class="admin-btn-ghost" id="btn-close-poem" type="button">Закрыть</button>
+            </div>
+
+            <input type="hidden" id="poem-id" />
+
+            <div class="form-row-grid">
+              <div class="form-row">
+                <label class="form-label" for="poem-title">Название</label>
+                <input class="form-input" type="text" id="poem-title" required />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="poem-slug">Slug</label>
+                <input class="form-input" type="text" id="poem-slug" pattern="[a-z0-9\-]+" />
+              </div>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="form-row">
+                <label class="form-label" for="poem-year">Год</label>
+                <input class="form-input" type="text" id="poem-year" placeholder="2026" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="poem-lang">Язык</label>
+                <select class="form-input" id="poem-lang">
+                  <option value="Рус">Рус</option>
+                  <option value="Укр">Укр</option>
+                  <option value="Eng">Eng</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="poem-preview">
+                Превью
+                <span class="form-help">Первые две строки для карточки на странице "Стихи".</span>
+              </label>
+              <textarea class="form-textarea" id="poem-preview" rows="2"></textarea>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="poem-body">
+                Полный текст
+                <span class="form-help">Сохраняй переносы строк. Пустая строка — между строфами.</span>
+              </label>
+              <textarea class="form-textarea form-textarea-long" id="poem-body" rows="16"></textarea>
+            </div>
+
+            <div class="form-row-grid">
+              <label class="admin-checkbox">
+                <input type="checkbox" id="poem-published" checked />
+                <span>Опубликовать</span>
+              </label>
+            </div>
+
+            <div class="admin-form-actions">
+              <button class="btn" type="submit">Сохранить</button>
+              <button class="admin-btn-danger" type="button" id="btn-delete-poem">Удалить</button>
+              <span class="admin-save-status" id="poem-status"></span>
+            </div>
+          </form>
+        </section>
+
+        <!-- YOUTUBE tab -->
+        <section class="admin-panel" data-panel="youtube">
+          <div class="admin-panel-head">
+            <h2 class="admin-panel-title">YouTube</h2>
+            <a class="admin-preview-link" href="/youtube.html" target="_blank" rel="noopener">Открыть страницу →</a>
+          </div>
+
+          <form class="admin-form" id="form-youtube">
+            <div class="form-row-grid">
+              <div class="form-row">
+                <label class="form-label" for="yt-title">Заголовок страницы</label>
+                <input class="form-input" type="text" id="yt-title" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="yt-subtitle">Подзаголовок</label>
+                <input class="form-input" type="text" id="yt-subtitle" />
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="yt-intro">Вступление</label>
+              <textarea class="form-textarea" id="yt-intro" rows="3"></textarea>
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="yt-channel-url">Ссылка на канал</label>
+              <input class="form-input" type="url" id="yt-channel-url" placeholder="https://www.youtube.com/@…" />
+            </div>
+
+            <div class="form-row">
+              <label class="form-label">Видео</label>
+              <div class="admin-list" id="yt-videos">
+                <p class="admin-list-empty">Нет видео.</p>
+              </div>
+              <button class="admin-btn-ghost" id="btn-yt-add" type="button">+ Добавить видео</button>
+            </div>
+
+            <div class="admin-form-actions">
+              <button class="btn" type="submit">Сохранить</button>
+              <span class="admin-save-status" id="yt-status"></span>
+            </div>
+          </form>
+        </section>
+
+        <!-- CONTACT tab -->
+        <section class="admin-panel" data-panel="contact">
+          <div class="admin-panel-head">
+            <h2 class="admin-panel-title">Контакт</h2>
+            <a class="admin-preview-link" href="/contact.html" target="_blank" rel="noopener">Открыть страницу →</a>
+          </div>
+
+          <form class="admin-form" id="form-contact">
+            <div class="form-row">
+              <label class="form-label" for="contact-title">Заголовок</label>
+              <input class="form-input" type="text" id="contact-title" />
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="contact-intro">Текст над формой</label>
+              <textarea class="form-textarea" id="contact-intro" rows="2"></textarea>
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="contact-foot">
+                Текст под формой
+                <span class="form-help">Можно HTML — например ссылки.</span>
+              </label>
+              <textarea class="form-textarea" id="contact-foot" rows="2"></textarea>
+            </div>
+            <div class="admin-form-actions">
+              <button class="btn" type="submit">Сохранить</button>
+              <span class="admin-save-status" id="contact-status"></span>
+            </div>
+          </form>
+        </section>
+
+        <!-- HISTORY tab -->
+        <section class="admin-panel" data-panel="history">
+          <div class="admin-panel-head">
+            <h2 class="admin-panel-title">История изменений</h2>
+          </div>
+          <p class="admin-hint">Последние 30 снимков. Каждый раз, когда ты сохраняешь — остаётся запись с датой. Можно откатить.</p>
+          <div class="admin-list" id="list-history">
+            <p class="admin-list-empty">Загружаю…</p>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </section>
+
+  <!-- LOADER -->
+  <div class="admin-boot" id="view-boot">
+    <div class="admin-boot-spinner"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+  <script src="/js/admin.js" defer></script>
+</body>
+</html>

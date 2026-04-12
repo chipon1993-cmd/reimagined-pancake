@@ -1,0 +1,461 @@
+/* ========================================
+   chepelovskyi.com — admin.css
+   Minimal admin panel — matches main.css design system
+   ======================================== */
+
+.admin-body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── Boot spinner ────────────────────── */
+.admin-boot {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: 100;
+}
+.admin-boot-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: admin-spin 0.8s linear infinite;
+}
+@keyframes admin-spin { to { transform: rotate(360deg); } }
+
+/* ── Login view ──────────────────────── */
+.admin-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.admin-login-box {
+  width: 100%;
+  max-width: 360px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 40px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.02);
+}
+.admin-login-title {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+}
+.admin-login-sub {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0 0 28px;
+}
+.admin-login-form .form-row { margin-bottom: 16px; }
+.admin-login-submit {
+  width: 100%;
+  margin-top: 8px;
+  justify-content: center;
+}
+.admin-login-error {
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: #FEF2F2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.admin-login-back {
+  display: block;
+  text-align: center;
+  margin-top: 24px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-decoration: none;
+}
+.admin-login-back:hover { color: var(--accent); }
+
+/* ── Header ──────────────────────────── */
+.admin-header {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.admin-header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.admin-brand-link {
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 15px;
+}
+.admin-brand-tag {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.admin-user {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── Layout ──────────────────────────── */
+.admin-layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+/* ── Sidebar ─────────────────────────── */
+.admin-sidebar {
+  position: sticky;
+  top: 72px;
+}
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+@media (max-width: 720px) {
+  .admin-sidebar { position: static; }
+  .admin-nav {
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+.admin-tab {
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 10px 14px;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+.admin-tab:hover {
+  background: var(--bg-secondary);
+  color: var(--text);
+}
+.admin-tab.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ── Main ────────────────────────────── */
+.admin-main {
+  min-width: 0;
+}
+.admin-panel {
+  display: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px;
+}
+.admin-panel.active { display: block; }
+@media (max-width: 720px) {
+  .admin-panel { padding: 20px; }
+}
+
+.admin-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.admin-panel-title {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.admin-preview-link {
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.admin-preview-link:hover { text-decoration: underline; }
+
+.admin-hint {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 0 0 20px;
+}
+
+/* ── Forms inside admin ──────────────── */
+.admin-form .form-row { margin-bottom: 18px; }
+
+.form-row-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.form-row-grid .form-row { margin-bottom: 0; }
+
+.form-help {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.form-help code {
+  background: var(--bg-secondary);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.form-textarea-long {
+  min-height: 320px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.admin-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.admin-checkbox input { accent-color: var(--accent); width: 16px; height: 16px; }
+
+.admin-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.admin-save-status {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.admin-save-status.ok { color: #15803D; }
+.admin-save-status.error { color: #B91C1C; }
+
+/* ── Buttons ─────────────────────────── */
+.admin-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.admin-btn-ghost:hover {
+  background: var(--bg-secondary);
+}
+.admin-btn-danger {
+  background: transparent;
+  border: 1px solid #FECACA;
+  color: #B91C1C;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.admin-btn-danger:hover {
+  background: #FEF2F2;
+}
+
+/* ── Lists (notes/poems/videos/history) ── */
+.admin-list-wrap { margin-bottom: 24px; }
+.admin-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.admin-list-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.admin-list-empty {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+  margin: 0;
+  padding: 12px 0;
+}
+
+.admin-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+.admin-item:hover {
+  background: var(--bg-secondary);
+}
+.admin-item-main {
+  min-width: 0;
+}
+.admin-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 2px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-item-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.admin-item-badge-draft {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: #FEF3C7;
+  color: #92400E;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.admin-item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ── Editor (note/poem) ──────────────── */
+.admin-editor {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.admin-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.admin-editor-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* ── YouTube video rows ──────────────── */
+.yt-video-row {
+  display: grid;
+  grid-template-columns: 1fr 180px auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+@media (max-width: 640px) {
+  .yt-video-row {
+    grid-template-columns: 1fr auto;
+  }
+  .yt-video-row .yt-video-id {
+    grid-column: 1 / -1;
+  }
+}
+.yt-video-row input {
+  font-size: 13px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+/* ── History ─────────────────────────── */
+.admin-history-item {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+}

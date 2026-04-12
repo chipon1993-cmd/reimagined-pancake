@@ -1,16 +1,20 @@
-// Service Worker — chepelovskyi.com v25 (rebuild 2026)
-// Purge-all and minimal offline shell caching.
-const CACHE = 'ac-v25';
+// Service Worker — chepelovskyi.com v26 (admin 2026)
+// Minimal offline shell caching. Admin page is never cached.
+const CACHE = 'ac-v26';
 const SHELL = [
   '/',
   '/index.html',
   '/path.html',
   '/notes.html',
   '/poetry.html',
+  '/note.html',
+  '/poem.html',
   '/youtube.html',
   '/contact.html',
   '/css/main.css',
   '/js/main.js',
+  '/js/content-loader.js',
+  '/firebase-config.js',
   '/favicon.svg',
   '/favicon.ico',
   '/manifest.json'
@@ -37,6 +41,13 @@ self.addEventListener('fetch', function (e) {
   var url = new URL(req.url);
   if (url.protocol === 'chrome-extension:') return;
   if (url.hostname !== location.hostname) return; // don't cache cross-origin (fonts, web3forms, youtube)
+
+  // Never cache admin (always network-fresh).
+  if (url.pathname === '/admin.html' ||
+      url.pathname === '/js/admin.js' ||
+      url.pathname === '/css/admin.css') {
+    return;
+  }
 
   var isHtml = req.mode === 'navigate' || (req.headers.get('accept') || '').indexOf('text/html') !== -1;
 

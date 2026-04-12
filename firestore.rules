@@ -1,0 +1,54 @@
+rules_version = '2';
+
+// Security rules for chepelovskyi-site Firestore.
+// Public pages (hero, path, notes, poems, youtube, contact, nav) are readable
+// by anyone. Writes are only allowed from the single owner account.
+//
+// To deploy:
+//   1) In Firebase Console -> Authentication -> Sign-in method, enable
+//      "Email/Password" and DISABLE self-service sign-up (or keep enabled
+//      but create only one account via the console).
+//   2) Create exactly one user in Authentication -> Users.
+//   3) Copy their UID and replace OWNER_UID below.
+//   4) Deploy via `firebase deploy --only firestore:rules`
+//      OR paste the content of this file into Firebase Console ->
+//      Firestore Database -> Rules tab and Publish.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Replace with the UID from Firebase Authentication.
+    function isOwner() {
+      return request.auth != null
+          && request.auth.uid == 'OWNER_UID';
+    }
+
+    // Site-wide sections: hero, path, youtube, contact, nav.
+    match /site/{docId} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    // Notes (short texts).
+    match /notes/{docId} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    // Poems.
+    match /poems/{docId} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    // Version history (snapshots taken before each save).
+    match /history/{docId} {
+      allow read, write: if isOwner();
+    }
+
+    // Default-deny anything else.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

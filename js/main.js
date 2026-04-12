@@ -97,6 +97,26 @@
     if (y) y.textContent = new Date().getFullYear();
   }
 
+  // ── Hidden admin entry ──
+  // Triple-click the footer year to open /admin.html, OR press Ctrl+Shift+A.
+  // The admin page itself is protected by Firebase Auth.
+  function initAdminEntry() {
+    var y = document.querySelector('[data-year]');
+    if (y) {
+      y.addEventListener('click', function (e) {
+        if (e.detail === 3) {
+          window.location.href = '/admin.html';
+        }
+      });
+    }
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        window.location.href = '/admin.html';
+      }
+    });
+  }
+
   // ── Register service worker (offline support) ──
   function initSW() {
     if (!('serviceWorker' in navigator)) return;
@@ -109,9 +129,9 @@
   // ── Boot ──
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      initNav(); initSearch(); initContactForm(); initYear(); initSW();
+      initNav(); initSearch(); initContactForm(); initYear(); initAdminEntry(); initSW();
     });
   } else {
-    initNav(); initSearch(); initContactForm(); initYear(); initSW();
+    initNav(); initSearch(); initContactForm(); initYear(); initAdminEntry(); initSW();
   }
 })();
