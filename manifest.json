@@ -1,11 +1,11 @@
 {
   "name": "Andrii Chepelovskyi",
   "short_name": "A.C",
-  "description": "Personal site — Ukraine, World, Norway",
+  "description": "Открытая платформа живого человека в пути — тексты, стихи, мысли.",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#0a0e1a",
-  "theme_color": "#0ad0ff",
+  "background_color": "#F5F6F8",
+  "theme_color": "#3B82F6",
   "icons": [
     {
       "src": "favicon.svg",

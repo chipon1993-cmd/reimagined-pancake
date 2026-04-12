@@ -3,246 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="preconnect" href="https://unpkg.com" crossorigin />
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-  <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://plausible.io https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://img.youtube.com https://www.googletagmanager.com data:; connect-src 'self' https://firestore.googleapis.com https://*.firebaseio.com https://api.web3forms.com https://buttondown.com https://plausible.io https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.gstatic.com https://unpkg.com; frame-src https://www.youtube.com https://player.vimeo.com; object-src 'none'; base-uri 'self';" />
-  <title>Контакт · Andrii Chepelovskyi</title>
-  <meta name="description" content="Связаться с Андрием Чепеловским — контакты и способы связи." />
-  <link rel="canonical" href="https://chepelovskyi.com/contact.html" />
+  <title>Контакт — A. Chepelovskyi</title>
+  <meta name="description" content="Если хочешь написать — просто напиши." />
+  <meta name="theme-color" content="#3B82F6" />
+
   <meta property="og:type" content="website" />
+  <meta property="og:title" content="Написать — A. Chepelovskyi" />
+  <meta property="og:description" content="Если хочешь написать — просто напиши." />
   <meta property="og:url" content="https://chepelovskyi.com/contact.html" />
-  <meta property="og:title" content="Контакт · Andrii Chepelovskyi" />
-  <meta property="og:description" content="Связаться с Андрием — контакты и способы связи." />
   <meta property="og:image" content="https://chepelovskyi.com/og-image.png" />
-  <meta property="og:locale" content="ru_RU" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <link rel="icon" href="favicon.ico" sizes="any" />
-  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0ad0ff" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:start; margin-bottom:80px; }
-    #contact-items { display:flex; flex-direction:column; gap:12px; }
-    .contact-card { display:flex; align-items:center; gap:18px; border-radius:var(--radius); padding:20px 24px; text-decoration:none; color:var(--text); transition:transform var(--transition); }
-    .contact-card:hover { transform:translateX(8px); }
-    .contact-card .icon { font-size:1.6rem; flex-shrink:0; width:44px; text-align:center; filter:drop-shadow(0 0 6px rgba(0,212,255,0.4)); display:flex; align-items:center; justify-content:center; }
-    .contact-card .icon svg { width:26px; height:26px; stroke:var(--accent); stroke-width:1.75; fill:none; }
-    .contact-card .info .label { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; margin-bottom:2px; }
-    .contact-card .info .value { font-size:.95rem; font-weight:600; }
-    .contact-card .arrow { margin-left:auto; color:var(--accent); font-size:1.1rem; opacity:0; transition:opacity var(--transition),transform var(--transition); text-shadow:0 0 8px var(--accent); }
-    .contact-card:hover .arrow { opacity:1; transform:translateX(4px); }
-    .contact-text h3 { font-size:1rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:18px; text-shadow:0 0 10px rgba(0,212,255,0.4); }
-    #contact-text-paras p { color:var(--muted); font-size:.96rem; margin-bottom:14px; line-height:1.75; }
-    #contact-text-paras p b { color:var(--text); }
-    .topics-wrap { margin-top:28px; }
-    .topics-wrap h4 { font-size:.7rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
-    #contact-topics { display:flex; flex-wrap:wrap; gap:8px; }
-    .topic-tag { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:6px 14px; font-size:.82rem; }
-    @media(max-width:768px){ .contact-grid{grid-template-columns:1fr;gap:40px;} }
 
-    /* ── Contact Form ─────────────────────────────────────── */
-    .contact-form-section { padding-top:56px; border-top:1px solid rgba(255,255,255,.06); margin-bottom:80px; }
-    .cform-heading {
-      font-size:.7rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
-      color:var(--accent); margin-bottom:32px;
-      text-shadow:0 0 10px rgba(0,212,255,.35);
-    }
-    .cform-heading::before { content:'// '; opacity:.55; }
-
-    .cform { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-    .cform-full { grid-column:1/-1; }
-    .cform-field label {
-      display:block; font-size:.68rem; font-weight:700;
-      letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;
-    }
-    .cform-field input,
-    .cform-field textarea {
-      width:100%; background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.09); border-radius:var(--radius);
-      padding:14px 16px; color:var(--text); font-size:.93rem;
-      font-family:inherit; transition:border-color .2s,box-shadow .2s;
-      resize:none; outline:none; box-sizing:border-box;
-    }
-    .cform-field input:focus,
-    .cform-field textarea:focus {
-      border-color:rgba(0,212,255,.45); box-shadow:0 0 0 3px rgba(0,212,255,.08);
-    }
-    .cform-field input::placeholder,
-    .cform-field textarea::placeholder { color:rgba(241,245,249,.22); }
-    .cform-field textarea { min-height:140px; }
-    .cform-submit { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
-    .cform-btn {
-      display:inline-flex; align-items:center; gap:8px;
-      background:var(--accent); color:#050810; border:none;
-      border-radius:var(--radius); padding:13px 28px;
-      font-size:.88rem; font-weight:700; letter-spacing:.08em;
-      text-transform:uppercase; cursor:pointer;
-      transition:opacity .2s,transform .2s;
-      box-shadow:0 0 18px rgba(0,212,255,.28);
-    }
-    .cform-btn:hover:not(:disabled) { opacity:.85; transform:translateY(-1px); }
-    .cform-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
-    .cform-status { font-size:.88rem; }
-    .cform-status.ok  { color:#4ade80; }
-    .cform-status.err { color:#f87171; }
-    @media(max-width:640px){ .cform { grid-template-columns:1fr; } }
-  </style>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
 </head>
-<body data-page="contact">
-  <noscript><style>.fade-in{opacity:1!important;transform:none!important}#page-overlay{display:none!important}</style></noscript>
-  <div id="page-overlay"></div>
-  <nav role="navigation" aria-label="Основная навигация">
-    <span class="nav-logo">A<span>.</span>C</span>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="index.html" onclick="closeMenu()">Главная</a></li>
-      <li class="nav-has-sub"><a href="about.html" onclick="closeMenu()" data-i18n="nav_about">О себе <span class="nav-sub-arrow">▼</span></a>
-        <ul class="nav-sub">
-          <li><a href="journey.html" onclick="closeMenu()"><span class="nav-sub-icon">🗺️</span> Мой путь</a></li>
-        </ul>
-      </li>
-      <li class="nav-has-sub"><a href="interests.html" onclick="closeMenu()" data-i18n="nav_interests">Интересы <span class="nav-sub-arrow">▼</span></a>
-        <ul class="nav-sub">
-          <li><a href="videos.html" onclick="closeMenu()"><span class="nav-sub-icon">🎬</span> Видео</a></li>
-        </ul>
-      </li>
-      <li><a href="world.html"     onclick="closeMenu()">Мир</a></li>
-      <li><a href="contact.html"   onclick="closeMenu()" data-i18n="nav_contact">Контакт</a></li>
-    </ul>
-    <div class="nav-controls">
-      <div class="theme-dots">
-        <button class="theme-dot t-cyan"   data-theme="cyan"   onclick="switchTheme('cyan')"   title="Cyan" aria-label="Голубая тема"></button>
-        <button class="theme-dot t-purple" data-theme="purple" onclick="switchTheme('purple')" title="Purple" aria-label="Фиолетовая тема"></button>
-        <button class="theme-dot t-green"  data-theme="green"  onclick="switchTheme('green')"  title="Green" aria-label="Зелёная тема"></button>
-        <button class="theme-dot t-orange" data-theme="orange" onclick="switchTheme('orange')" title="Orange" aria-label="Оранжевая тема"></button>
-        <button class="theme-dot t-light"  data-theme="light"  onclick="switchTheme('light')"  title="Light" aria-label="Светлая тема"></button>
+<body>
+
+  <nav class="nav" aria-label="Основная навигация">
+    <div class="nav-inner">
+      <a class="nav-logo" href="/">A. Chepelovskyi</a>
+      <button class="nav-toggle" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
+      <div class="nav-links">
+        <a class="nav-link" href="/path.html">Путь</a>
+        <a class="nav-link" href="/notes.html">Записки</a>
+        <a class="nav-link" href="/poetry.html">Стихи</a>
+        <a class="nav-link" href="/youtube.html">YouTube</a>
+        <a class="nav-link active" href="/contact.html">Контакт</a>
       </div>
     </div>
-    <button class="burger" id="burger" onclick="toggleMenu()" aria-label="Меню">
-      <span></span><span></span><span></span>
-    </button>
   </nav>
 
-  <main class="page-wrapper">
-    <div class="container">
-      <div class="page-hero fade-in">
-        <a href="index.html" class="back-link" data-i18n="back_home">← На главную</a>
-        <p class="section-label" id="contact-section-label" data-i18n="lbl_contact">Контакт</p>
-        <h1 class="section-title" id="contact-page-title">Ты дочитал до этого момента</h1>
-        <p class="section-desc" id="contact-page-desc">Значит, что-то откликнулось. Пиши — если есть что сказать, спросить или просто захотелось.</p>
-      </div>
-      <div class="contact-grid">
-        <div id="contact-items" class="fade-in"></div>
-        <div class="contact-text fade-in">
-          <h3 id="contact-text-title"></h3>
-          <div id="contact-text-paras"></div>
-          <div class="topics-wrap">
-            <h4 data-i18n="topics_title">// Темы</h4>
-            <div id="contact-topics"></div>
-          </div>
-        </div>
-      </div>
+  <main>
+    <div class="container-read">
 
-      <!-- Web3Forms contact form — shown by loader.js when web3formsKey is configured -->
-      <div id="contact-form-wrap" style="display:none">
-        <div class="contact-form-section fade-in">
-          <div class="cform-heading" id="cform-heading">Написать напрямую</div>
-          <form class="cform" id="cform" action="https://api.web3forms.com/submit" onsubmit="submitCForm(event)">
-            <!-- Web3Forms hidden fields -->
-            <input type="hidden" name="access_key" id="cf-access-key" value="" />
-            <input type="hidden" name="subject" value="Новое сообщение с сайта" />
-            <input type="hidden" name="from_name" value="Andrii Chepelovskyi Site" />
-            <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off" />
-            <!-- Name -->
-            <div class="cform-field">
-              <label for="cf-name">Ваше имя</label>
-              <input id="cf-name" name="name" type="text" required placeholder="Андрий" autocomplete="name" />
-            </div>
-            <!-- Email -->
-            <div class="cform-field">
-              <label for="cf-email">Email</label>
-              <input id="cf-email" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
-            </div>
-            <!-- Message -->
-            <div class="cform-field cform-full">
-              <label for="cf-msg">Сообщение</label>
-              <textarea id="cf-msg" name="message" required placeholder="Привет, хотел спросить…"></textarea>
-            </div>
-            <!-- Submit row -->
-            <div class="cform-submit cform-full">
-              <button type="submit" class="cform-btn" id="cform-btn">
-                <span id="cform-btn-lbl">Отправить →</span>
-              </button>
-              <span class="cform-status" id="cform-status"></span>
-            </div>
-          </form>
+      <header class="page-header">
+        <h1 class="page-title fade-in">Написать</h1>
+      </header>
+
+      <p class="contact-intro fade-in delay-1">Если хочешь написать — просто напиши.</p>
+
+      <form class="form" data-contact-form action="https://api.web3forms.com/submit" method="POST">
+        <input type="hidden" name="access_key" value="dda0c183-2be1-49d6-9b03-7c7a7cbabe41" />
+        <input type="hidden" name="subject" value="Новое сообщение с chepelovskyi.com" />
+        <input type="hidden" name="from_name" value="chepelovskyi.com" />
+        <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off" />
+
+        <div class="form-row">
+          <label class="form-label" for="c-name">Имя</label>
+          <input class="form-input" type="text" id="c-name" name="name" required autocomplete="name" />
         </div>
+
+        <div class="form-row">
+          <label class="form-label" for="c-email">Электронная почта</label>
+          <input class="form-input" type="email" id="c-email" name="email" required autocomplete="email" />
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" for="c-message">Сообщение</label>
+          <textarea class="form-textarea" id="c-message" name="message" required></textarea>
+        </div>
+
+        <button class="btn form-submit" type="submit">Отправить</button>
+
+        <div class="form-status" role="status" aria-live="polite"></div>
+      </form>
+
+      <div class="contact-foot">
+        Или посмотри <a href="/youtube.html">YouTube канал</a> — стихи вслух.
       </div>
 
     </div>
   </main>
 
-  <footer></footer>
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>Andrii Chepelovskyi · <span data-year>2026</span></span>
+      <div class="footer-links">
+        <a href="/youtube.html">YouTube</a>
+        <a href="https://github.com/chipon1993-cmd/reimagined-pancake" target="_blank" rel="noopener">GitHub</a>
+        <a href="/contact.html">Написать</a>
+      </div>
+      <span class="footer-domain">chepelovskyi.com</span>
+    </div>
+  </footer>
 
-  <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
-  <script defer src="site-data.js"></script>
-  <script defer src="translations.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script defer src="firebase-config.js"></script>
-  <script defer src="loader.js"></script>
-  <script defer src="nav.js"></script>
-  <script>
-  (function(){
-    function lazyLoad(srcs){srcs.forEach(function(s){var el=document.createElement('script');el.src=s;document.body.appendChild(el);});}
-    var idle=window.requestIdleCallback||function(cb){setTimeout(cb,200)};
-    idle(function(){
-      lazyLoad(['https://unpkg.com/lucide@0.469.0','https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js','effects.js']);
-    });
-  })();
-  </script>
-  <script>
-  function submitCForm(e) {
-    e.preventDefault();
-    const form = document.getElementById('cform');
-    const btn  = document.getElementById('cform-btn');
-    const lbl  = document.getElementById('cform-btn-lbl');
-    const stat = document.getElementById('cform-status');
-    btn.disabled = true;
-    lbl.textContent = '⏳ Отправка…';
-    stat.textContent = '';
-    stat.className = 'cform-status';
-    fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      body: new FormData(form),
-      headers: { Accept: 'application/json' }
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        form.reset();
-        // restore access_key after reset
-        const k = document.getElementById('cf-access-key');
-        if (k) k.value = k.dataset.key || '';
-        stat.textContent = '✓ Отправлено! Отвечу в ближайшее время.';
-        stat.className = 'cform-status ok';
-        lbl.textContent = 'Отправить →';
-      } else {
-        throw new Error(data.message || 'server_error');
-      }
-    })
-    .catch(() => {
-      stat.textContent = '✕ Что-то пошло не так — попробуй ещё раз.';
-      stat.className = 'cform-status err';
-      lbl.textContent = 'Отправить →';
-    })
-    .finally(() => { btn.disabled = false; });
-  }
-  </script>
+  <script src="/js/main.js" defer></script>
 </body>
 </html>

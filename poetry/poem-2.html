@@ -1,13 +1,20 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Не найдено — A. Chepelovskyi</title>
-  <meta name="description" content="Такой страницы здесь нет." />
+  <title>Назва другого вірша — A. Chepelovskyi</title>
+  <meta name="description" content="Вірш — заповнювач." />
   <meta name="theme-color" content="#3B82F6" />
-  <meta name="robots" content="noindex" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Назва другого вірша" />
+  <meta property="og:description" content="Вірш — заповнювач." />
+  <meta property="og:url" content="https://chepelovskyi.com/poetry/poem-2.html" />
+  <meta property="og:image" content="https://chepelovskyi.com/og-image.png" />
+
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -15,14 +22,14 @@
 </head>
 <body>
 
-  <nav class="nav" aria-label="Основная навигация">
+  <nav class="nav" aria-label="Основна навігація">
     <div class="nav-inner">
       <a class="nav-logo" href="/">A. Chepelovskyi</a>
       <button class="nav-toggle" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
       <div class="nav-links">
         <a class="nav-link" href="/path.html">Путь</a>
         <a class="nav-link" href="/notes.html">Записки</a>
-        <a class="nav-link" href="/poetry.html">Стихи</a>
+        <a class="nav-link active" href="/poetry.html">Стихи</a>
         <a class="nav-link" href="/youtube.html">YouTube</a>
         <a class="nav-link" href="/contact.html">Контакт</a>
       </div>
@@ -30,12 +37,31 @@
   </nav>
 
   <main>
-    <div class="container">
-      <div class="error-wrap">
-        <h1 class="error-code">404</h1>
-        <p class="error-text">Такой страницы здесь нет.</p>
-        <a class="btn" href="/">На главную</a>
-      </div>
+    <div class="container-read">
+
+      <a class="back-link" href="/poetry.html">← До віршів</a>
+
+      <header class="page-header center">
+        <h1 class="page-title">Назва другого вірша</h1>
+      </header>
+
+      <div class="poem-full">Перший рядок вірша —
+другий рядок продовжує думку,
+третій тримає паузу,
+четвертий повертає ритм.
+
+Порожній рядок — як вдих.
+
+П'ятий рядок — нова думка,
+шостий її розгортає,
+сьомий завершує без повчання.
+
+Останній рядок — не висновок.
+Це просто тиша після.</div>
+
+      <div class="poem-full-meta">2025 · Укр</div>
+
+      <p style="margin-top: 64px;"><a class="back-link" href="/poetry.html">← До віршів</a></p>
     </div>
   </main>
 

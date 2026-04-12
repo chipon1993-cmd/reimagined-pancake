@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Записки — A. Chepelovskyi</title>
+  <meta name="description" content="Короткие тексты — мысли, наблюдения, заметки." />
+  <meta name="theme-color" content="#3B82F6" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Записки — A. Chepelovskyi" />
+  <meta property="og:description" content="Короткие тексты — мысли, наблюдения, заметки." />
+  <meta property="og:url" content="https://chepelovskyi.com/notes.html" />
+  <meta property="og:image" content="https://chepelovskyi.com/og-image.png" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+
+  <nav class="nav" aria-label="Основная навигация">
+    <div class="nav-inner">
+      <a class="nav-logo" href="/">A. Chepelovskyi</a>
+      <button class="nav-toggle" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
+      <div class="nav-links">
+        <a class="nav-link" href="/path.html">Путь</a>
+        <a class="nav-link active" href="/notes.html">Записки</a>
+        <a class="nav-link" href="/poetry.html">Стихи</a>
+        <a class="nav-link" href="/youtube.html">YouTube</a>
+        <a class="nav-link" href="/contact.html">Контакт</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container">
+
+      <header class="page-header">
+        <h1 class="page-title fade-in">Записки</h1>
+        <p class="page-subtitle fade-in delay-1">Короткие тексты, в порядке появления.</p>
+      </header>
+
+      <div class="search-wrap">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" type="search" data-search placeholder="Поиск по заголовку…" aria-label="Поиск" />
+      </div>
+
+      <div class="note-list" data-search-list>
+
+        <a class="note-card" href="/notes/note-1.html"
+           data-title="Заголовок первой записки"
+           data-excerpt="Короткий отрывок первой записки — две-три строки.">
+          <div class="note-card-meta">
+            <span>12 апреля 2026</span>
+            <span class="note-card-lang">Рус</span>
+          </div>
+          <h3 class="note-card-title">Заголовок первой записки</h3>
+          <p class="note-card-excerpt">Короткий отрывок первой записки — две-три строки. Здесь будет текст, когда автор подставит свой. Пока это место для слов.</p>
+          <span class="note-card-more">Читать →</span>
+        </a>
+
+        <a class="note-card" href="/notes/note-2.html"
+           data-title="Назва другої нотатки"
+           data-excerpt="Короткий уривок другої нотатки.">
+          <div class="note-card-meta">
+            <span>28 марта 2026</span>
+            <span class="note-card-lang">Укр</span>
+          </div>
+          <h3 class="note-card-title">Назва другої нотатки</h3>
+          <p class="note-card-excerpt">Короткий уривок другої нотатки. Тут буде текст, коли автор підставить свій. Поки це місце для слів.</p>
+          <span class="note-card-more">Читати →</span>
+        </a>
+
+        <a class="note-card" href="/notes/note-3.html"
+           data-title="Заголовок третьей записки"
+           data-excerpt="Ещё один отрывок — заполнитель.">
+          <div class="note-card-meta">
+            <span>5 марта 2026</span>
+            <span class="note-card-lang">Рус</span>
+          </div>
+          <h3 class="note-card-title">Заголовок третьей записки</h3>
+          <p class="note-card-excerpt">Ещё один отрывок — заполнитель. Автор заменит его своими словами. Здесь должен быть настоящий первый абзац.</p>
+          <span class="note-card-more">Читать →</span>
+        </a>
+
+      </div>
+
+      <div class="search-empty" data-search-empty>Ничего не найдено.</div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>Andrii Chepelovskyi · <span data-year>2026</span></span>
+      <div class="footer-links">
+        <a href="/youtube.html">YouTube</a>
+        <a href="https://github.com/chipon1993-cmd/reimagined-pancake" target="_blank" rel="noopener">GitHub</a>
+        <a href="/contact.html">Написать</a>
+      </div>
+      <span class="footer-domain">chepelovskyi.com</span>
+    </div>
+  </footer>
+
+  <script src="/js/main.js" defer></script>
+</body>
+</html>

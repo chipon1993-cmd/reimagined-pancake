@@ -2,8 +2,3 @@ User-agent: *
 Allow: /
 
 Sitemap: https://chepelovskyi.com/sitemap.xml
-
-# Admin panel — no indexing
-Disallow: /admin.html
-Disallow: /og-template.html
-Disallow: /bookmarks.html

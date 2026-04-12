@@ -3,11 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Не найдено — A. Chepelovskyi</title>
-  <meta name="description" content="Такой страницы здесь нет." />
+  <title>Название первого стихотворения — A. Chepelovskyi</title>
+  <meta name="description" content="Стихотворение — заполнитель." />
   <meta name="theme-color" content="#3B82F6" />
-  <meta name="robots" content="noindex" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Название первого стихотворения" />
+  <meta property="og:description" content="Стихотворение — заполнитель." />
+  <meta property="og:url" content="https://chepelovskyi.com/poetry/poem-1.html" />
+  <meta property="og:image" content="https://chepelovskyi.com/og-image.png" />
+
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -22,7 +29,7 @@
       <div class="nav-links">
         <a class="nav-link" href="/path.html">Путь</a>
         <a class="nav-link" href="/notes.html">Записки</a>
-        <a class="nav-link" href="/poetry.html">Стихи</a>
+        <a class="nav-link active" href="/poetry.html">Стихи</a>
         <a class="nav-link" href="/youtube.html">YouTube</a>
         <a class="nav-link" href="/contact.html">Контакт</a>
       </div>
@@ -30,12 +37,31 @@
   </nav>
 
   <main>
-    <div class="container">
-      <div class="error-wrap">
-        <h1 class="error-code">404</h1>
-        <p class="error-text">Такой страницы здесь нет.</p>
-        <a class="btn" href="/">На главную</a>
-      </div>
+    <div class="container-read">
+
+      <a class="back-link" href="/poetry.html">← К стихам</a>
+
+      <header class="page-header center">
+        <h1 class="page-title">Название первого стихотворения</h1>
+      </header>
+
+      <div class="poem-full">Первая строка стихотворения —
+вторая строка продолжает мысль,
+третья держит паузу,
+четвёртая возвращает ритм.
+
+Пустая строка — как вдох.
+
+Пятая строка — новая мысль,
+шестая её разворачивает,
+седьмая заключает без назидания.
+
+Последняя строка — не вывод.
+Это просто тишина после.</div>
+
+      <div class="poem-full-meta">2026 · Рус</div>
+
+      <p style="margin-top: 64px;"><a class="back-link" href="/poetry.html">← К стихам</a></p>
     </div>
   </main>
 
