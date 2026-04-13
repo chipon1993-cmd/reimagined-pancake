@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Не найдено — A. Chepelovskyi</title>
-  <meta name="description" content="Такой страницы здесь нет." />
+  <title>Стих — A. Chepelovskyi</title>
+  <meta name="description" content="Стихотворение." />
   <meta name="theme-color" content="#3B82F6" />
-  <meta name="robots" content="noindex" />
+
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -22,7 +23,7 @@
       <div class="nav-links">
         <a class="nav-link" href="/path.html">Путь</a>
         <a class="nav-link" href="/notes.html">Записки</a>
-        <a class="nav-link" href="/poetry.html">Стихи</a>
+        <a class="nav-link active" href="/poetry.html">Стихи</a>
         <a class="nav-link" href="/youtube.html">YouTube</a>
         <a class="nav-link" href="/contact.html">Контакт</a>
       </div>
@@ -30,12 +31,15 @@
   </nav>
 
   <main>
-    <div class="container">
-      <div class="error-wrap">
-        <h1 class="error-code">404</h1>
-        <p class="error-text">Такой страницы здесь нет.</p>
-        <a class="btn" href="/">На главную</a>
+    <div class="container-read">
+
+      <a class="back-link" href="/poetry.html">← К стихам</a>
+
+      <div data-poem-view>
+        <p style="color:var(--text-muted)">Загружаю…</p>
       </div>
+
+      <p style="margin-top: 64px;"><a class="back-link" href="/poetry.html">← К стихам</a></p>
     </div>
   </main>
 
@@ -47,10 +51,14 @@
         <a href="https://github.com/chipon1993-cmd/reimagined-pancake" target="_blank" rel="noopener">GitHub</a>
         <a href="/contact.html">Написать</a>
       </div>
-      <span class="footer-domain">chepelovskyi.com <a href="/admin.html" class="footer-admin" title="Админ" aria-label="Админ">·</a></span>
+      <span class="footer-domain">chepelovskyi.com</span>
     </div>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
   <script src="/js/main.js" defer></script>
+  <script src="/js/content.js" defer></script>
 </body>
 </html>

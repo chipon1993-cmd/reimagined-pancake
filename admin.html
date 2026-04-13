@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Админ · A. Chepelovskyi</title>
+  <meta name="theme-color" content="#3B82F6" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+
+  <style>
+    /* ── Admin-specific styles (reuses main.css palette) ── */
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+    .admin-title {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .admin-title small {
+      font-weight: 400;
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-left: 10px;
+    }
+    .admin-user {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-tabs {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .admin-tab {
+      background: transparent;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      padding: 12px 2px;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
+    }
+    .admin-tab:hover { color: var(--text); }
+    .admin-tab.active {
+      color: var(--text);
+      border-bottom-color: var(--accent);
+      font-weight: 500;
+    }
+
+    .admin-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .admin-count {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .admin-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .admin-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 18px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .admin-item:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.06);
+    }
+    .admin-item-main { flex: 1; min-width: 0; }
+    .admin-item-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin: 0 0 4px;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .admin-item-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .admin-item-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .admin-empty {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .btn-sm {
+      padding: 7px 14px;
+      font-size: 13px;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--text);
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-sm.danger:hover { border-color: #DC2626; color: #DC2626; }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--white);
+      border-color: var(--accent);
+    }
+    .btn-primary:hover {
+      background: #2563EB;
+      border-color: #2563EB;
+      color: var(--white);
+    }
+
+    /* ── Login screen ── */
+    .login-screen {
+      max-width: 380px;
+      margin: 120px auto 40px;
+      padding: 32px 28px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .login-screen h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 6px;
+    }
+    .login-screen p.subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin: 0 0 24px;
+    }
+
+    /* ── Editor modal ── */
+    .editor-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 29, 35, 0.4);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      z-index: 200;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-y: auto;
+      padding: 40px 20px;
+    }
+    .editor-backdrop.open { display: flex; }
+    .editor-modal {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      max-width: 640px;
+      width: 100%;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+    .editor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .editor-head h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .editor-close {
+      background: transparent;
+      border: 0;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--text-muted);
+      line-height: 1;
+      padding: 4px 8px;
+    }
+    .editor-close:hover { color: var(--text); }
+    .form-row-inline {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 500px) {
+      .form-row-inline { grid-template-columns: 1fr; }
+    }
+    .editor-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .admin-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: var(--white);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 300;
+      pointer-events: none;
+    }
+    .admin-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .admin-toast.error { background: #DC2626; }
+
+    .hidden { display: none !important; }
+
+    .warn-box {
+      background: #FEF9C3;
+      border: 1px solid #FDE68A;
+      color: #78350F;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .warn-box code {
+      background: rgba(0,0,0,0.06);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav" aria-label="Навигация">
+    <div class="nav-inner">
+      <a class="nav-logo" href="/">A. Chepelovskyi</a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">← На сайт</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container">
+
+      <!-- ══════════ LOGIN SCREEN ══════════ -->
+      <section id="login-screen" class="login-screen hidden">
+        <h1>Вход в админку</h1>
+        <p class="subtitle">Только для автора сайта.</p>
+
+        <form id="login-form" class="form">
+          <div class="form-row">
+            <label class="form-label" for="login-email">Email</label>
+            <input id="login-email" class="form-input" type="email" required autocomplete="username" />
+          </div>
+          <div class="form-row">
+            <label class="form-label" for="login-password">Пароль</label>
+            <input id="login-password" class="form-input" type="password" required autocomplete="current-password" />
+          </div>
+          <button type="submit" class="btn" id="login-submit">Войти</button>
+          <div class="form-status" id="login-status"></div>
+        </form>
+      </section>
+
+      <!-- ══════════ ADMIN DASHBOARD ══════════ -->
+      <section id="admin-dashboard" class="hidden">
+
+        <header class="admin-header">
+          <h1 class="admin-title">
+            Админка
+            <small id="admin-env">Firestore</small>
+          </h1>
+          <div class="admin-user">
+            <span id="admin-email">—</span>
+            <button class="btn-sm" id="btn-logout">Выйти</button>
+          </div>
+        </header>
+
+        <div id="rules-warning" class="warn-box hidden">
+          <strong>Подсказка.</strong> Если записи не сохраняются,
+          проверь правила Firestore в консоли Firebase. Пример:
+          <code>allow read: if true; allow write: if request.auth != null;</code>
+        </div>
+
+        <div class="admin-tabs" role="tablist">
+          <button class="admin-tab active" data-tab="notes" role="tab">Записки</button>
+          <button class="admin-tab" data-tab="poems" role="tab">Стихи</button>
+        </div>
+
+        <div class="admin-toolbar">
+          <div class="admin-count" id="admin-count">—</div>
+          <button class="btn-sm btn-primary" id="btn-new">+ Добавить</button>
+        </div>
+
+        <div id="admin-list-notes" class="admin-list"></div>
+        <div id="admin-list-poems" class="admin-list hidden"></div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- ══════════ EDITOR MODAL ══════════ -->
+  <div class="editor-backdrop" id="editor-backdrop">
+    <div class="editor-modal" role="dialog" aria-modal="true">
+      <div class="editor-head">
+        <h2 id="editor-title">Новая запись</h2>
+        <button class="editor-close" id="editor-close" aria-label="Закрыть">×</button>
+      </div>
+
+      <form id="editor-form" class="form">
+        <!-- Shared -->
+        <div class="form-row-inline">
+          <div class="form-row">
+            <label class="form-label" for="f-id">Slug (URL id)</label>
+            <input id="f-id" class="form-input" type="text" required pattern="[a-z0-9\-]+" placeholder="моя-заметка" />
+            <span class="hint">только латиница, цифры и дефисы; URL будет /notes/view.html?id=slug</span>
+          </div>
+          <div class="form-row">
+            <label class="form-label" for="f-lang">Язык</label>
+            <select id="f-lang" class="form-input" required>
+              <option value="ru">Рус</option>
+              <option value="uk">Укр</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" for="f-title">Заголовок</label>
+          <input id="f-title" class="form-input" type="text" required />
+        </div>
+
+        <!-- Notes-only -->
+        <div class="form-row" data-type="note">
+          <label class="form-label" for="f-date">Дата</label>
+          <input id="f-date" class="form-input" type="date" />
+          <span class="hint">например, 2026-04-12 → «12 апреля 2026»</span>
+        </div>
+
+        <div class="form-row" data-type="note">
+          <label class="form-label" for="f-excerpt">Отрывок (для карточки)</label>
+          <textarea id="f-excerpt" class="form-textarea" rows="2"></textarea>
+        </div>
+
+        <!-- Poems-only -->
+        <div class="form-row" data-type="poem">
+          <label class="form-label" for="f-year">Год</label>
+          <input id="f-year" class="form-input" type="number" min="1900" max="2100" step="1" />
+        </div>
+
+        <div class="form-row" data-type="poem">
+          <label class="form-label" for="f-preview">Превью (первые 1–2 строки)</label>
+          <textarea id="f-preview" class="form-textarea" rows="2"></textarea>
+        </div>
+
+        <!-- Content -->
+        <div class="form-row">
+          <label class="form-label" for="f-content">
+            <span data-type="note">Текст записки</span>
+            <span data-type="poem">Полный текст стихотворения</span>
+          </label>
+          <textarea id="f-content" class="form-textarea" rows="10" required></textarea>
+          <span class="hint" data-type="note">Пустая строка = новый абзац.</span>
+          <span class="hint" data-type="poem">Переносы строк сохраняются как есть.</span>
+        </div>
+
+        <div class="editor-actions">
+          <button type="button" class="btn-sm danger hidden" id="btn-delete">Удалить</button>
+          <button type="button" class="btn-sm" id="btn-cancel">Отмена</button>
+          <button type="submit" class="btn-sm btn-primary" id="btn-save">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="admin-toast" id="toast"></div>
+
+  <!-- Firebase SDK (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // ── State ──
+    var currentType = 'note';            // 'note' | 'poem'
+    var currentId = null;                // null = new, otherwise editing existing
+    var cache = { note: [], poem: [] };
+    var user = null;
+
+    // ── DOM shortcuts ──
+    var $ = function (sel) { return document.querySelector(sel); };
+    var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+
+    // ── Toast ──
+    var toastTimer = null;
+    function toast(msg, kind) {
+      var el = $('#toast');
+      el.textContent = msg;
+      el.className = 'admin-toast show' + (kind === 'error' ? ' error' : '');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { el.className = 'admin-toast'; }, 2600);
+    }
+
+    // ── Escape HTML ──
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ── Date helpers ──
+    var MONTHS_RU = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+    function formatDateRu(iso) {
+      if (!iso) return '';
+      var parts = iso.split('-');
+      if (parts.length !== 3) return iso;
+      var d = parseInt(parts[2], 10);
+      var m = parseInt(parts[1], 10) - 1;
+      var y = parts[0];
+      if (isNaN(d) || isNaN(m)) return iso;
+      return d + ' ' + MONTHS_RU[m] + ' ' + y;
+    }
+
+    // ── Auth boot ──
+    function bootAuth() {
+      if (typeof firebase === 'undefined' || !firebase.auth) {
+        showLogin();
+        $('#login-status').className = 'form-status show error';
+        $('#login-status').textContent = 'Firebase SDK не загрузился.';
+        return;
+      }
+      firebase.auth().onAuthStateChanged(function (u) {
+        user = u;
+        if (u) {
+          $('#admin-email').textContent = u.email || '—';
+          showDashboard();
+          loadList('note');
+        } else {
+          showLogin();
+        }
+      });
+    }
+
+    function showLogin() {
+      $('#login-screen').classList.remove('hidden');
+      $('#admin-dashboard').classList.add('hidden');
+    }
+    function showDashboard() {
+      $('#login-screen').classList.add('hidden');
+      $('#admin-dashboard').classList.remove('hidden');
+    }
+
+    // ── Login form ──
+    $('#login-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = $('#login-email').value.trim();
+      var pw = $('#login-password').value;
+      var status = $('#login-status');
+      var btn = $('#login-submit');
+      status.className = 'form-status';
+      status.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Вхожу…';
+
+      firebase.auth().signInWithEmailAndPassword(email, pw)
+        .catch(function (err) {
+          var msg = 'Не удалось войти.';
+          if (err && err.code === 'auth/invalid-email') msg = 'Неверный формат email.';
+          else if (err && err.code === 'auth/wrong-password') msg = 'Неверный пароль.';
+          else if (err && err.code === 'auth/user-not-found') msg = 'Пользователь не найден.';
+          else if (err && err.code === 'auth/invalid-login-credentials') msg = 'Неверный email или пароль.';
+          else if (err && err.code === 'auth/network-request-failed') msg = 'Нет сети.';
+          else if (err && err.message) msg = err.message;
+          status.className = 'form-status show error';
+          status.textContent = msg;
+        })
+        .then(function () {
+          btn.disabled = false;
+          btn.textContent = 'Войти';
+        });
+    });
+
+    // ── Logout ──
+    $('#btn-logout').addEventListener('click', function () {
+      firebase.auth().signOut();
+    });
+
+    // ── Tabs ──
+    $$('.admin-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var t = tab.getAttribute('data-tab');
+        if (t === 'notes') selectType('note');
+        else selectType('poem');
+      });
+    });
+
+    function selectType(type) {
+      currentType = type;
+      $$('.admin-tab').forEach(function (tab) {
+        var isActive = (tab.getAttribute('data-tab') === (type === 'note' ? 'notes' : 'poems'));
+        tab.classList.toggle('active', isActive);
+      });
+      $('#admin-list-notes').classList.toggle('hidden', type !== 'note');
+      $('#admin-list-poems').classList.toggle('hidden', type !== 'poem');
+      loadList(type);
+    }
+
+    // ── Load list from Firestore ──
+    async function loadList(type) {
+      var listEl = type === 'note' ? $('#admin-list-notes') : $('#admin-list-poems');
+      var countEl = $('#admin-count');
+      listEl.innerHTML = '<div class="admin-empty">Загружаю…</div>';
+      countEl.textContent = '';
+
+      var collection = type === 'note' ? 'notes' : 'poems';
+      var items = [];
+      try {
+        items = await window.fsListCollection(collection);
+      } catch (e) {
+        listEl.innerHTML = '<div class="admin-empty">Не удалось загрузить. Проверь правила Firestore.</div>';
+        $('#rules-warning').classList.remove('hidden');
+        return;
+      }
+
+      // Sort: notes by date desc, poems by year desc
+      items.sort(function (a, b) {
+        if (type === 'note') {
+          return (b.date || '').localeCompare(a.date || '');
+        }
+        return (parseInt(b.year, 10) || 0) - (parseInt(a.year, 10) || 0);
+      });
+
+      cache[type] = items;
+      countEl.textContent = items.length + (type === 'note' ? ' записок' : ' стихов');
+
+      if (!items.length) {
+        listEl.innerHTML = '<div class="admin-empty">Пока пусто. Нажми «+ Добавить».</div>';
+        return;
+      }
+
+      listEl.innerHTML = items.map(function (it) {
+        var meta;
+        if (type === 'note') {
+          meta = (it.date ? formatDateRu(it.date) : '—') +
+                 ' · ' + (it.lang === 'uk' ? 'Укр' : 'Рус');
+        } else {
+          meta = (it.year || '—') + ' · ' + (it.lang === 'uk' ? 'Укр' : 'Рус');
+        }
+        return '' +
+          '<div class="admin-item" data-id="' + esc(it.id) + '">' +
+            '<div class="admin-item-main">' +
+              '<p class="admin-item-title">' + esc(it.title || '(без названия)') + '</p>' +
+              '<div class="admin-item-meta">' + esc(meta) + ' · <code>' + esc(it.id) + '</code></div>' +
+            '</div>' +
+            '<div class="admin-item-actions">' +
+              '<button class="btn-sm" data-edit="' + esc(it.id) + '">Редактировать</button>' +
+            '</div>' +
+          '</div>';
+      }).join('');
+
+      // Wire up edit buttons
+      listEl.querySelectorAll('[data-edit]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          openEditor(type, btn.getAttribute('data-edit'));
+        });
+      });
+    }
+
+    // ── Editor ──
+    function openEditor(type, id) {
+      currentType = type;
+      currentId = id;
+      var isNew = !id;
+
+      $('#editor-title').textContent = isNew
+        ? (type === 'note' ? 'Новая записка' : 'Новое стихотворение')
+        : (type === 'note' ? 'Редактировать записку' : 'Редактировать стих');
+
+      // Show/hide type-specific fields
+      $$('[data-type="note"]').forEach(function (el) {
+        el.classList.toggle('hidden', type !== 'note');
+      });
+      $$('[data-type="poem"]').forEach(function (el) {
+        el.classList.toggle('hidden', type !== 'poem');
+      });
+
+      // Reset form
+      $('#f-id').value = '';
+      $('#f-title').value = '';
+      $('#f-lang').value = 'ru';
+      $('#f-date').value = '';
+      $('#f-excerpt').value = '';
+      $('#f-year').value = '';
+      $('#f-preview').value = '';
+      $('#f-content').value = '';
+
+      $('#btn-delete').classList.toggle('hidden', isNew);
+      $('#f-id').disabled = !isNew;
+
+      if (!isNew) {
+        var item = cache[type].filter(function (x) { return x.id === id; })[0];
+        if (item) {
+          $('#f-id').value = item.id || '';
+          $('#f-title').value = item.title || '';
+          $('#f-lang').value = item.lang || 'ru';
+          if (type === 'note') {
+            $('#f-date').value = item.date || '';
+            $('#f-excerpt').value = item.excerpt || '';
+            $('#f-content').value = item.content || '';
+          } else {
+            $('#f-year').value = item.year || '';
+            $('#f-preview').value = item.preview || '';
+            $('#f-content').value = item.text || '';
+          }
+        }
+      }
+
+      $('#editor-backdrop').classList.add('open');
+      setTimeout(function () { $('#f-title').focus(); }, 50);
+    }
+
+    function closeEditor() {
+      $('#editor-backdrop').classList.remove('open');
+      currentId = null;
+    }
+
+    $('#btn-new').addEventListener('click', function () { openEditor(currentType, null); });
+    $('#btn-cancel').addEventListener('click', closeEditor);
+    $('#editor-close').addEventListener('click', closeEditor);
+    $('#editor-backdrop').addEventListener('click', function (e) {
+      if (e.target === $('#editor-backdrop')) closeEditor();
+    });
+
+    // ── Save ──
+    $('#editor-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var id = $('#f-id').value.trim().toLowerCase();
+      if (!/^[a-z0-9\-]+$/.test(id)) {
+        toast('Slug может содержать только латиницу, цифры и дефисы.', 'error');
+        return;
+      }
+      var type = currentType;
+      var collection = type === 'note' ? 'notes' : 'poems';
+
+      var data;
+      if (type === 'note') {
+        data = {
+          title: $('#f-title').value.trim(),
+          lang: $('#f-lang').value,
+          date: $('#f-date').value,
+          excerpt: $('#f-excerpt').value.trim(),
+          content: $('#f-content').value,
+          updatedAt: Date.now()
+        };
+      } else {
+        data = {
+          title: $('#f-title').value.trim(),
+          lang: $('#f-lang').value,
+          year: parseInt($('#f-year').value, 10) || null,
+          preview: $('#f-preview').value,
+          text: $('#f-content').value,
+          updatedAt: Date.now()
+        };
+      }
+
+      var btn = $('#btn-save');
+      btn.disabled = true;
+      btn.textContent = 'Сохраняю…';
+      try {
+        await window.fsSet(collection, id, data);
+        toast(currentId ? 'Сохранено.' : 'Добавлено.');
+        closeEditor();
+        await loadList(type);
+      } catch (err) {
+        console.error(err);
+        toast('Ошибка сохранения. Проверь правила Firestore.', 'error');
+        $('#rules-warning').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Сохранить';
+      }
+    });
+
+    // ── Delete ──
+    $('#btn-delete').addEventListener('click', async function () {
+      if (!currentId) return;
+      if (!confirm('Удалить «' + ($('#f-title').value || currentId) + '» безвозвратно?')) return;
+
+      var collection = currentType === 'note' ? 'notes' : 'poems';
+      try {
+        await window.fsDelete(collection, currentId);
+        toast('Удалено.');
+        closeEditor();
+        await loadList(currentType);
+      } catch (err) {
+        console.error(err);
+        toast('Не удалось удалить.', 'error');
+      }
+    });
+
+    // ── Boot ──
+    if (window.firebaseReady && window.firebaseReady.then) {
+      window.firebaseReady.then(function (ok) {
+        if (!ok) {
+          showLogin();
+          $('#login-status').className = 'form-status show error';
+          $('#login-status').textContent = 'Firebase не инициализировался.';
+          return;
+        }
+        bootAuth();
+      });
+    } else {
+      bootAuth();
+    }
+  })();
+  </script>
+</body>
+</html>

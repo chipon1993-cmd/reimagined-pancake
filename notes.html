@@ -49,7 +49,7 @@
         <input class="search-input" type="search" data-search placeholder="Поиск по заголовку…" aria-label="Поиск" />
       </div>
 
-      <div class="note-list" data-search-list>
+      <div class="note-list" data-search-list data-notes-list>
 
         <a class="note-card" href="/notes/note-1.html"
            data-title="Заголовок первой записки"
@@ -102,10 +102,14 @@
         <a href="https://github.com/chipon1993-cmd/reimagined-pancake" target="_blank" rel="noopener">GitHub</a>
         <a href="/contact.html">Написать</a>
       </div>
-      <span class="footer-domain">chepelovskyi.com</span>
+      <span class="footer-domain">chepelovskyi.com <a href="/admin.html" class="footer-admin" title="Админ" aria-label="Админ">·</a></span>
     </div>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
   <script src="/js/main.js" defer></script>
+  <script src="/js/content.js" defer></script>
 </body>
 </html>

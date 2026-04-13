@@ -1,6 +1,6 @@
-// Service Worker — chepelovskyi.com v25 (rebuild 2026)
+// Service Worker — chepelovskyi.com v26 (admin + dynamic content)
 // Purge-all and minimal offline shell caching.
-const CACHE = 'ac-v25';
+const CACHE = 'ac-v26';
 const SHELL = [
   '/',
   '/index.html',
@@ -36,7 +36,8 @@ self.addEventListener('fetch', function (e) {
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
   if (url.protocol === 'chrome-extension:') return;
-  if (url.hostname !== location.hostname) return; // don't cache cross-origin (fonts, web3forms, youtube)
+  if (url.hostname !== location.hostname) return; // don't cache cross-origin (fonts, web3forms, youtube, firebase)
+  if (url.pathname === '/admin.html') return;     // admin is always fresh, never cached
 
   var isHtml = req.mode === 'navigate' || (req.headers.get('accept') || '').indexOf('text/html') !== -1;
 

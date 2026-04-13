@@ -44,7 +44,7 @@
         <p class="page-subtitle fade-in delay-1">Короче, чем записки. Честнее, чем объяснения.</p>
       </header>
 
-      <div class="poetry-grid" style="margin-top: 32px;">
+      <div class="poetry-grid" data-poems-list style="margin-top: 32px;">
 
         <a class="poem-card" href="/poetry/poem-1.html">
           <h3 class="poem-card-title">Название первого стихотворения</h3>
@@ -92,10 +92,14 @@
         <a href="https://github.com/chipon1993-cmd/reimagined-pancake" target="_blank" rel="noopener">GitHub</a>
         <a href="/contact.html">Написать</a>
       </div>
-      <span class="footer-domain">chepelovskyi.com</span>
+      <span class="footer-domain">chepelovskyi.com <a href="/admin.html" class="footer-admin" title="Админ" aria-label="Админ">·</a></span>
     </div>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
   <script src="/js/main.js" defer></script>
+  <script src="/js/content.js" defer></script>
 </body>
 </html>
