@@ -100,6 +100,22 @@ main { flex: 1; padding: 32px 0 96px; }
 }
 .nav-link:hover { color: var(--text); opacity: 1; }
 .nav-link.active { color: var(--text); font-weight: 500; }
+.nav-link-admin {
+  color: var(--accent);
+  font-weight: 500;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.nav-link-admin:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+  opacity: 1;
+}
+.nav-link-admin.active::after { display: none; }
 .nav-link.active::after {
   content: '';
   position: absolute;
