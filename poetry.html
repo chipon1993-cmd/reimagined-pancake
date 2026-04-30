@@ -97,5 +97,29 @@
   </footer>
 
   <script src="/js/main.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+  <script>
+  (async function(){
+    await window.firebaseReady;
+    var poems = await window.fsListCollection('poetry');
+    var published = poems.filter(function(p){ return p.published !== false; });
+    published.sort(function(a,b){ return (b._ts||0) - (a._ts||0); });
+
+    if (!published.length) return;
+
+    var grid = document.querySelector('.poetry-grid');
+    if (!grid) return;
+
+    grid.innerHTML = published.map(function(p){
+      var preview = (p.text||'').split('\n').slice(0,2).join('\n');
+      return '<a class="poem-card" href="/poem-view.html?id='+p.id+'">' +
+        '<h3 class="poem-card-title">'+(p.title||'Без названия')+'</h3>' +
+        '<p class="poem-card-preview">'+preview.replace(/</g,'&lt;')+'</p>' +
+        '<div class="poem-card-meta"><span class="poem-card-year">'+(p.year||'')+'</span><span>·</span><span class="note-card-lang">'+(p.lang||'Рус')+'</span></div></a>';
+    }).join('');
+  })();
+  </script>
 </body>
 </html>

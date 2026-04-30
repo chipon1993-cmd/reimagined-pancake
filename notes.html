@@ -107,5 +107,34 @@
   </footer>
 
   <script src="/js/main.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+  <script>
+  (async function(){
+    await window.firebaseReady;
+    const notes = await window.fsListCollection('notes');
+    const published = notes.filter(function(n){ return n.published !== false; });
+    published.sort(function(a,b){ return (b._ts||0) - (a._ts||0); });
+
+    if (!published.length) return;
+
+    var list = document.querySelector('[data-search-list]');
+    if (!list) return;
+
+    list.innerHTML = published.map(function(n){
+      var excerpt = (n.content||'').replace(/[#*_`>\[\]]/g,'').slice(0,150);
+      var date = n.date ? new Date(n.date).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}) : '';
+      return '<a class="note-card" href="/note-view.html?id='+n.id+'" data-title="'+(n.title||'').replace(/"/g,'&quot;')+'" data-excerpt="'+excerpt.replace(/"/g,'&quot;')+'">' +
+        '<div class="note-card-meta"><span>'+date+'</span><span class="note-card-lang">'+(n.lang||'Рус')+'</span></div>' +
+        '<h3 class="note-card-title">'+(n.title||'Без заголовка')+'</h3>' +
+        '<p class="note-card-excerpt">'+excerpt+'</p>' +
+        '<span class="note-card-more">Читать →</span></a>';
+    }).join('');
+
+    // Re-init search with new cards
+    if (window.initSearchAfterLoad) window.initSearchAfterLoad();
+  })();
+  </script>
 </body>
 </html>
