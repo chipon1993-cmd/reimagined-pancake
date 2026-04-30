@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Панель управления</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F5F6F8; --bg2: #ECEEF2; --white: #FFFFFF;
+      --text: #1A1D23; --muted: #6B7280; --accent: #3B82F6;
+      --accent-light: #EFF6FF; --border: #E2E5EA;
+      --success: #10B981; --danger: #EF4444; --warning: #F59E0B;
+      --r: 12px; --font: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;}
+
+    /* ── Login ── */
+    #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    .login-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:48px 40px;max-width:380px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,0.06);}
+    .login-card h1{font-size:1.4rem;font-weight:600;margin-bottom:4px;}
+    .login-card p{font-size:.85rem;color:var(--muted);margin-bottom:28px;}
+    .field{margin-bottom:16px;}
+    .field label{display:block;font-size:.78rem;font-weight:500;color:var(--muted);margin-bottom:5px;}
+    .field input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--r);font-size:.9rem;font-family:var(--font);outline:none;transition:border .2s;}
+    .field input:focus{border-color:var(--accent);}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:11px 24px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;transition:opacity .2s;}
+    .btn:hover{opacity:.85;}
+    .btn-outline{background:transparent;color:var(--accent);border:1px solid var(--border);}
+    .btn-outline:hover{border-color:var(--accent);}
+    .btn-danger{background:var(--danger);}
+    .btn-sm{padding:7px 14px;font-size:.78rem;}
+    #login-err{font-size:.82rem;color:var(--danger);margin-top:12px;min-height:20px;}
+
+    /* ── Layout ── */
+    #app{display:none;min-height:100vh;}
+    .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+    .topbar-left{display:flex;align-items:center;gap:12px;}
+    .topbar-title{font-size:.9rem;font-weight:600;}
+    .topbar-user{font-size:.75rem;color:var(--muted);}
+    .topbar-right{display:flex;align-items:center;gap:8px;}
+
+    .layout{display:flex;min-height:calc(100vh - 53px);}
+    .sidebar{width:200px;background:var(--white);border-right:1px solid var(--border);padding:16px 0;flex-shrink:0;}
+    .sb-label{font-size:.65rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:0 16px;margin:16px 0 6px;}
+    .sb-label:first-child{margin-top:0;}
+    .sb-item{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;border-left:3px solid transparent;}
+    .sb-item:hover{color:var(--text);background:var(--bg);}
+    .sb-item.active{color:var(--accent);background:var(--accent-light);border-left-color:var(--accent);font-weight:600;}
+    .sb-icon{font-size:1rem;width:20px;text-align:center;}
+
+    .main{flex:1;padding:32px;overflow-y:auto;max-height:calc(100vh - 53px);}
+    .main-header{margin-bottom:28px;}
+    .main-header h2{font-size:1.3rem;font-weight:600;margin-bottom:4px;}
+    .main-header p{font-size:.85rem;color:var(--muted);}
+
+    /* ── Cards/List ── */
+    .item-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+    .item-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s;cursor:pointer;}
+    .item-card:hover{border-color:var(--accent);}
+    .item-card-left{flex:1;min-width:0;}
+    .item-card-title{font-size:.9rem;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .item-card-meta{font-size:.72rem;color:var(--muted);display:flex;gap:8px;}
+    .item-card-right{display:flex;gap:6px;flex-shrink:0;margin-left:12px;}
+    .badge{font-size:.65rem;font-weight:600;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;}
+    .badge-pub{background:#D1FAE5;color:#065F46;}
+    .badge-draft{background:#FEF3C7;color:#92400E;}
+
+    /* ── Editor ── */
+    .editor{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:20px;}
+    .fg{margin-bottom:18px;}
+    .fg label{display:block;font-size:.78rem;font-weight:500;color:var(--muted);margin-bottom:5px;}
+    .fg input,.fg select,.fg textarea{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r);font-size:.88rem;font-family:var(--font);outline:none;transition:border .2s;background:var(--white);}
+    .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);}
+    .fg textarea{resize:vertical;min-height:200px;line-height:1.7;}
+    .fg-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .fg-check{display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer;}
+    .fg-check input{width:18px;height:18px;accent-color:var(--accent);}
+    .editor-actions{display:flex;gap:8px;justify-content:space-between;margin-top:24px;}
+    .editor-actions-left{display:flex;gap:8px;}
+
+    /* ── Toast ── */
+    .toast{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+    .toast-item{padding:12px 20px;border-radius:var(--r);font-size:.82rem;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,0.1);animation:toastIn .3s ease;}
+    .toast-ok{background:var(--success);color:#fff;}
+    .toast-err{background:var(--danger);color:#fff;}
+    @keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* ── Save bar ── */
+    .save-bar{position:fixed;bottom:0;left:200px;right:0;background:var(--white);border-top:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;justify-content:space-between;z-index:10;}
+    .save-status{font-size:.78rem;color:var(--muted);}
+    .save-status.dirty{color:var(--warning);font-weight:600;}
+    .save-bar.dirty{border-top:2px solid var(--warning);}
+
+    /* ── Mobile ── */
+    @media(max-width:768px){
+      .sidebar{display:none;}
+      .main{padding:20px 16px;}
+      .save-bar{left:0;}
+      .fg-row{grid-template-columns:1fr;}
+      .topbar{padding:10px 16px;}
+    }
+  </style>
+</head>
+<body>
+  <!-- Login -->
+  <div id="login">
+    <div class="login-card">
+      <h1>Панель управления</h1>
+      <p>chepelovskyi.com</p>
+      <div class="field"><label>Email</label><input type="email" id="l-email" autocomplete="email"/></div>
+      <div class="field"><label>Пароль</label><input type="password" id="l-pass" autocomplete="current-password"/></div>
+      <button class="btn" style="width:100%;justify-content:center;" onclick="doLogin()">Войти</button>
+      <div id="login-err"></div>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="app">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-title">A. Chepelovskyi</span>
+        <span class="topbar-user" id="topbar-user"></span>
+      </div>
+      <div class="topbar-right">
+        <a href="/" target="_blank" class="btn btn-outline btn-sm">Открыть сайт ↗</a>
+        <button class="btn btn-outline btn-sm" onclick="doLogout()">Выйти</button>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="sb-label">Контент</div>
+        <div class="sb-item active" data-tab="notes" onclick="showTab('notes')"><span class="sb-icon">📝</span> Записки</div>
+        <div class="sb-item" data-tab="poetry" onclick="showTab('poetry')"><span class="sb-icon">✒️</span> Стихи</div>
+        <div class="sb-item" data-tab="path" onclick="showTab('path')"><span class="sb-icon">🗺️</span> Путь</div>
+        <div class="sb-item" data-tab="youtube" onclick="showTab('youtube')"><span class="sb-icon">🎬</span> YouTube</div>
+        <div class="sb-label">Система</div>
+        <div class="sb-item" data-tab="settings" onclick="showTab('settings')"><span class="sb-icon">⚙️</span> Настройки</div>
+      </div>
+      <div class="main" id="main"></div>
+    </div>
+    <div class="save-bar" id="save-bar">
+      <span class="save-status" id="save-status">Готово</span>
+      <button class="btn btn-sm" onclick="saveCurrentTab()">💾 Сохранить</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+
+  <script>
+  (function(){
+    'use strict';
+    const auth = firebase.auth();
+    let currentTab = 'notes';
+    let editingId = null;
+
+    // ── Auth ──
+    window.doLogin = async function(){
+      const email = document.getElementById('l-email').value;
+      const pass = document.getElementById('l-pass').value;
+      const err = document.getElementById('login-err');
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+      } catch(e) {
+        err.textContent = e.code === 'auth/wrong-password' ? 'Неверный пароль' :
+                          e.code === 'auth/user-not-found' ? 'Пользователь не найден' :
+                          'Ошибка: ' + e.message;
+      }
+    };
+    window.doLogout = () => auth.signOut();
+
+    auth.onAuthStateChanged(user => {
+      document.getElementById('login').style.display = user ? 'none' : 'flex';
+      document.getElementById('app').style.display = user ? 'block' : 'none';
+      if (user) {
+        document.getElementById('topbar-user').textContent = user.email;
+        showTab(localStorage.getItem('ac_admin_tab') || 'notes');
+      }
+    });
+
+    // ── Toast ──
+    function toast(msg, ok) {
+      const el = document.createElement('div');
+      el.className = 'toast-item ' + (ok ? 'toast-ok' : 'toast-err');
+      el.textContent = msg;
+      document.getElementById('toast').appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    // ── Tabs ──
+    window.showTab = function(tab) {
+      currentTab = tab;
+      editingId = null;
+      localStorage.setItem('ac_admin_tab', tab);
+      document.querySelectorAll('.sb-item').forEach(s => s.classList.toggle('active', s.dataset.tab === tab));
+      const m = document.getElementById('main');
+      switch(tab) {
+        case 'notes': renderNotesList(); break;
+        case 'poetry': renderPoetryList(); break;
+        case 'path': renderPathEditor(); break;
+        case 'youtube': renderYoutube(); break;
+        case 'settings': renderSettings(); break;
+      }
+    };
+
+    // ── Notes ──
+    async function renderNotesList() {
+      const m = document.getElementById('main');
+      m.innerHTML = '<div class="main-header"><h2>Записки</h2><p>Короткие тексты, мысли, наблюдения</p></div><div class="item-list" id="list"></div><button class="btn" onclick="newNote()">+ Новая записка</button>';
+      const notes = await fsListCollection('notes');
+      notes.sort((a,b) => (b._ts||0) - (a._ts||0));
+      const list = document.getElementById('list');
+      if (!notes.length) { list.innerHTML = '<p style="color:var(--muted);font-size:.85rem;">Пока пусто. Нажми «+ Новая записка»</p>'; return; }
+      list.innerHTML = notes.map(n => `
+        <div class="item-card" onclick="editNote('${n.id}')">
+          <div class="item-card-left">
+            <div class="item-card-title">${esc(n.title || 'Без заголовка')}</div>
+            <div class="item-card-meta"><span>${n.date || '—'}</span><span>${n.lang || 'Рус'}</span></div>
+          </div>
+          <div class="item-card-right">
+            <span class="badge ${n.published !== false ? 'badge-pub' : 'badge-draft'}">${n.published !== false ? 'Опубл.' : 'Черновик'}</span>
+          </div>
+        </div>`).join('');
+    }
+
+    window.newNote = function() {
+      editingId = null;
+      renderNoteEditor({title:'', content:'', date: new Date().toISOString().slice(0,10), lang:'Рус', published: true});
+    };
+    window.editNote = async function(id) {
+      const data = await fsGet('notes', id);
+      if (!data) return toast('Не удалось загрузить', false);
+      editingId = id;
+      renderNoteEditor(data);
+    };
+
+    function renderNoteEditor(d) {
+      document.getElementById('main').innerHTML = `
+        <div class="main-header"><h2>${editingId ? 'Редактировать записку' : 'Новая записка'}</h2><button class="btn btn-outline btn-sm" onclick="showTab('notes')">← Назад</button></div>
+        <div class="editor">
+          <div class="fg"><label>Заголовок</label><input id="e-title" value="${esc(d.title||'')}"/></div>
+          <div class="fg-row">
+            <div class="fg"><label>Дата</label><input type="date" id="e-date" value="${esc(d.date||'')}"/></div>
+            <div class="fg"><label>Язык</label><select id="e-lang"><option${d.lang==='Рус'?' selected':''}>Рус</option><option${d.lang==='Укр'?' selected':''}>Укр</option></select></div>
+          </div>
+          <div class="fg"><label>Текст (Markdown)</label><textarea id="e-content" rows="12">${esc(d.content||'')}</textarea></div>
+          <div class="fg"><label class="fg-check"><input type="checkbox" id="e-pub"${d.published!==false?' checked':''}> Опубликовано</label></div>
+          <div class="editor-actions">
+            <div class="editor-actions-left">
+              <button class="btn" onclick="saveNote()">💾 Сохранить</button>
+              <button class="btn btn-outline" onclick="showTab('notes')">Отмена</button>
+            </div>
+            ${editingId ? '<button class="btn btn-danger btn-sm" onclick="deleteNote()">Удалить</button>' : ''}
+          </div>
+        </div>`;
+    }
+
+    window.saveNote = async function() {
+      const data = {
+        title: document.getElementById('e-title').value,
+        content: document.getElementById('e-content').value,
+        date: document.getElementById('e-date').value,
+        lang: document.getElementById('e-lang').value,
+        published: document.getElementById('e-pub').checked,
+        _ts: Date.now()
+      };
+      try {
+        if (editingId) {
+          await fsSet('notes', editingId, data);
+        } else {
+          const id = 'note-' + Date.now();
+          await fsSet('notes', id, data);
+          editingId = id;
+        }
+        toast('Записка сохранена', true);
+        showTab('notes');
+      } catch(e) { toast('Ошибка: ' + e.message, false); }
+    };
+
+    window.deleteNote = async function() {
+      if (!editingId || !confirm('Удалить эту записку?')) return;
+      try { await fsDelete('notes', editingId); toast('Удалено', true); showTab('notes'); }
+      catch(e) { toast('Ошибка: ' + e.message, false); }
+    };
+
+    // ── Poetry ──
+    async function renderPoetryList() {
+      const m = document.getElementById('main');
+      m.innerHTML = '<div class="main-header"><h2>Стихи</h2><p>Стихотворения и тексты</p></div><div class="item-list" id="list"></div><button class="btn" onclick="newPoem()">+ Новое стихотворение</button>';
+      const poems = await fsListCollection('poetry');
+      poems.sort((a,b) => (b._ts||0) - (a._ts||0));
+      const list = document.getElementById('list');
+      if (!poems.length) { list.innerHTML = '<p style="color:var(--muted);font-size:.85rem;">Пока пусто.</p>'; return; }
+      list.innerHTML = poems.map(p => `
+        <div class="item-card" onclick="editPoem('${p.id}')">
+          <div class="item-card-left">
+            <div class="item-card-title">${esc(p.title || 'Без названия')}</div>
+            <div class="item-card-meta"><span>${p.year || '—'}</span><span>${p.lang || 'Рус'}</span></div>
+          </div>
+          <div class="item-card-right">
+            <span class="badge ${p.published !== false ? 'badge-pub' : 'badge-draft'}">${p.published !== false ? 'Опубл.' : 'Черновик'}</span>
+          </div>
+        </div>`).join('');
+    }
+
+    window.newPoem = function() {
+      editingId = null;
+      renderPoemEditor({title:'', text:'', year: new Date().getFullYear().toString(), lang:'Рус', published: true});
+    };
+    window.editPoem = async function(id) {
+      const data = await fsGet('poetry', id);
+      if (!data) return toast('Не удалось загрузить', false);
+      editingId = id;
+      renderPoemEditor(data);
+    };
+
+    function renderPoemEditor(d) {
+      document.getElementById('main').innerHTML = `
+        <div class="main-header"><h2>${editingId ? 'Редактировать' : 'Новое стихотворение'}</h2><button class="btn btn-outline btn-sm" onclick="showTab('poetry')">← Назад</button></div>
+        <div class="editor">
+          <div class="fg"><label>Название</label><input id="e-title" value="${esc(d.title||'')}"/></div>
+          <div class="fg-row">
+            <div class="fg"><label>Год</label><input id="e-year" value="${esc(d.year||'')}"/></div>
+            <div class="fg"><label>Язык</label><select id="e-lang"><option${d.lang==='Рус'?' selected':''}>Рус</option><option${d.lang==='Укр'?' selected':''}>Укр</option></select></div>
+          </div>
+          <div class="fg"><label>Текст</label><textarea id="e-text" rows="16" style="font-family:Georgia,serif;font-size:1rem;line-height:1.8;">${esc(d.text||'')}</textarea></div>
+          <div class="fg"><label class="fg-check"><input type="checkbox" id="e-pub"${d.published!==false?' checked':''}> Опубликовано</label></div>
+          <div class="editor-actions">
+            <div class="editor-actions-left">
+              <button class="btn" onclick="savePoem()">💾 Сохранить</button>
+              <button class="btn btn-outline" onclick="showTab('poetry')">Отмена</button>
+            </div>
+            ${editingId ? '<button class="btn btn-danger btn-sm" onclick="deletePoem()">Удалить</button>' : ''}
+          </div>
+        </div>`;
+    }
+
+    window.savePoem = async function() {
+      const data = {
+        title: document.getElementById('e-title').value,
+        text: document.getElementById('e-text').value,
+        year: document.getElementById('e-year').value,
+        lang: document.getElementById('e-lang').value,
+        published: document.getElementById('e-pub').checked,
+        _ts: Date.now()
+      };
+      try {
+        if (editingId) { await fsSet('poetry', editingId, data); }
+        else { await fsSet('poetry', 'poem-' + Date.now(), data); }
+        toast('Стихотворение сохранено', true);
+        showTab('poetry');
+      } catch(e) { toast('Ошибка: ' + e.message, false); }
+    };
+
+    window.deletePoem = async function() {
+      if (!editingId || !confirm('Удалить?')) return;
+      try { await fsDelete('poetry', editingId); toast('Удалено', true); showTab('poetry'); }
+      catch(e) { toast('Ошибка: ' + e.message, false); }
+    };
+
+    // ── Path ──
+    async function renderPathEditor() {
+      const d = await fsGet('content', 'path') || {};
+      document.getElementById('main').innerHTML = `
+        <div class="main-header"><h2>Путь</h2><p>Текст страницы «Мой путь»</p></div>
+        <div class="editor">
+          <div class="fg"><label>Заголовок</label><input id="e-title" value="${esc(d.title||'Путь')}"/></div>
+          <div class="fg"><label>Эпиграф</label><input id="e-epigraph" value="${esc(d.epigraph||'')}"/></div>
+          <div class="fg"><label>Содержание (HTML)</label><textarea id="e-content" rows="20">${esc(d.content||'')}</textarea></div>
+          <div class="editor-actions"><button class="btn" onclick="savePath()">💾 Сохранить</button></div>
+        </div>`;
+    }
+
+    window.savePath = async function() {
+      try {
+        await fsSet('content', 'path', {
+          title: document.getElementById('e-title').value,
+          epigraph: document.getElementById('e-epigraph').value,
+          content: document.getElementById('e-content').value,
+          _ts: Date.now()
+        });
+        toast('Путь сохранён', true);
+      } catch(e) { toast('Ошибка: ' + e.message, false); }
+    };
+
+    // ── YouTube ──
+    async function renderYoutube() {
+      const d = await fsGet('content', 'youtube') || {};
+      const videos = d.videos || [];
+      document.getElementById('main').innerHTML = `
+        <div class="main-header"><h2>YouTube</h2><p>Ссылки на видео</p></div>
+        <div class="editor">
+          <div class="fg"><label>URL канала</label><input id="e-channel" value="${esc(d.channelUrl||'')}"/></div>
+          <div class="fg"><label>Описание</label><input id="e-desc" value="${esc(d.description||'')}"/></div>
+          <div id="yt-list">${videos.map((v,i) => ytRow(v,i)).join('')}</div>
+          <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="addYtVideo()">+ Добавить видео</button>
+          <div class="editor-actions" style="margin-top:20px;"><button class="btn" onclick="saveYoutube()">💾 Сохранить</button></div>
+        </div>`;
+    }
+
+    function ytRow(v, i) {
+      return `<div class="fg-row" style="margin-top:12px;align-items:end;">
+        <div class="fg" style="margin:0;"><label>Название</label><input class="yt-title" value="${esc(v.title||'')}"/></div>
+        <div class="fg" style="margin:0;"><label>YouTube URL</label><input class="yt-url" value="${esc(v.url||'')}"/></div>
+      </div>`;
+    }
+
+    window.addYtVideo = function() {
+      const list = document.getElementById('yt-list');
+      list.insertAdjacentHTML('beforeend', ytRow({}, list.children.length));
+    };
+
+    window.saveYoutube = async function() {
+      const titles = document.querySelectorAll('.yt-title');
+      const urls = document.querySelectorAll('.yt-url');
+      const videos = [];
+      titles.forEach((t,i) => { if(t.value||urls[i].value) videos.push({title:t.value, url:urls[i].value}); });
+      try {
+        await fsSet('content', 'youtube', {
+          channelUrl: document.getElementById('e-channel').value,
+          description: document.getElementById('e-desc').value,
+          videos: videos, _ts: Date.now()
+        });
+        toast('YouTube сохранён', true);
+      } catch(e) { toast('Ошибка: ' + e.message, false); }
+    };
+
+    // ── Settings ──
+    async function renderSettings() {
+      const d = await fsGet('content', 'settings') || {};
+      document.getElementById('main').innerHTML = `
+        <div class="main-header"><h2>Настройки</h2><p>Общие настройки сайта</p></div>
+        <div class="editor">
+          <div class="fg"><label>Название сайта</label><input id="e-site-title" value="${esc(d.siteTitle||'A. Chepelovskyi')}"/></div>
+          <div class="fg"><label>Описание</label><input id="e-site-desc" value="${esc(d.siteDesc||'')}"/></div>
+          <div class="fg"><label>Контактный email</label><input id="e-email" value="${esc(d.contactEmail||'')}"/></div>
+          <div class="fg"><label>YouTube канал URL</label><input id="e-yt" value="${esc(d.youtubeUrl||'')}"/></div>
+          <div class="editor-actions"><button class="btn" onclick="saveSettings()">💾 Сохранить</button></div>
+        </div>`;
+    }
+
+    window.saveSettings = async function() {
+      try {
+        await fsSet('content', 'settings', {
+          siteTitle: document.getElementById('e-site-title').value,
+          siteDesc: document.getElementById('e-site-desc').value,
+          contactEmail: document.getElementById('e-email').value,
+          youtubeUrl: document.getElementById('e-yt').value,
+          _ts: Date.now()
+        });
+        toast('Настройки сохранены', true);
+      } catch(e) { toast('Ошибка: ' + e.message, false); }
+    };
+
+    window.saveCurrentTab = function() {
+      switch(currentTab) {
+        case 'path': savePath(); break;
+        case 'youtube': saveYoutube(); break;
+        case 'settings': saveSettings(); break;
+      }
+    };
+
+    // ── Ctrl+S ──
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveCurrentTab(); }
+    });
+
+    // ── Helpers ──
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // Enter to login
+    document.getElementById('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  })();
+  </script>
+</body>
+</html>
