@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Стих — A. Chepelovskyi</title>
+  <meta name="theme-color" content="#3B82F6" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <nav class="nav" aria-label="Основная навигация">
+    <div class="nav-inner">
+      <a class="nav-logo" href="/">A. Chepelovskyi</a>
+      <button class="nav-toggle" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
+      <div class="nav-links">
+        <a class="nav-link" href="/path.html">Путь</a>
+        <a class="nav-link" href="/notes.html">Записки</a>
+        <a class="nav-link active" href="/poetry.html">Стихи</a>
+        <a class="nav-link" href="/youtube.html">YouTube</a>
+        <a class="nav-link" href="/contact.html">Контакт</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container-read">
+      <p style="margin-bottom:24px;"><a class="back-link" href="/poetry.html">← Все стихи</a></p>
+      <article id="poem-article">
+        <p style="color:var(--text-muted);">Загрузка...</p>
+      </article>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>Andrii Chepelovskyi · <span data-year>2026</span></span>
+      <div class="footer-links">
+        <a href="/youtube.html">YouTube</a>
+        <a href="https://github.com/chipon1993-cmd/reimagined-pancake" target="_blank" rel="noopener">GitHub</a>
+        <a href="/contact.html">Написать</a>
+      </div>
+      <span class="footer-domain">chepelovskyi.com</span>
+    </div>
+  </footer>
+
+  <script src="/js/main.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+  <script>
+  (async function(){
+    const id = new URLSearchParams(location.search).get('id');
+    const el = document.getElementById('poem-article');
+    if (!id) { el.innerHTML = '<p>Стихотворение не найдено.</p>'; return; }
+
+    await window.firebaseReady;
+    const data = await window.fsGet('poetry', id);
+    if (!data || data.published === false) {
+      el.innerHTML = '<p>Стихотворение не найдено или не опубликовано.</p>';
+      return;
+    }
+
+    document.title = data.title + ' — A. Chepelovskyi';
+
+    const text = (data.text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+
+    el.innerHTML = `
+      <div style="margin-bottom:40px;">
+        <h1 style="font-size:1.6rem;font-weight:500;font-family:Georgia,serif;margin-bottom:8px;">${esc(data.title)}</h1>
+        <div style="font-size:.82rem;color:var(--text-muted);display:flex;gap:12px;"><span>${data.year||''}</span><span>${esc(data.lang||'')}</span></div>
+      </div>
+      <div style="font-family:Georgia,serif;font-size:1.1rem;line-height:2;color:var(--text);">${text}</div>
+    `;
+  })();
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  </script>
+</body>
+</html>

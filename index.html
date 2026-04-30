@@ -159,5 +159,45 @@
   </footer>
 
   <script src="/js/main.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+  <script>
+  (async function(){
+    await window.firebaseReady;
+
+    // Load latest notes
+    var notes = await window.fsListCollection('notes');
+    var pubNotes = notes.filter(function(n){ return n.published !== false; });
+    pubNotes.sort(function(a,b){ return (b._ts||0) - (a._ts||0); });
+    var noteList = document.querySelector('.note-list');
+    if (noteList && pubNotes.length) {
+      noteList.innerHTML = pubNotes.slice(0,3).map(function(n){
+        var excerpt = (n.content||'').replace(/[#*_`>\[\]]/g,'').slice(0,150);
+        var date = n.date ? new Date(n.date).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}) : '';
+        return '<a class="note-card" href="/note-view.html?id='+n.id+'">' +
+          '<div class="note-card-meta"><span>'+date+'</span><span class="note-card-lang">'+(n.lang||'Рус')+'</span></div>' +
+          '<h3 class="note-card-title">'+(n.title||'Без заголовка')+'</h3>' +
+          '<p class="note-card-excerpt">'+excerpt+'</p>' +
+          '<span class="note-card-more">Читать →</span></a>';
+      }).join('');
+    }
+
+    // Load latest poems
+    var poems = await window.fsListCollection('poetry');
+    var pubPoems = poems.filter(function(p){ return p.published !== false; });
+    pubPoems.sort(function(a,b){ return (b._ts||0) - (a._ts||0); });
+    var poetryGrid = document.querySelector('.poetry-grid');
+    if (poetryGrid && pubPoems.length) {
+      poetryGrid.innerHTML = pubPoems.slice(0,3).map(function(p){
+        var preview = (p.text||'').split('\n').slice(0,2).join('\n');
+        return '<a class="poem-card" href="/poem-view.html?id='+p.id+'">' +
+          '<h3 class="poem-card-title">'+(p.title||'')+'</h3>' +
+          '<p class="poem-card-preview">'+preview.replace(/</g,'&lt;')+'</p>' +
+          '<div class="poem-card-meta"><span class="poem-card-year">'+(p.year||'')+'</span><span>·</span><span class="note-card-lang">'+(p.lang||'Рус')+'</span></div></a>';
+      }).join('');
+    }
+  })();
+  </script>
 </body>
 </html>
